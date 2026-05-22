@@ -141,3 +141,21 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# SQLite database
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# User-reported issues (consumed by Claude, deleted after fix)
+issues/
+.claude
+.agents
+.playwright-mcp
+
+# Ad-hoc screenshots from Playwright runs — only root-level so deliberate
+# images committed inside docs/ or web/public still work.
+/*.png
+/*.jpeg
+/*.jpg
