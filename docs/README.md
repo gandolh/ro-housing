@@ -1,23 +1,17 @@
-# ro-housing — docs
+# ro-housing docs
 
-Living notes about *what this project is* and *why it looks the way it does*. The point of this folder is "after a two-week pause, what do I need to read to get my head back in?" — not API reference, not exhaustive code docs. Code is the source of truth for *what*; these docs cover *why*.
+Start with the [main README](../README.md). This folder holds what it links to, and the notes to read after a pause to get back into the project. The code says *what*, and these files say *why*. Things that drift quickly, such as version numbers, selectors and line numbers, belong next to the code instead.
 
-Avoid putting things here that drift quickly (npm version numbers, exact selectors, line numbers). Those belong next to the code.
-
-## Files
-
-**Start here**
-- [overview.md](overview.md) — what the app does, who it's for, what's in/out of scope.
-- [worklog.md](worklog.md) — chronological "what got built / what's next" log. Read after a pause to catch up.
-
-**How it's built**
-- [architecture.md](architecture.md) — repo layout, request flow, data model, the moving parts.
-- [adapters.md](adapters.md) — the contract every site adapter follows, the two scraping strategies (cheerio vs Playwright), per-site quirks.
-- [design.md](design.md) — the terminal/retro frontend design system. Palette, type scale, primitive components, anti-goals.
-- [testing.md](testing.md) — Vitest setup, what's tested, how to add tests in each package.
-
-**Why it's built that way**
-- [decisions.md](decisions.md) — append-only log of deliberate design choices and the tradeoffs behind them. Update when you make a call you might second-guess later.
-
-**Operational**
-- [issues.md](issues.md) — how the in-app "Report an issue" channel works. Read before processing files in `issues/`.
+| File | What it covers |
+|---|---|
+| [getting-started.md](getting-started.md) | Local setup: prerequisites, the two dev servers, settings, first use, tests, common problems |
+| [overview.md](overview.md) | What the app does, who it's for, what is in and out of scope, the known risks |
+| [worklog.md](worklog.md) | What each session built, what broke and what's next. Read it after a pause |
+| [architecture.md](architecture.md) | Repo layout, the Refresh and the save-by-link flows, the data model, what lives where |
+| [adapters.md](adapters.md) | The search-scraper contract, cheerio vs Playwright, per-site notes, and how a single listing page is read |
+| [design.md](design.md) | The terminal-style design system: palette, type scale, the shared UI components, anti-goals |
+| [testing.md](testing.md) | The Vitest setup in both packages, what each test file covers, how to add one |
+| [decisions.md](decisions.md) | Append-only log of design choices and their trade-offs. Read it before changing a rule |
+| [issues.md](issues.md) | How the in-app Report button writes files to `issues/`, and how Claude works through them |
+| [base-ui.txt](base-ui.txt) | Index of the Base UI component docs, for anyone adding a component to `web/src/components/ui/` |
+| [images/](images/shots.md) | The screenshots in the README, how each was made, and the demo seed |
