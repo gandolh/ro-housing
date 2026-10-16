@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -169,11 +170,18 @@ describe('<SavedPage> add by link', () => {
       'POST /api/saved/scrape': () => [200, DRAFT],
     });
     const taken = vi.fn();
-    render(<SavedPage incomingLink={LINK} onIncomingTaken={taken} />);
+    // StrictMode, as in main.tsx: the hand-over must still fetch only once.
+    render(
+      <StrictMode>
+        <SavedPage incomingLink={LINK} onIncomingTaken={taken} />
+      </StrictMode>,
+    );
 
     expect(await screen.findByText(/Read 8 of 10 fields/)).toBeInTheDocument();
     expect(taken).toHaveBeenCalled();
-    expect(calls.find((c) => c.url === '/api/saved/scrape')?.body).toEqual({ url: LINK });
+    const scrapes = calls.filter((c) => c.url === '/api/saved/scrape');
+    expect(scrapes).toHaveLength(1);
+    expect(scrapes[0]?.body).toEqual({ url: LINK });
   });
 
   it('deletes only after a second click', async () => {

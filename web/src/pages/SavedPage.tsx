@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { ApiError, api, type SavedApartment, type ScrapeResult } from '../api.ts';
 import { ApartmentForm } from '../components/ApartmentForm.tsx';
 import { SavedTable } from '../components/SavedTable.tsx';
@@ -133,8 +133,16 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     }
   };
 
+  // StrictMode runs this effect twice in dev; the ref keeps it to one fetch
+  // per hand-over, and resets once the parent clears the link.
+  const handledLink = useRef<string | null>(null);
   useEffect(() => {
-    if (!incomingLink) return;
+    if (!incomingLink) {
+      handledLink.current = null;
+      return;
+    }
+    if (handledLink.current === incomingLink) return;
+    handledLink.current = incomingLink;
     setLink(incomingLink);
     void fetchDetails(incomingLink);
     onIncomingTaken();
@@ -195,6 +203,8 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     try {
       await api.updateSaved(editing.id, parsed.input);
       setEditing(null);
+      // The "Already saved: <title>" line would show the pre-edit values.
+      setStage((s) => (s.kind === 'existing' ? { kind: 'idle' } : s));
       await reload();
     } catch (err) {
       setEditProblem(message(err));
