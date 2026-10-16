@@ -21,7 +21,7 @@ Format: date + 2–6 lines per session. What got built, what's next, anything we
 
 **Weird:**
 - imobiliare.ro now blocks this machine for plain fetch (Cloudflare) **and** headless Chromium (DataDome CAPTCHA). The search adapter is affected too. storia.ro answers plain fetch now. Noted in [adapters.md](adapters.md); adapters not changed.
-- `vite` dev failed here with `ENOSPC` (inotify watcher limit). `npm run build && npx vite preview` works without watchers; raising `fs.inotify.max_user_watches` fixes dev.
+- `vite` dev failed here with `ENOSPC`: the inotify watch limit (already 524288) was used up by VS Code's file watcher with all of `~/projects` open (~500k watches). Opening just this repo in VS Code, or excluding `node_modules`/`dist` in `files.watcherExclude`, frees them. `npm run build && npx vite preview` works meanwhile.
 
 **Next:**
 - Open the Saved tab on a real imobiliare listing in the owner's browser: if the block lifts, check what the extractor reads there (no fixture yet).
