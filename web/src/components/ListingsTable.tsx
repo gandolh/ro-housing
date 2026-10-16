@@ -75,9 +75,9 @@ export function ListingsTable({ listings, lastRefreshAt, onSave }: Props) {
                   <Badge>{l.sourceId}</Badge>
                 </td>
                 <td className="px-2 py-1.5">{l.rooms ?? '—'}</td>
-                <td className="px-2 py-1.5">{fmtSqm(l.sqm)}</td>
-                <td className="px-2 py-1.5">{fmtPrice(l.priceEur)}</td>
-                <td className="px-2 py-1.5">
+                <td className="whitespace-nowrap px-2 py-1.5">{fmtSqm(l.sqm)}</td>
+                <td className="whitespace-nowrap px-2 py-1.5">{fmtPrice(l.priceEur)}</td>
+                <td className="whitespace-nowrap px-2 py-1.5">
                   {fmtPricePerSqm(l.priceEur, l.sqm)}
                 </td>
                 <td className="px-2 py-1.5">{l.location ?? '—'}</td>

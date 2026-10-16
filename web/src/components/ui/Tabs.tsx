@@ -35,9 +35,10 @@ export const TabsTab = forwardRef<
       'hover:bg-panel-alt hover:text-ink',
       // Active state: bold, ink, panel background to lift it visually,
       // plus a 3px ink underline flush with the list's bottom border.
-      'data-selected:font-bold data-selected:text-ink data-selected:bg-panel',
+      // Base UI 1.x marks the selected tab with data-active.
+      'data-active:font-bold data-active:text-ink data-active:bg-panel',
       'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-[3px] after:bg-transparent',
-      'data-selected:after:bg-ink',
+      'data-active:after:bg-ink',
       className,
     )}
   />
