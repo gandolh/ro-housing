@@ -53,8 +53,30 @@ Decision: use SQLite's built-in `PRAGMA user_version` as a one-shot migration la
 ### No bare-element CSS rules after `@import 'tailwindcss';` (session 4 lesson)
 A `button { background: transparent; border: none; padding: 0 }` block in `styles.css` looked innocent but overrode every Tailwind utility on every button because unlayered rules outrank `@layer utilities`. The rule going forward: don't add bare-element selectors to `styles.css`. If you genuinely need to reset a native element's defaults, wrap the rule in `@layer base { ... }` so it sits below utilities in the cascade. Better still, let Tailwind's preflight handle the reset.
 
+## Saved apartments (session 5)
+
+### A separate `saved` table, not a flag on `listings`
+`listings` is overwritten by every Refresh. A saved apartment holds values the user confirmed or typed (a corrected price, a floor the page didn't give, notes), and a Refresh must never touch them. It also covers sites that have no search adapter at all. So: its own table, keyed by normalized URL, with no link to `listings`. Cost: a listing that is in both shows up in both, with no price history on the saved side.
+
+### The page is a draft; nothing is saved without the user
+Same rule as shelfmark's book lookup. `POST /api/saved/scrape` only reads; the form marks every field "from page", "edited" or "not on page"; only Save writes. Scrapers are wrong in quiet ways (apostu's own page says "decomandat" in the prose and "semidecomandat" in its details block), so the user is the last check, not the extractor.
+
+### One generic extractor, not one per site
+The search adapters are per site because search cards differ a lot. Listing pages mostly carry Open Graph tags and a details block of Romanian labels, so one layered extractor covers storia (its JSON) and the four agency sites tested, and does something useful on a site never seen. Only storia has a site-specific layer, because its JSON is exact.
+
+### Blocked means blocked
+When a site shows a CAPTCHA even to headless Chromium (imobiliare.ro's DataDome on 2026-10-16), the app says so and opens the empty form with the link filled in. It does not add stealth plugins or solve challenges. Shelfmark took the same stance on the national library's CAPTCHA.
+
+### Store the photo's link, not the photo
+Keeps the "no image storage" scope. The thumbnail breaks if the listing is taken down; `raw_json` still has what the page said. Revisit if dead thumbnails get annoying: download once on save, as shelfmark does for covers.
+
+### Refuse local addresses in the scrape endpoint
+The API answers any origin (`cors: origin: true`), so any page open in the browser could ask it to fetch a URL. The endpoint refuses `localhost` and private-network IPs (checked after DNS). Only the first hop is checked; redirects are followed unchecked. Enough for a localhost tool.
+
 ## What we'd revisit if usage proves us wrong
 
 - **Dedup**: if the same apartment appears 3+ times across sources every refresh, that noise might outweigh the false-positive risk. Add a "group by (rooms, m², ±5% price, fuzzy-neighborhood)" view as a toggle.
 - **Scheduler**: if the user actually wants meaningful price history and refresh-click density isn't enough, add an optional single daily cron — not a heavy scheduler.
 - **Playwright per-site**: if more sites turn out to need it, fine. If only storia needs it forever, also fine.
+- **Saved vs listings**: if most saved apartments also show up in the Listings table, join them on normalized URL to show the refresh price history next to the saved row.
+- **Re-check a saved apartment**: a "fetch again" that shows what changed on the page (price drops, taken down) without overwriting the user's values.

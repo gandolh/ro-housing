@@ -32,3 +32,27 @@ CREATE TABLE IF NOT EXISTS price_history (
 
 CREATE INDEX IF NOT EXISTS listings_source ON listings(source_id);
 CREATE INDEX IF NOT EXISTS listings_last_seen ON listings(last_seen);
+
+-- Apartments the user saved by pasting a listing link. Separate from
+-- `listings`: these values were confirmed or typed by the user, and a Refresh
+-- must never overwrite them. `raw_json` keeps what the page said at fetch time.
+CREATE TABLE IF NOT EXISTS saved (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  url          TEXT NOT NULL UNIQUE,
+  site         TEXT NOT NULL,
+  title        TEXT,
+  price_eur    INTEGER,
+  rooms        INTEGER,
+  sqm          REAL,
+  floor        INTEGER,
+  floors_total INTEGER,
+  year_built   INTEGER,
+  location     TEXT,
+  partitioning TEXT,
+  image_url    TEXT,
+  notes        TEXT,
+  raw_json     TEXT,
+  fetched_at   INTEGER,
+  saved_at     INTEGER NOT NULL,
+  updated_at   INTEGER NOT NULL
+);

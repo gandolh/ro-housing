@@ -4,6 +4,7 @@ import './db/index.ts';
 import { issuesRoutes } from './routes/issues.ts';
 import { listingsRoutes } from './routes/listings.ts';
 import { refreshRoutes } from './routes/refresh.ts';
+import { savedRoutes } from './routes/saved.ts';
 import { sourcesRoutes } from './routes/sources.ts';
 import { closeBrowser } from './lib/playwright.ts';
 
@@ -14,6 +15,7 @@ await app.register(sourcesRoutes);
 await app.register(listingsRoutes);
 await app.register(refreshRoutes);
 await app.register(issuesRoutes);
+await app.register(savedRoutes);
 
 const PORT = Number(process.env.PORT ?? 3000);
 const HOST = process.env.HOST ?? '127.0.0.1';

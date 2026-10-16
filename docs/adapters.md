@@ -33,6 +33,7 @@ Reuse the chromium instance across adapter calls within a single refresh — `li
 These get filled in as adapters are built. Includes things worth remembering: the URL pattern, the selectors that work today, known quirks. **Do not rely on this file for current selectors** — when an adapter breaks, fix the code first, update this note second.
 
 ### imobiliare.ro
+- **2026-10-16: blocked.** Plain fetch gets Cloudflare's "Attention Required!" 403; headless Chromium gets a DataDome CAPTCHA (`geo.captcha-delivery.com`). Both the search adapter and the Saved tab come back empty for it. Not worked around, on purpose. It worked from this machine in session 4, so the block may lift; re-test before changing the adapter.
 - Strategy: cheerio.
 - Search URL pattern: `https://www.imobiliare.ro/vanzare-apartamente/timisoara` (+ `?pagina=N`).
 - Quirk: sets consent cookie on first visit. The shared `lib/fetch.ts` cookie jar handles this.
@@ -43,6 +44,7 @@ These get filled in as adapters are built. Includes things worth remembering: th
   - **Listing cards don't carry a stable location class** — adapter parses the neighborhood from the URL slug via `locationFromImobiliareUrl()`.
 
 ### storia.ro
+- **2026-10-16:** plain fetch answered 200 with the full page, search and listing alike. The adapter still uses Playwright; switching it to cheerio would be faster but is untested against the search page's markup.
 - Strategy: Playwright (confirmed 403 on plain fetch + React SPA shell).
 - Search URL pattern: `https://www.storia.ro/ro/rezultate/vanzare/apartament/timis/timisoara` (+ `?page=N`).
 - Quirk: Cloudflare + bot signals. Use a stock Playwright chromium with default UA — no extra stealth needed at personal volume in initial testing, but be ready to add `playwright-extra` + stealth plugin if it starts challenging.
@@ -65,6 +67,23 @@ These get filled in as adapters are built. Includes things worth remembering: th
 ### apostuestate.ro, primum.ro, districtestate.ro
 - Strategy: cheerio (assumed). Not verifiable from research environment.
 - TODO during impl: confirm with `curl -A 'Mozilla/5.0 ...' <url>` from a real workstation that listings appear in raw HTML before writing selectors.
+
+## Single listing pages (the Saved tab)
+
+Separate from the search adapters: `api/src/details/` reads **one** listing page from **any** site into a draft. There is no per-site adapter to register. A site the extractor doesn't know still gets its title and photo from Open Graph, plus whatever its labels say.
+
+The layers, most trusted first; a field keeps the first value found:
+
+1. **storia's `__NEXT_DATA__`** (the OLX-group Next.js JSON): `ad.target` has `Price`, `Area`, `Rooms_num`, `Floor_no` (`floor_4`, `ground_floor`), `Building_floors_num`, `Build_year`; the area is the last of `ad.location.reverseGeocoding.locations`.
+2. **Label/value lines.** Every text node is one line; a short line starting with a known Romanian label takes its value from the rest of the line or the next line. Covers foxfort (`Nr. camere:` + `<span>3</span>`), apostu (`<p>Pret</p><span>102,000 EUR</span>`), primum (`<strong>Pret:</strong> 108.000€`). `nav`, `footer` and `select` are dropped first so search filters don't pass for labels. Bare `Camere` and `Etaje` only count with a colon.
+3. **Open Graph**: `og:title` (minus a trailing " - Site.ro" or listing ID), `og:image`.
+4. **Phrases** in the title and prose: "2 camere", "garsoniera", "zona Freidorf", "etajul 3 din 3", "bloc din 1980", "imobil cu 10 etaje", "decomandat".
+
+Values outside sane ranges are dropped (price under 1,000 €, year after next year + 5, a floor above the top floor drops the top floor). JSON-LD was looked at and skipped: on every site tested it only described the agency.
+
+Bot checks: a page with no `og:title` whose `<title>` names a challenge, or that loads `captcha-delivery.com`, or that has under 500 characters of text, counts as blocked. Not `/cdn-cgi/challenge-platform`: Cloudflare adds that script to normal pages too.
+
+When a field comes out wrong, add the page's block to a fixture in `api/src/details/fixtures/` (trimmed, no agent names or phones), write the failing test in `extract.test.ts`, then fix the rule.
 
 ## When a selector breaks
 

@@ -26,7 +26,7 @@ const ORDER_LABELS: Record<Order, string> = {
   asc: '↑ asc',
 };
 
-export function ListingsPage() {
+export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void }) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
   const [sort, setSort] = useState<Sort>('lastSeen');
@@ -134,7 +134,11 @@ export function ListingsPage() {
       )}
 
       <div className="mt-4">
-        <ListingsTable listings={listings} lastRefreshAt={lastRefreshAt} />
+        <ListingsTable
+          listings={listings}
+          lastRefreshAt={lastRefreshAt}
+          onSave={(l) => onSaveLink(l.url)}
+        />
       </div>
     </div>
   );

@@ -24,6 +24,10 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 |------|-------------------|
 | `src/lib/normalize.test.ts` | All five `normalize.ts` helpers — `parsePriceEur`, `pickLargestPriceEur`, `parseRooms`, `parseSqm`, `cleanText`, `slugFromUrl`, `stripTrailingPrice`, `locationFromImobiliareUrl`. Includes regression tests for the imobiliare data-quality bugs (discount-fragment price, fractional rooms, embedded title price, neighborhood extraction). |
 | `src/routes/issues.test.ts` | The slugify function used by the issue-write endpoint and the cap-counting logic. Uses a fresh `mkdtempSync` directory per test. |
+| `src/details/extract.test.ts` | The listing-page extractor against trimmed real pages in `src/details/fixtures/` (storia, foxfort, primum, apostu, a DataDome page), plus the floor / top-floor / partitioning label parsers and the sanity ranges. |
+| `src/details/fetchPage.test.ts` | `looksBlocked`: both imobiliare bot-check pages are caught, the four real listing pages pass. |
+| `src/details/url.test.ts` | URL normalization (tracking params, hash, trailing slash), site names, the local-address guard. |
+| `src/routes/saved-input.test.ts` | Validation of a saved apartment: ranges, whole numbers, floor above top floor, partitioning vocabulary. |
 
 **Conventions**
 
@@ -48,6 +52,9 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 | `src/components/ui/Checkbox.test.tsx` | Accessible role, onCheckedChange firing, controlled checked prop. |
 | `src/components/ui/Dialog.test.tsx` | Trigger-open, title/description rendering, close-button unmount (with `waitFor` because Base UI has a 150ms fade-out transition). |
 | `src/components/ui/Tabs.test.tsx` | Default tab renders its panel; click switches panel. |
+| `src/lib/format.test.ts` | Floor formatting ("P/4", "3/4"), €/m². |
+| `src/lib/apartment.test.ts` | Form strings ↔ saved record: "72.000 €", "42,5 mp", "parter", per-field errors. |
+| `src/pages/SavedPage.test.tsx` | The add-by-link flow with `fetch` stubbed: draft → edit → save (checks the POST body), the bot-check message, "already saved", a link handed over from Listings, two-click delete. |
 
 **Conventions**
 

@@ -2,10 +2,18 @@ import { useState } from 'react';
 import { ReportIssueButton } from './components/ReportIssueButton.tsx';
 import { Tabs, TabsList, TabsPanel, TabsTab } from './components/ui/Tabs.tsx';
 import { ListingsPage } from './pages/ListingsPage.tsx';
+import { SavedPage } from './pages/SavedPage.tsx';
 import { SourcesPage } from './pages/SourcesPage.tsx';
 
 export function App() {
   const [tab, setTab] = useState<string>('listings');
+  // A listing's link handed from the Listings tab to the Saved tab's fetch.
+  const [incomingLink, setIncomingLink] = useState<string | null>(null);
+
+  const saveLink = (url: string) => {
+    setIncomingLink(url);
+    setTab('saved');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -20,10 +28,17 @@ export function App() {
         <Tabs value={tab} onValueChange={(v) => setTab(String(v))}>
           <TabsList>
             <TabsTab value="listings">Listings</TabsTab>
+            <TabsTab value="saved">Saved</TabsTab>
             <TabsTab value="sources">Sources</TabsTab>
           </TabsList>
           <TabsPanel value="listings">
-            <ListingsPage />
+            <ListingsPage onSaveLink={saveLink} />
+          </TabsPanel>
+          <TabsPanel value="saved">
+            <SavedPage
+              incomingLink={incomingLink}
+              onIncomingTaken={() => setIncomingLink(null)}
+            />
           </TabsPanel>
           <TabsPanel value="sources">
             <SourcesPage />

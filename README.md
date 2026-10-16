@@ -2,6 +2,8 @@
 
 Personal, local-only aggregator for "apartamente de vânzare Timișoara" across imobiliare.ro, storia.ro, and several local agency sites. Paste a search URL per site, click Refresh, see everything in one table.
 
+The **Saved** tab is the shortlist: paste the link of one listing, click Fetch details, check and fix what the page gave, and save it next to the others to compare price, €/m², floor and year built. Any listing in the Listings table has a "save" action that does the same.
+
 See [docs/overview.md](docs/overview.md) for what this is and isn't, [docs/architecture.md](docs/architecture.md) for how it's built, [docs/adapters.md](docs/adapters.md) for the scraper contract.
 
 ## Running

@@ -52,6 +52,7 @@ export function createSession(): FetchSession {
           ...(cookie ? { Cookie: cookie } : {}),
         },
         redirect: 'follow',
+        signal: AbortSignal.timeout(20_000),
       });
       const setCookie = res.headers.getSetCookie?.() ?? res.headers.get('set-cookie');
       jar.setFromResponse(url, setCookie ?? undefined);

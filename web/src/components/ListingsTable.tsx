@@ -1,27 +1,16 @@
 import type { Listing } from '../api.ts';
 import { cn } from '../lib/cn.ts';
+import { fmtPrice, fmtPricePerSqm, fmtSqm } from '../lib/format.ts';
 import { PriceHistory } from './PriceHistory.tsx';
 import { Badge } from './ui/Badge.tsx';
+import { Button } from './ui/Button.tsx';
 import { Panel } from './ui/Panel.tsx';
 
 interface Props {
   listings: Listing[];
   lastRefreshAt: number | null;
-}
-
-function fmtPrice(eur: number | null): string {
-  if (eur === null) return '—';
-  return `${eur.toLocaleString('ro-RO')} €`;
-}
-
-function fmtSqm(sqm: number | null): string {
-  if (sqm === null) return '—';
-  return `${sqm} m²`;
-}
-
-function fmtPricePerSqm(price: number | null, sqm: number | null): string {
-  if (price === null || sqm === null || sqm === 0) return '—';
-  return `${Math.round(price / sqm).toLocaleString('ro-RO')} €/m²`;
+  /** Opens the listing in the Saved tab's fetch-and-confirm flow. */
+  onSave: (listing: Listing) => void;
 }
 
 function fmtAge(firstSeen: number): string {
@@ -33,7 +22,7 @@ function fmtAge(firstSeen: number): string {
 
 const HEAD = 'border-b border-ink bg-panel-alt px-2 py-1.5 text-xs uppercase tracking-wide text-ink-dim text-left';
 
-export function ListingsTable({ listings, lastRefreshAt }: Props) {
+export function ListingsTable({ listings, lastRefreshAt, onSave }: Props) {
   if (listings.length === 0) {
     return (
       <Panel className="px-6 py-12 text-center text-sm text-ink-dim">
@@ -55,6 +44,9 @@ export function ListingsTable({ listings, lastRefreshAt }: Props) {
             <th className={HEAD}>Location</th>
             <th className={HEAD}>Age</th>
             <th className={HEAD}>History</th>
+            <th className={HEAD}>
+              <span className="sr-only">Save</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -92,6 +84,16 @@ export function ListingsTable({ listings, lastRefreshAt }: Props) {
                 <td className="px-2 py-1.5">{fmtAge(l.firstSeen)}</td>
                 <td className="px-2 py-1.5">
                   <PriceHistory history={l.history} />
+                </td>
+                <td className="px-1 py-1.5">
+                  <Button
+                    variant="ghost"
+                    className="h-auto px-1 text-xs"
+                    aria-label={`Save ${l.title ?? l.sourceUid} for comparing`}
+                    onClick={() => onSave(l)}
+                  >
+                    save
+                  </Button>
                 </td>
               </tr>
             );

@@ -6,6 +6,29 @@ Format: date + 2–6 lines per session. What got built, what's next, anything we
 
 ---
 
+## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
+
+**Built:**
+- **Saved tab.** Paste one listing's link → Fetch details → a draft form with every field marked "from page", "edited" or "not on page" → Save. Saved apartments sit in a table sortable by newest, price, €/m², m² and year built, with notes, a thumbnail, Edit (dialog) and two-click Delete. A link already saved shows "Already saved" instead of a second copy. Each row in the Listings table got a "save" action that opens the same flow.
+- API: `POST /api/saved/scrape` (reads only), `GET/POST /api/saved`, `PUT/DELETE /api/saved/:id`; new `saved` table. Extraction lives in `api/src/details/` and works on any site: storia's JSON, Romanian label/value lines, Open Graph, phrases. See [adapters.md](adapters.md#single-listing-pages-the-saved-tab).
+- `lib/fetch.ts` now times out after 20 s (it could hang a refresh forever before).
+- Formatters moved from `ListingsTable` into `web/src/lib/format.ts`.
+
+**Verified:**
+- api 88/88 and web 39/39 tests; `tsc --noEmit` clean in both; `vite build` clean.
+- Live, through the running API: storia 9 of 10 fields (no partitioning on that page), foxfort 10 of 10, both matching the page. imobiliare.ro → "bot check" and an empty form. localhost links refused, unknown host reported.
+- Drove the built UI in headless Chrome: fetch, edit a price, save, the table, the edit dialog.
+
+**Weird:**
+- imobiliare.ro now blocks this machine for plain fetch (Cloudflare) **and** headless Chromium (DataDome CAPTCHA). The search adapter is affected too. storia.ro answers plain fetch now. Noted in [adapters.md](adapters.md); adapters not changed.
+- `vite` dev failed here with `ENOSPC` (inotify watcher limit). `npm run build && npx vite preview` works without watchers; raising `fs.inotify.max_user_watches` fixes dev.
+
+**Next:**
+- Open the Saved tab on a real imobiliare listing in the owner's browser: if the block lifts, check what the extractor reads there (no fixture yet).
+- Maybe: re-check a saved apartment for price changes; join saved rows to `listings` history. See the end of [decisions.md](decisions.md).
+
+---
+
 ## Session 4 — Vitest set up; bug audit; CSS, Select, DB, and imobiliare adapter fixes
 
 **Built:**
