@@ -51,7 +51,7 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 | `src/components/ui/Button.test.tsx` | Render, variant classes, click handler, disabled-state click suppression. |
 | `src/components/ui/Checkbox.test.tsx` | Accessible role, onCheckedChange firing, controlled checked prop. |
 | `src/components/ui/Dialog.test.tsx` | Trigger-open, title/description rendering, close-button unmount (with `waitFor` because Base UI has a 150ms fade-out transition). |
-| `src/components/ui/Tabs.test.tsx` | Default tab renders its panel; click switches panel. |
+| `src/components/ui/Tabs.test.tsx` | Default tab renders its panel; click switches panel. The selected tab, and only it, carries `data-active`, the attribute the active-tab styles key on. |
 | `src/lib/format.test.ts` | Floor formatting ("P/4", "3/4"), €/m². |
 | `src/lib/apartment.test.ts` | Form strings ↔ saved record: "72.000 €", "42,5 mp", "parter", per-field errors. |
 | `src/pages/SavedPage.test.tsx` | The add-by-link flow with `fetch` stubbed: draft → edit → save (checks the POST body), the bot-check message, "already saved", a link handed over from Listings, two-click delete. |

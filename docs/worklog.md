@@ -23,6 +23,11 @@ Format: date + 2–6 lines per session. What got built, what's next, anything we
 - imobiliare.ro now blocks this machine for plain fetch (Cloudflare) **and** headless Chromium (DataDome CAPTCHA). The search adapter is affected too. storia.ro answers plain fetch now. Noted in [adapters.md](adapters.md); adapters not changed.
 - `vite` dev failed here with `ENOSPC`: the inotify watch limit (already 524288) was used up by VS Code's file watcher with all of `~/projects` open (~500k watches). Opening just this repo in VS Code, or excluding `node_modules`/`dist` in `files.watcherExclude`, frees them. `npm run build && npx vite preview` works meanwhile.
 
+**Later the same day:**
+- A "save" from Listings fetched twice under React StrictMode in dev; a ref now keeps it to one, with a StrictMode test that fails without it.
+- No tab had looked selected since session 3: the styles keyed on `data-selected`, but Base UI 1.x sets `data-active`. Fixed in `ui/Tabs.tsx`, with a test pinning the attribute. The Listings table's m², price and €/m² also stopped wrapping their unit onto a second line.
+- README rewritten to the shared readme-docs standard, with `docs/getting-started.md` and real screenshots in `docs/images/`, taken from a throwaway clone filled by `docs/images/demo-seed.mjs`. `shots.md` says how to re-take them.
+
 **Next:**
 - Open the Saved tab on a real imobiliare listing in the owner's browser: if the block lifts, check what the extractor reads there (no fixture yet).
 - Maybe: re-check a saved apartment for price changes; join saved rows to `listings` history. See the end of [decisions.md](decisions.md).

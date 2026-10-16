@@ -26,4 +26,17 @@ describe('<Tabs>', () => {
     await user.click(screen.getByRole('tab', { name: 'B' }));
     expect(screen.getByText('Panel B')).toBeInTheDocument();
   });
+
+  // The active-tab styles in Tabs.tsx key on this attribute. They keyed on
+  // data-selected, which Base UI 1.x never sets, so no tab ever looked active.
+  it('marks the selected tab with data-active, and only that one', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    expect(screen.getByRole('tab', { selected: true })).toHaveAttribute('data-active');
+    expect(screen.getByRole('tab', { name: 'B' })).not.toHaveAttribute('data-active');
+
+    await user.click(screen.getByRole('tab', { name: 'B' }));
+    expect(screen.getByRole('tab', { name: 'B' })).toHaveAttribute('data-active');
+    expect(screen.getByRole('tab', { name: 'A' })).not.toHaveAttribute('data-active');
+  });
 });
