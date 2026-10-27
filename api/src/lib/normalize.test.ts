@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   cleanText,
+  extractPriceEur,
   locationFromImobiliareUrl,
   parsePriceEur,
   parseRooms,
@@ -28,6 +29,58 @@ describe('parsePriceEur', () => {
     expect(parsePriceEur(null)).toBeUndefined();
     expect(parsePriceEur('contact for price')).toBeUndefined();
     expect(parsePriceEur('0 €')).toBeUndefined();
+  });
+});
+
+describe('extractPriceEur', () => {
+  // The adapters' old regex took the numbers in front of the price too; these
+  // gave 289000, 12299000 and 75 before (run on 2026-10-21).
+  it('reads the price, not the floor or street number in front of it', () => {
+    expect(extractPriceEur('Etaj 2 89.000 €')).toBe(89000);
+    expect(extractPriceEur('Strada Aradului 12 299 000 €')).toBe(299000);
+    expect(extractPriceEur('Etaj 3 120\u00a0000 €')).toBe(120000);
+    expect(extractPriceEur('3 camere65 m²Etaj 2\n89 500 EUR')).toBe(89500);
+  });
+
+  it('takes the amount followed by the currency sign in a range', () => {
+    expect(extractPriceEur('75.000 - 80.000 €')).toBe(80000);
+  });
+
+  it('reads the formats the adapters met before', () => {
+    expect(extractPriceEur('125.000 €')).toBe(125000);
+    expect(extractPriceEur('Pret 125.000 €')).toBe(125000);
+    expect(extractPriceEur('109,000 EUR')).toBe(109000);
+    expect(extractPriceEur('72.000,00 €')).toBe(72000);
+    expect(extractPriceEur('89000 euro')).toBe(89000);
+    expect(extractPriceEur('1.299.000 €')).toBe(1299000);
+  });
+
+  it('skips the discount blurb in a developer card', () => {
+    const text =
+      'Dezvoltator -3% Discount aplicat: Ap si Boxă + 2000 € Discount la parcare | Oferta limitata! 111.359 € 92.033 € +TVA';
+    expect(extractPriceEur(text)).toBe(111359);
+  });
+
+  it('skips a price per m²', () => {
+    expect(extractPriceEur('1.850 €/m² 120.000 €')).toBe(120000);
+  });
+
+  it('skips the price marked "Preț vechi", wherever it stands', () => {
+    expect(
+      extractPriceEur('Apartament 2 camere zona X 109.000 € 131.890 € Preț vechi 131.890 €'),
+    ).toBe(109000);
+    expect(extractPriceEur('Pret vechi: 131.890 € 109.000 €')).toBe(109000);
+  });
+
+  it('returns undefined outside 5,000-5,000,000 € or without a price', () => {
+    expect(extractPriceEur('1 250 €')).toBeUndefined();
+    expect(extractPriceEur('6.000.000 €')).toBeUndefined();
+    expect(extractPriceEur('12299000 €')).toBeUndefined();
+    expect(extractPriceEur('0 €')).toBeUndefined();
+    expect(extractPriceEur('contact for price')).toBeUndefined();
+    expect(extractPriceEur('Apartament 2 camere zona Aradului')).toBeUndefined();
+    expect(extractPriceEur('')).toBeUndefined();
+    expect(extractPriceEur(null)).toBeUndefined();
   });
 });
 

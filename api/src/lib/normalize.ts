@@ -14,6 +14,64 @@ export function parsePriceEur(input: string | null | undefined): number | undefi
   return Math.round(n);
 }
 
+/** Prices a flat for sale can have; anything outside is a discount, a fee, a
+ *  €/m² figure or digits run together, not the asking price. */
+const PRICE_MIN_EUR = 5_000;
+const PRICE_MAX_EUR = 5_000_000;
+
+// One euro price, tried at a fixed position (sticky): thousands groups split by
+// ".", "," or a space ("89.000", "109,000", "299 000"), or 4-7 bare digits; an
+// optional ",00"; then €, eur or euro, and not "/m²".
+const PRICE_TOKEN = /(\d{1,3}(?:[.,\s]\d{3})+|\d{4,7})(?:,\d{2})?\s*(?:€|euro?\b)(?!\s*\/\s*m)/iy;
+// The label in front of a crossed-out price: "Preț vechi", "Pret vechi:".
+const OLD_PRICE_LABEL = /pre[țţt]\s+vechi\s*:?\s*$/i;
+
+/** Reads the asking price, in euro, out of a listing card's text.
+ *
+ *  A price starts at a digit that does not follow another digit, "." or ",",
+ *  so "Etaj 2 89.000 €" gives 89000, not 289000. Where a space-grouped number
+ *  can be read more than one way ("Strada Aradului 12 299 000 €"), the
+ *  shortest reading in range wins: 299000. A price over 1,000,000 € written
+ *  with spaces therefore loses its millions; on a flat in Timișoara that is
+ *  rarer than a floor or street number in front of the price.
+ *
+ *  Amounts outside 5,000-5,000,000 are skipped ("+ 2000 € discount"), and so
+ *  is every amount equal to one labelled "Preț vechi". Of what is left, the
+ *  first wins. A range "75.000 - 80.000 €" gives 80000, the only amount
+ *  followed by a currency sign. */
+export function extractPriceEur(text: string | null | undefined): number | undefined {
+  if (!text) return undefined;
+
+  // Every reading of a price, grouped by where it ends (at its currency sign).
+  const readingsByEnd = new Map<number, { start: number; value: number }[]>();
+  for (let i = 0; i < text.length; i++) {
+    if (!/\d/.test(text[i]!) || (i > 0 && /[\d.,]/.test(text[i - 1]!))) continue;
+    PRICE_TOKEN.lastIndex = i;
+    const m = PRICE_TOKEN.exec(text);
+    if (!m || !m[1]) continue;
+    const end = i + m[0].length;
+    const reading = { start: i, value: Number(m[1].replace(/\D/g, '')) };
+    const readings = readingsByEnd.get(end);
+    if (readings) readings.push(reading);
+    else readingsByEnd.set(end, [reading]);
+  }
+
+  // Readings start left to right, so the last one in range is the shortest.
+  const prices: { start: number; value: number; old: boolean }[] = [];
+  for (const end of [...readingsByEnd.keys()].sort((a, b) => a - b)) {
+    const inRange = readingsByEnd
+      .get(end)!
+      .filter((r) => r.value >= PRICE_MIN_EUR && r.value <= PRICE_MAX_EUR);
+    const chosen = inRange[inRange.length - 1];
+    if (!chosen) continue;
+    const before = text.slice(Math.max(0, chosen.start - 24), chosen.start);
+    prices.push({ ...chosen, old: OLD_PRICE_LABEL.test(before) });
+  }
+
+  const oldValues = new Set(prices.filter((p) => p.old).map((p) => p.value));
+  return prices.find((p) => !oldValues.has(p.value))?.value;
+}
+
 /** Extracts every euro-denominated monetary value from a free-form string and
  *  returns the largest. Used by adapters whose listing-card text contains a
  *  mix of discount blurbs and the real price ("+ 2000 € discount ... 111.359 €"). */

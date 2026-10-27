@@ -28,6 +28,10 @@ For sites where the initial HTML is a SPA shell and listing data only appears af
 
 Reuse the chromium instance across adapter calls within a single refresh — `lib/playwright.ts` exposes a singleton with a lazy launch and an explicit `closeBrowser()` for shutdown.
 
+## Reading the price from a card
+
+Every adapter but imobiliare's reads the price with `extractPriceEur(cardText)` from `lib/normalize.ts` (since 2026-10-27; before, each had a loose regex that also took the numbers in front of the price, so "Etaj 2 89.000 €" became 289000). It takes the first euro amount between 5,000 and 5,000,000 that starts at a fresh number and is not a €/m² figure or the amount labelled "Preț vechi". Known limits, each pinned in `normalize.test.ts`: a range "75.000 - 80.000 €" gives the upper end, and a price over 1,000,000 € written with spaces ("1 299 000 €") reads as 299000, because "Strada Aradului 12 299 000 €" has to.
+
 ## Per-site notes
 
 These get filled in as adapters are built. Includes things worth remembering: the URL pattern, the selectors that work today, known quirks. **Do not rely on this file for current selectors** — when an adapter breaks, fix the code first, update this note second.

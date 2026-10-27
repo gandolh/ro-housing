@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import { fetchRenderedHtml } from '../lib/playwright.ts';
 import {
   cleanText,
-  parsePriceEur,
+  extractPriceEur,
   parseRooms,
   parseSqm,
 } from '../lib/normalize.ts';
@@ -38,7 +38,7 @@ export const storiaAdapter: Adapter = {
         sourceUid,
         url,
         title: cleanText(root.find('p, h2, h3').first().text()),
-        priceEur: parsePriceEur(text.match(/[\d.,\s]+\s*€|[\d.,\s]+\s*eur/i)?.[0]),
+        priceEur: extractPriceEur(text),
         rooms: parseRooms(text.match(/\d+\s*(camere|camera|cam\b|room)/i)?.[0]),
         sqm: parseSqm(text.match(/[\d.,]+\s*(m\s*²|m\s*2|mp)/i)?.[0]),
         location: cleanText(

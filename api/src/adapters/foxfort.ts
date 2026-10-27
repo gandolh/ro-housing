@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import { createSession } from '../lib/fetch.ts';
 import {
   cleanText,
-  parsePriceEur,
+  extractPriceEur,
   parseRooms,
   parseSqm,
 } from '../lib/normalize.ts';
@@ -36,7 +36,7 @@ export const foxfortAdapter: Adapter = {
         sourceUid,
         url,
         title: cleanText(root.find('h2, h3, .title').first().text()),
-        priceEur: parsePriceEur(text.match(/[\d.,\s]+\s*€|[\d.,\s]+\s*eur/i)?.[0]),
+        priceEur: extractPriceEur(text),
         rooms: parseRooms(text.match(/\d+\s*(camere|camera|cam\b)/i)?.[0]),
         sqm: parseSqm(text.match(/[\d.,]+\s*(m\s*²|m\s*2|mp)/i)?.[0]),
         location: cleanText(
