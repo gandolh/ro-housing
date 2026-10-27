@@ -6,7 +6,6 @@ import {
   parsePriceEur,
   parseRooms,
   parseSqm,
-  pickLargestPriceEur,
   slugFromUrl,
   stripTrailingPrice,
 } from './normalize.ts';
@@ -142,20 +141,35 @@ describe('cleanText', () => {
   });
 });
 
-describe('pickLargestPriceEur', () => {
+// imobiliare's cards, read with the same extractPriceEur since 2026-10-27
+// (it used pickLargestPriceEur, which took the crossed-out old price).
+describe('imobiliare card price', () => {
   it('picks the actual listing price over a discount fragment', () => {
     const text =
       'Dezvoltator -3% Discount aplicat: Ap si Boxă + 2000 € Discount la parcare | Oferta limitata! 111.359 € 92.033 € +TVA';
-    expect(pickLargestPriceEur(text)).toBe(111359);
+    expect(extractPriceEur(text)).toBe(111359);
+  });
+
+  it('skips a discount of more than 5,000 € too', () => {
+    expect(extractPriceEur('Ap si Boxă + 10.000 € Discount la parcare | 111.359 €')).toBe(111359);
+    expect(extractPriceEur('Reducere: 6.500 € 98.000 €')).toBe(98000);
+  });
+
+  it('takes the price, not the crossed-out old one', () => {
+    // The sample in stripTrailingPrice's comment; the largest-amount rule gave 131890.
+    expect(
+      extractPriceEur('Apartament 2 camere zona X 109.000 € 131.890 € Preț vechi 131.890 €'),
+    ).toBe(109000);
+    expect(extractPriceEur('131.890 € 109.000 € Preț vechi 131.890 €')).toBe(109000);
   });
 
   it('returns undefined when no euro tokens are present', () => {
-    expect(pickLargestPriceEur('Apartament 2 camere zona Aradului')).toBeUndefined();
-    expect(pickLargestPriceEur(null)).toBeUndefined();
+    expect(extractPriceEur('Apartament 2 camere zona Aradului')).toBeUndefined();
+    expect(extractPriceEur(null)).toBeUndefined();
   });
 
   it('handles a single price correctly', () => {
-    expect(pickLargestPriceEur('Pret 125.000 €')).toBe(125000);
+    expect(extractPriceEur('Pret 125.000 €')).toBe(125000);
   });
 });
 

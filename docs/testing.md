@@ -22,8 +22,9 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 
 | File | What it exercises |
 |------|-------------------|
-| `src/lib/normalize.test.ts` | All the `normalize.ts` helpers — `parsePriceEur`, `extractPriceEur` (the adapters' price: the numbers in front, ranges, discounts, €/m², "Preț vechi", the 5,000-5,000,000 € range), `pickLargestPriceEur`, `parseRooms`, `parseSqm`, `cleanText`, `slugFromUrl`, `stripTrailingPrice`, `locationFromImobiliareUrl`. Includes regression tests for the imobiliare data-quality bugs (discount-fragment price, fractional rooms, embedded title price, neighborhood extraction). |
+| `src/lib/normalize.test.ts` | All the `normalize.ts` helpers — `parsePriceEur`, `extractPriceEur` (the adapters' price: the numbers in front, ranges, discounts, €/m², "Preț vechi", the 5,000-5,000,000 € range), `parseRooms`, `parseSqm`, `cleanText`, `slugFromUrl`, `stripTrailingPrice`, `locationFromImobiliareUrl`. Includes regression tests for the imobiliare data-quality bugs (discount-fragment price, fractional rooms, embedded title price, neighborhood extraction). |
 | `src/lib/origin.test.ts` | The guard that refuses other websites: the allowed-origin list and `WEB_ORIGINS`, and a bare Fastify instance driven with `inject()` (no port, no database) answering 403 to `Origin: https://evil.example` on a read, a form post and a preflight, and serving requests with no Origin or the app's own. |
+| `src/adapters/imobiliare.test.ts` | The imobiliare adapter on two made-up search cards, with `lib/fetch.ts` mocked: the price over the crossed-out "Preț vechi" one and over a discount blurb, rooms, m², the neighborhood from the URL. |
 | `src/routes/issues.test.ts` | The slugify function used by the issue-write endpoint and the cap-counting logic. Uses a fresh `mkdtempSync` directory per test. |
 | `src/details/extract.test.ts` | The listing-page extractor against trimmed real pages in `src/details/fixtures/` (storia, foxfort, primum, apostu, a DataDome page), plus the floor / top-floor / partitioning label parsers and the sanity ranges. |
 | `src/details/fetchPage.test.ts` | `looksBlocked`: both imobiliare bot-check pages are caught, the four real listing pages pass. |
@@ -68,7 +69,7 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 
 Whenever a bug is found in the live app, the fix lands together with a regression test that would have caught it. The current `normalize.test.ts` has explicit tests for the four imobiliare adapter bugs found in the session 3 Playwright audit:
 
-- `pickLargestPriceEur` picks the actual price out of "+ 2000 € Discount … 111.359 €"
+- the card's price comes out of "+ 2000 € Discount … 111.359 €" (`pickLargestPriceEur` then; `extractPriceEur` since 2026-10-27, which also skips the "Preț vechi" amount)
 - `parseRooms` rejects the wrong half of "1,5 camere"
 - `stripTrailingPrice` removes the embedded euro suffix from titles
 - `locationFromImobiliareUrl` extracts the neighborhood from the URL slug

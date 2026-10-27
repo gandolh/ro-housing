@@ -30,7 +30,7 @@ Reuse the chromium instance across adapter calls within a single refresh — `li
 
 ## Reading the price from a card
 
-Every adapter but imobiliare's reads the price with `extractPriceEur(cardText)` from `lib/normalize.ts` (since 2026-10-27; before, each had a loose regex that also took the numbers in front of the price, so "Etaj 2 89.000 €" became 289000). It takes the first euro amount between 5,000 and 5,000,000 that starts at a fresh number and is not a €/m² figure or the amount labelled "Preț vechi". Known limits, each pinned in `normalize.test.ts`: a range "75.000 - 80.000 €" gives the upper end, and a price over 1,000,000 € written with spaces ("1 299 000 €") reads as 299000, because "Strada Aradului 12 299 000 €" has to.
+Every adapter reads the price with `extractPriceEur(cardText)` from `lib/normalize.ts` (since 2026-10-27; before, eight had a loose regex that also took the numbers in front of the price, so "Etaj 2 89.000 €" became 289000, and imobiliare took the largest amount, which was the crossed-out old price on every discounted flat). It takes the first euro amount between 5,000 and 5,000,000 that starts at a fresh number and is not a €/m² figure, a discount or add-on ("+ 2000 €", "10.000 € Discount"), or the amount labelled "Preț vechi" (wherever that amount stands in the card). Known limits, each pinned in `normalize.test.ts`: a range "75.000 - 80.000 €" gives the upper end, and a price over 1,000,000 € written with spaces ("1 299 000 €") reads as 299000, because "Strada Aradului 12 299 000 €" has to.
 
 ## Per-site notes
 
@@ -43,7 +43,7 @@ These get filled in as adapters are built. Includes things worth remembering: th
 - Quirk: sets consent cookie on first visit. The shared `lib/fetch.ts` cookie jar handles this.
 - Quirks learned in session 4 (each has a regression test in `api/src/lib/normalize.test.ts`):
   - **Titles embed the price** ("... 125.000 €") — adapter uses `stripTrailingPrice()` from `normalize.ts` to chop the trailing euro fragment.
-  - **Card text mixes discounts and the real price** ("+ 2000 € Discount … 111.359 €") — adapter uses `pickLargestPriceEur()` which picks the max euro token in the text.
+  - **Card text mixes discounts, the old price and the real price** ("+ 2000 € Discount … 111.359 €", "109.000 € 131.890 € Preț vechi 131.890 €") — the adapter took the largest amount from session 4, which picked the old price on discounted flats; since 2026-10-27 it uses `extractPriceEur()` like the others (see above). Its own price element would be better still, but the site's markup cannot be checked while it shows the bot check. `imobiliare.test.ts` runs the adapter on two made-up cards.
   - **Fractional room descriptions** ("1,5 camere") — `parseRooms()` uses a negative lookbehind `(?<![\d.,])` so the "5 camere" in "1,5 camere" doesn't match.
   - **Listing cards don't carry a stable location class** — adapter parses the neighborhood from the URL slug via `locationFromImobiliareUrl()`.
 

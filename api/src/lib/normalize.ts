@@ -25,6 +25,10 @@ const PRICE_MAX_EUR = 5_000_000;
 const PRICE_TOKEN = /(\d{1,3}(?:[.,\s]\d{3})+|\d{4,7})(?:,\d{2})?\s*(?:€|euro?\b)(?!\s*\/\s*m)/iy;
 // The label in front of a crossed-out price: "Preț vechi", "Pret vechi:".
 const OLD_PRICE_LABEL = /pre[țţt]\s+vechi\s*:?\s*$/i;
+// An amount off or on top, not the price: "+ 2000 €", "10.000 € discount",
+// "Reducere: 5.000 €".
+const EXTRA_BEFORE = /(?:\+|discount|reducere)\s*:?\s*$/i;
+const EXTRA_AFTER = /^\s*(?:discount|reducere)/i;
 
 /** Reads the asking price, in euro, out of a listing card's text.
  *
@@ -35,10 +39,11 @@ const OLD_PRICE_LABEL = /pre[țţt]\s+vechi\s*:?\s*$/i;
  *  with spaces therefore loses its millions; on a flat in Timișoara that is
  *  rarer than a floor or street number in front of the price.
  *
- *  Amounts outside 5,000-5,000,000 are skipped ("+ 2000 € discount"), and so
- *  is every amount equal to one labelled "Preț vechi". Of what is left, the
- *  first wins. A range "75.000 - 80.000 €" gives 80000, the only amount
- *  followed by a currency sign. */
+ *  Skipped: amounts outside 5,000-5,000,000; a discount or add-on ("+ 2000 €",
+ *  "10.000 € Discount"); and every amount equal to one labelled "Preț vechi",
+ *  so a crossed-out old price is skipped wherever it stands in the card. Of
+ *  what is left, the first wins. A range "75.000 - 80.000 €" gives 80000, the
+ *  only amount followed by a currency sign. */
 export function extractPriceEur(text: string | null | undefined): number | undefined {
   if (!text) return undefined;
 
@@ -65,26 +70,12 @@ export function extractPriceEur(text: string | null | undefined): number | undef
     const chosen = inRange[inRange.length - 1];
     if (!chosen) continue;
     const before = text.slice(Math.max(0, chosen.start - 24), chosen.start);
+    if (EXTRA_BEFORE.test(before) || EXTRA_AFTER.test(text.slice(end, end + 16))) continue;
     prices.push({ ...chosen, old: OLD_PRICE_LABEL.test(before) });
   }
 
   const oldValues = new Set(prices.filter((p) => p.old).map((p) => p.value));
   return prices.find((p) => !oldValues.has(p.value))?.value;
-}
-
-/** Extracts every euro-denominated monetary value from a free-form string and
- *  returns the largest. Used by adapters whose listing-card text contains a
- *  mix of discount blurbs and the real price ("+ 2000 € discount ... 111.359 €"). */
-export function pickLargestPriceEur(input: string | null | undefined): number | undefined {
-  if (!input) return undefined;
-  const matches = input.match(/[\d.,]+\s*(?:€|eur\b)/gi);
-  if (!matches) return undefined;
-  let max: number | undefined;
-  for (const m of matches) {
-    const v = parsePriceEur(m);
-    if (v !== undefined && (max === undefined || v > max)) max = v;
-  }
-  return max;
 }
 
 /** Strips a trailing price-like fragment from a title string. Romanian listings
