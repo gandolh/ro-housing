@@ -29,3 +29,19 @@ Improvement sweep of 2026-10-20 (web app lens), vetted against the code; the ran
 
 - Tests: after a reload, a row older than its source's last run is dimmed.
 - A failed refresh shows the alert and dims nothing new.
+
+## Outcome (2026-10-27)
+
+Done in d031d1d. `ListingsTable` takes the sources instead of `lastRefreshAt` and works out one
+cutoff per source (`staleCutoffs`): its `lastRunAt` when `lastRunOk` is true. The sources table
+keeps only the last run, so when that run failed the cutoff is the newest `lastSeen` among the
+source's listings, which is when its last good run found something. A row seen more than 5 s
+before the cutoff is dimmed and carries `data-stale`. The Age cell's title reads "Last seen
+YYYY-MM-DD HH:MM", plus ", not found by its source's last refresh" on a stale row.
+`refresh()` catches into a `role="alert"` line ("Refresh failed: HTTP 500") and reloads only
+after a good run. With staleness taken from the API, a failed Refresh changes no row.
+
+Checked: `ListingsPage.test.tsx` (3 tests, fetch stubbed, all failing on the old code): on a
+fresh load the rows older than their source's last run are dimmed, also for a source whose last
+run failed; the titles; a 500 from Refresh shows the alert, leaves the rows as they were and
+reloads nothing. web 52/52, tsc -b clean.

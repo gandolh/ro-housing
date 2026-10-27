@@ -38,3 +38,10 @@ made-up cards), tsc clean.
 The Saved form's price parser drops the currency, then a one- or two-digit decimal part, then the
 thousands separators, and refuses prices over 10,000,000 €. "72000.00" was 7200000 and is now
 72000. Code 3c5c673. Checks: web 49/49, tsc -b and vite build clean.
+
+## [2026-10-27] done | Brief 05: Staleness from each source's last run, and a failed Refresh says so
+
+The Listings table dims a row against its source's last successful run, read from `/api/sources`
+on every load (or, when that source's last run failed, its newest `lastSeen`), not against a click
+time held in page state. The Age cell's title shows the last-seen time. A failed Refresh shows a
+`role="alert"` line and changes no row. Code d031d1d. Checks: web 52/52, tsc -b clean.

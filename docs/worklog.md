@@ -15,6 +15,7 @@ Built from `corpus/briefs/`, in number order; each brief's outcome note has the 
 - Brief 02: the eight non-imobiliare adapters read the price with `extractPriceEur()` (a fresh number, 5,000-5,000,000 €, not "Preț vechi"), not a regex that took the floor number too.
 - Brief 03: imobiliare uses the same reader, so a discounted flat shows its price, not the crossed-out old one; discounts above 5,000 € are skipped too. `pickLargestPriceEur` is gone.
 - Brief 04: the Saved form's price reads "72000.00" and "85.500,00 EUR" as 72000 and 85500, accepts "euro", and refuses over 10,000,000 €.
+- Brief 05: stale rows come from each source's last run (`staleCutoffs`), so they stay dimmed after a reload; the Age cell's title has the last-seen time; a failed Refresh shows an alert.
 
 ## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
 

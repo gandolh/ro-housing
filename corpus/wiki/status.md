@@ -13,7 +13,7 @@ and switching tabs throws work away. The sweep's watch list is not briefed.
 - [02](../briefs/done/02-adapter-price-token.md) (Now, done 2026-10-27): Adapters: read the price, not the numbers before it
 - [03](../briefs/done/03-not-the-old-price.md) (Now, done 2026-10-27): Don't take the crossed-out old price
 - [04](../briefs/done/04-form-price-decimals.md) (Now, done 2026-10-27): The form's price field: decimals are not thousands
-- [05](../briefs/todo/05-staleness-from-source-runs.md) (Now, todo): Staleness from each source's last run, and a failed Refresh says so
+- [05](../briefs/done/05-staleness-from-source-runs.md) (Now, done 2026-10-27): Staleness from each source's last run, and a failed Refresh says so
 - [06](../briefs/todo/06-keep-tabs-mounted.md) (Now, todo): Keep the pages alive when switching tabs
 - [07](../briefs/todo/07-api-down-shows-error.md) (Next, todo): Show an error when the API is down, not an empty shortlist
 - [08](../briefs/todo/08-refetch-keeps-draft-edits.md) (Next, todo): A second "Fetch details" must not wipe the open draft
