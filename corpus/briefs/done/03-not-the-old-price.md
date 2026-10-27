@@ -26,3 +26,19 @@ Improvement sweep of 2026-10-20 (API correctness and safety lens), vetted agains
 
 - A test: the Preț vechi sample gives 109000.
 - The existing discount test still passes.
+
+## Outcome (2026-10-27)
+
+Done in 73aa338, the first option. The imobiliare adapter now calls `extractPriceEur` (brief 02),
+which drops every amount equal to one labelled "Preț vechi" and takes the first price left, so the
+sample gives 109000. Since "first" replaces "largest", the reader also skips a discount or add-on
+("+ 2000 €", "10.000 € Discount", "Reducere: 6.500 €"), so a discount above the 5,000 € floor is
+not taken either. `pickLargestPriceEur` had no other caller and is gone; its three tests now run on
+`extractPriceEur` under "imobiliare card price", the discount sample unchanged.
+
+Not done: reading imobiliare's dedicated price element. The site answers with a bot check, so its
+current markup cannot be looked at; try it when the block lifts.
+
+Checked: the Preț vechi sample gives 109000, also with the old price first; the discount test
+passes; a new `adapters/imobiliare.test.ts` runs the adapter on two made-up cards (fetch mocked)
+and gets 109000 and 111359. api 107/107, tsc clean.

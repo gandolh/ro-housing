@@ -11,7 +11,7 @@ and switching tabs throws work away. The sweep's watch list is not briefed.
 
 - [01](../briefs/done/01-close-api-to-other-sites.md) (Now, done 2026-10-27): Close the API to other websites
 - [02](../briefs/done/02-adapter-price-token.md) (Now, done 2026-10-27): Adapters: read the price, not the numbers before it
-- [03](../briefs/todo/03-not-the-old-price.md) (Now, todo): Don't take the crossed-out old price
+- [03](../briefs/done/03-not-the-old-price.md) (Now, done 2026-10-27): Don't take the crossed-out old price
 - [04](../briefs/todo/04-form-price-decimals.md) (Now, todo): The form's price field: decimals are not thousands
 - [05](../briefs/todo/05-staleness-from-source-runs.md) (Now, todo): Staleness from each source's last run, and a failed Refresh says so
 - [06](../briefs/todo/06-keep-tabs-mounted.md) (Now, todo): Keep the pages alive when switching tabs

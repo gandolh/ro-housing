@@ -13,6 +13,7 @@ Built from `corpus/briefs/`, in number order; each brief's outcome note has the 
 **Built:**
 - Brief 01: no CORS; the API answers 403 to any request whose `Origin` is another site's (`api/src/lib/origin.ts`, `WEB_ORIGINS`).
 - Brief 02: the eight non-imobiliare adapters read the price with `extractPriceEur()` (a fresh number, 5,000-5,000,000 €, not "Preț vechi"), not a regex that took the floor number too.
+- Brief 03: imobiliare uses the same reader, so a discounted flat shows its price, not the crossed-out old one; discounts above 5,000 € are skipped too. `pickLargestPriceEur` is gone.
 
 ## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
 

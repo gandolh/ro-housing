@@ -24,3 +24,11 @@ token starting at a fresh number, 5,000-5,000,000 €, not €/m², not the "Pre
 one wins. "Etaj 2 89.000 €" now gives 89000 and "Strada Aradului 12 299 000 €" 299000. Open calls
 settled and pinned in tests: a range gives its upper end; a space-grouped price over 1,000,000 €
 loses its millions. Code fd14226. Checks: api 104/104, tsc clean, grep on the adapters.
+
+## [2026-10-27] done | Brief 03: Don't take the crossed-out old price
+
+The imobiliare adapter reads its price with `extractPriceEur` instead of the largest amount, so
+"109.000 € 131.890 € Preț vechi 131.890 €" gives 109000; discounts and add-ons are skipped by label,
+not only by the 5,000 € floor. `pickLargestPriceEur` is removed. Reading imobiliare's own price
+element waits until its bot check lifts. Code 73aa338. Checks: api 107/107 (an adapter test on
+made-up cards), tsc clean.
