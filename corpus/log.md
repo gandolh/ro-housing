@@ -68,3 +68,10 @@ When the open draft has edits (notes included), a second Fetch details, Enter in
 "save" from Listings shows an inline question naming the edited fields, with Replace draft and
 Keep editing; without edits it fetches at once. Asking, not merging, because the new link may be
 another flat. Code 117f738. Checks: web 62/62, tsc -b and vite build clean.
+
+## [2026-10-27] done | Brief 09: Recover from a failed or crashed Chromium without a restart
+
+`lib/playwright.ts` drops its cached launch when the launch fails or the browser disconnects, so
+storia and the Saved tab's browser fallback work again on the next call. Code 17893c8. Checks: api
+114/114 (a launch stub failing once, then succeeding), tsc clean, and a close-and-relaunch on the
+real local Chromium with no site opened.

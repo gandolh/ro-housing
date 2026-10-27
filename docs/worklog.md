@@ -19,6 +19,7 @@ Built from `corpus/briefs/`, in number order; each brief's outcome note has the 
 - Brief 06: the tab pages stay mounted (drafts, sort and a running Refresh survive a tab switch; Sources re-reads its last runs when opened); a second `POST /api/refresh` during a run gets 409.
 - Brief 07: with the API down, each page shows "Can't reach the API: is it running?" with Retry (`ApiErrorNotice`) instead of its empty state; a failed Sources Save says so and keeps the edits.
 - Brief 08: fetching again over a Saved draft with edits (button, Enter, a "save" from Listings) asks before replacing it.
+- Brief 09: a failed Chromium launch or a disconnected browser clears the shared one, so the next call launches again without restarting the API.
 
 ## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
 
