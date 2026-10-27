@@ -23,6 +23,7 @@ function toApi(r: SavedRow) {
     site: r.site,
     title: r.title,
     priceEur: r.price_eur,
+    pricePlusVat: r.price_plus_vat === 1,
     rooms: r.rooms,
     sqm: r.sqm,
     floor: r.floor,
@@ -38,9 +39,10 @@ function toApi(r: SavedRow) {
   };
 }
 
-const EMPTY_DRAFT = Object.fromEntries(
-  DETAIL_FIELDS.map((k) => [k, null]),
-) as unknown as DetailFields;
+const EMPTY_DRAFT = {
+  ...Object.fromEntries(DETAIL_FIELDS.map((k) => [k, null])),
+  pricePlusVat: null,
+} as unknown as DetailFields;
 
 // What the page said, keyed by normalized URL, held until the user saves the
 // draft so raw_json records the scrape and not the user's edits. Small and

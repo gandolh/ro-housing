@@ -22,6 +22,7 @@ const DRAFT: ScrapeResult = {
     location: 'Calea Sagului',
     partitioning: null,
     imageUrl: null,
+    pricePlusVat: false,
   },
   found: ['title', 'priceEur', 'rooms', 'sqm', 'floor', 'floorsTotal', 'yearBuilt', 'location'],
   via: 'fetch',
@@ -201,6 +202,37 @@ describe('<SavedPage> add by link', () => {
     await user.click(screen.getByRole('button', { name: 'Delete it' }));
 
     await waitFor(() => expect(screen.getByText(/Nothing saved yet/)).toBeInTheDocument());
+  });
+});
+
+describe('<SavedPage> a price before VAT', () => {
+  it('ticks +TVA from the page, saves it, and marks the saved row', async () => {
+    let saved: SavedApartment[] = [];
+    const calls = mockApi({
+      'GET /api/saved': () => [200, saved],
+      'POST /api/saved/scrape': () => [
+        200,
+        { ...DRAFT, draft: { ...DRAFT.draft!, priceEur: 92033, pricePlusVat: true } },
+      ],
+      'POST /api/saved': (body) => {
+        saved = [savedRow(body as Partial<SavedApartment>)];
+        return [201, saved[0]];
+      },
+    });
+    const user = userEvent.setup();
+    render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+
+    await user.type(screen.getByRole('textbox', { name: 'Listing link' }), LINK);
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    const box = await screen.findByRole('checkbox', { name: /\+ TVA \(before VAT\) · from page$/ });
+    expect(box).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await screen.findByText(/Saved: Apartament 2 camere/);
+    const post = calls.find((c) => c.method === 'POST' && c.url === '/api/saved');
+    expect(post?.body).toMatchObject({ priceEur: 92033, pricePlusVat: true });
+    const table = screen.getByRole('table');
+    expect(within(table).getAllByText('+TVA')).toHaveLength(2);
   });
 });
 

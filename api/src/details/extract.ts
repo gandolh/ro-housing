@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import {
   cleanText,
+  isPlusVat,
   parsePriceEur,
   parseRooms,
   parseSqm,
@@ -28,8 +29,11 @@ export interface DetailFields {
   location: string | null;
   partitioning: Partitioning | null;
   imageUrl: string | null;
+  /** The price is marked as before VAT ("+ TVA", "fără TVA"). Part of the
+   *  price, not a field of its own: not in DETAIL_FIELDS, not counted. */
+  pricePlusVat: boolean | null;
 }
-export type DetailField = keyof DetailFields;
+export type DetailField = Exclude<keyof DetailFields, 'pricePlusVat'>;
 
 export const DETAIL_FIELDS: DetailField[] = [
   'title',
@@ -55,7 +59,9 @@ export interface Extraction {
 }
 
 /** One layer's findings: any subset of the fields. */
-type Found = { [K in DetailField]?: DetailFields[K] | null | undefined };
+type Found = { [K in DetailField]?: DetailFields[K] | null | undefined } & {
+  pricePlusVat?: boolean;
+};
 
 /** Lowercases and strips diacritics one character at a time, so the folded
  *  string has the same length as the original and indices carry over. */
@@ -247,7 +253,10 @@ interface LabelRule {
 const LABEL_RULES: LabelRule[] = [
   {
     label: /pret(?:\s+(?:de\s+)?vanzare)?(?!\s*(?:\/|pe\s|per\s)\s*m)/,
-    parse: (v) => ({ priceEur: parsePriceEur(v) }),
+    parse: (v) => {
+      const priceEur = parsePriceEur(v);
+      return priceEur === undefined ? {} : { priceEur, pricePlusVat: isPlusVat(v) };
+    },
   },
   {
     label: /(?:nr\.?\s*|numar\s+(?:de\s+)?)camere|camere(?=\s*:)/,
@@ -450,6 +459,7 @@ function sane(f: DetailFields): DetailFields {
     location: f.location ? f.location.slice(0, 120) : null,
     partitioning: f.partitioning ?? null,
     imageUrl: f.imageUrl ?? null,
+    pricePlusVat: priceEur === null ? null : f.pricePlusVat === true,
   };
 }
 
@@ -482,6 +492,9 @@ export function extractDetails(html: string, pageUrl: string): Extraction {
       }
     }
   }
+  // The VAT mark goes with the price: from the layer that gave it.
+  merged.pricePlusVat =
+    layers.find(([layer]) => layer === sources.priceEur)?.[1].pricePlusVat ?? null;
 
   const fields = sane(merged);
   const found = DETAIL_FIELDS.filter((k) => fields[k] !== null);

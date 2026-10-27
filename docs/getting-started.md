@@ -30,7 +30,7 @@ npm run dev    # Vite on http://127.0.0.1:5173, proxies /api to the API
 
 Open <http://127.0.0.1:5173>.
 
-On its first start the API creates `data/ro-housing.db`, with the nine sources from the scraper registry, and an empty `issues/` folder at the repo root for the Report button. Both are gitignored. To start over, stop the API and delete `data/ro-housing.db*`.
+When an update adds a column (the first, `price_plus_vat`, came on 2026-10-27), the API adds it to an existing `data/ro-housing.db` on its next start; there is nothing to run by hand. On its first start the API creates `data/ro-housing.db`, with the nine sources from the scraper registry, and an empty `issues/` folder at the repo root for the Report button. Both are gitignored. To start over, stop the API and delete `data/ro-housing.db*`.
 
 ## Settings
 

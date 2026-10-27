@@ -85,6 +85,11 @@ The check is on `Origin`, not only on the missing CORS headers, because a plain 
 ### The tab pages stay mounted; one Refresh at a time
 Base UI unmounts a hidden tab panel by default, so leaving Saved threw away an open draft with its notes, and leaving Listings dropped the sort, the filter and the result of a running Refresh, then offered Refresh again. All three panels now use `keepMounted`. The cost is that a hidden page does not re-read the API when it comes back; only Sources needs to (its last-run lines change with every Refresh), so it re-reads them each time its tab opens and keeps rows with unsaved edits. Separately, `POST /api/refresh` answers 409 while a run is in progress, so two Refreshes never hit the sites in parallel, whatever the UI does.
 
+### Prices before VAT are marked, not converted
+Developers list new builds as "92.033 € + TVA", next to resale flats whose price includes VAT, so their €/m² looked about a fifth cheaper than it is. The price readers now notice "+ TVA", "+TVA", "(+TVA)" and "fără TVA" next to the amount they take, and a `price_plus_vat` flag on `listings` and `saved` carries it to a "+TVA" marker beside the price and the €/m² in both tables. The mark belongs to the amount it follows: in "111.359 € 92.033 € +TVA" the price taken is 111359 and it is not marked. Working out a gross price is left out on purpose: the rate is 21%, or 9% for a first home under the reduced-rate cap, and which applies is the buyer's case, not the listing's. On a saved apartment the mark is a tick box beside the price that the user confirms like every other field.
+
+The new column is the first one added since the tables were created. `schema.sql` has it for new databases, and `db/migrate.ts` adds it to existing ones when `PRAGMA table_info` shows it missing, which is safe on every boot. `user_version` stays for one-off data changes.
+
 ## What we'd revisit if usage proves us wrong
 
 - **Dedup**: if the same apartment appears 3+ times across sources every refresh, that noise might outweigh the false-positive risk. Add a "group by (rooms, m², ±5% price, fuzzy-neighborhood)" view as a toggle.

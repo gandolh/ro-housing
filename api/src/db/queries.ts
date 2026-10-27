@@ -17,6 +17,7 @@ export interface ListingRow {
   url: string;
   title: string | null;
   price_eur: number | null;
+  price_plus_vat: number | null;
   rooms: number | null;
   sqm: number | null;
   location: string | null;
@@ -63,12 +64,13 @@ export function markSourceRun(id: string, ok: boolean): void {
 }
 
 const upsertListingStmt = db.prepare(`
-  INSERT INTO listings (source_id, source_uid, url, title, price_eur, rooms, sqm, location, first_seen, last_seen, raw_json)
-  VALUES (@source_id, @source_uid, @url, @title, @price_eur, @rooms, @sqm, @location, @now, @now, @raw_json)
+  INSERT INTO listings (source_id, source_uid, url, title, price_eur, price_plus_vat, rooms, sqm, location, first_seen, last_seen, raw_json)
+  VALUES (@source_id, @source_uid, @url, @title, @price_eur, @price_plus_vat, @rooms, @sqm, @location, @now, @now, @raw_json)
   ON CONFLICT(source_id, source_uid) DO UPDATE SET
     url = excluded.url,
     title = excluded.title,
     price_eur = excluded.price_eur,
+    price_plus_vat = excluded.price_plus_vat,
     rooms = excluded.rooms,
     sqm = excluded.sqm,
     location = excluded.location,
@@ -93,6 +95,7 @@ export function upsertListingWithSnapshot(
     url: scraped.url,
     title: scraped.title ?? null,
     price_eur: scraped.priceEur ?? null,
+    price_plus_vat: scraped.pricePlusVat === undefined ? null : Number(scraped.pricePlusVat),
     rooms: scraped.rooms ?? null,
     sqm: scraped.sqm ?? null,
     location: scraped.location ?? null,

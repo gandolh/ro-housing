@@ -84,6 +84,7 @@ const FIELD_NAMES: Record<FormField, string> = {
   location: 'area',
   partitioning: 'partitioning',
   imageUrl: 'photo link',
+  pricePlusVat: '+TVA',
   notes: 'notes',
 };
 

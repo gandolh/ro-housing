@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import { createSession } from '../lib/fetch.ts';
 import {
-  extractPriceEur,
+  cardPrice,
   locationFromImobiliareUrl,
   parseRooms,
   parseSqm,
@@ -43,7 +43,7 @@ export const imobiliareAdapter: Adapter = {
         // Card text holds the price, the crossed-out old price with its
         // "Preț vechi" label and discount blurbs ("+ 2000 € Discount"); the
         // shared reader skips the last two and takes the first price left.
-        priceEur: extractPriceEur(text),
+        ...cardPrice(text),
         rooms: parseRooms(text.match(/(?<![\d.,])\d+\s*(camere|camera|cam\b)/i)?.[0]),
         sqm: parseSqm(text.match(/[\d.,]+\s*(m\s*²|m\s*2|mp)/i)?.[0]),
         // Imobiliare's listing cards don't carry a stable location class, but

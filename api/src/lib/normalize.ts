@@ -29,6 +29,16 @@ const OLD_PRICE_LABEL = /pre[țţt]\s+vechi\s*:?\s*$/i;
 // "Reducere: 5.000 €".
 const EXTRA_BEFORE = /(?:\+|discount|reducere)\s*:?\s*$/i;
 const EXTRA_AFTER = /^\s*(?:discount|reducere)/i;
+// A price before VAT: "92.033 € + TVA", "+TVA", "(+TVA)", "fără TVA" after it,
+// or "Preț fără TVA:" in front. "TVA inclus" and "cu TVA" mean nothing here.
+const PLUS_VAT = /\+\s*tva\b|f[aăǎ]r[aăǎ]\s+tva\b/i;
+const PLUS_VAT_AFTER = /^\s*\(?\s*(?:\+\s*tva\b|f[aăǎ]r[aăǎ]\s+tva\b)/i;
+const PLUS_VAT_BEFORE = /f[aăǎ]r[aăǎ]\s+tva\s*:?\s*$/i;
+
+/** True when a price text says VAT is added on top ("+ TVA", "fără TVA"). */
+export function isPlusVat(text: string | null | undefined): boolean {
+  return Boolean(text && PLUS_VAT.test(text));
+}
 
 /** Reads the asking price, in euro, out of a listing card's text.
  *
@@ -45,6 +55,15 @@ const EXTRA_AFTER = /^\s*(?:discount|reducere)/i;
  *  what is left, the first wins. A range "75.000 - 80.000 €" gives 80000, the
  *  only amount followed by a currency sign. */
 export function extractPriceEur(text: string | null | undefined): number | undefined {
+  return extractPrice(text)?.eur;
+}
+
+/** extractPriceEur's price, and whether that amount is marked as before VAT
+ *  ("92.033 € + TVA"). The mark belongs to the amount it follows: in
+ *  "111.359 € 92.033 € +TVA" the price is 111359 and is not marked. */
+export function extractPrice(
+  text: string | null | undefined,
+): { eur: number; plusVat: boolean } | undefined {
   if (!text) return undefined;
 
   // Every reading of a price, grouped by where it ends (at its currency sign).
@@ -62,7 +81,7 @@ export function extractPriceEur(text: string | null | undefined): number | undef
   }
 
   // Readings start left to right, so the last one in range is the shortest.
-  const prices: { start: number; value: number; old: boolean }[] = [];
+  const prices: { start: number; value: number; old: boolean; plusVat: boolean }[] = [];
   for (const end of [...readingsByEnd.keys()].sort((a, b) => a - b)) {
     const inRange = readingsByEnd
       .get(end)!
@@ -70,12 +89,27 @@ export function extractPriceEur(text: string | null | undefined): number | undef
     const chosen = inRange[inRange.length - 1];
     if (!chosen) continue;
     const before = text.slice(Math.max(0, chosen.start - 24), chosen.start);
-    if (EXTRA_BEFORE.test(before) || EXTRA_AFTER.test(text.slice(end, end + 16))) continue;
-    prices.push({ ...chosen, old: OLD_PRICE_LABEL.test(before) });
+    const after = text.slice(end, end + 16);
+    if (EXTRA_BEFORE.test(before) || EXTRA_AFTER.test(after)) continue;
+    prices.push({
+      ...chosen,
+      old: OLD_PRICE_LABEL.test(before),
+      plusVat: PLUS_VAT_AFTER.test(after) || PLUS_VAT_BEFORE.test(before),
+    });
   }
 
   const oldValues = new Set(prices.filter((p) => p.old).map((p) => p.value));
-  return prices.find((p) => !oldValues.has(p.value))?.value;
+  const price = prices.find((p) => !oldValues.has(p.value));
+  return price && { eur: price.value, plusVat: price.plusVat };
+}
+
+/** A search card's price as the adapters store it. */
+export function cardPrice(text: string | null | undefined): {
+  priceEur?: number;
+  pricePlusVat?: boolean;
+} {
+  const price = extractPrice(text);
+  return price ? { priceEur: price.eur, pricePlusVat: price.plusVat } : {};
 }
 
 /** Strips a trailing price-like fragment from a title string. Romanian listings

@@ -4,6 +4,8 @@ import type { FormErrors, FormField, FormValues } from '../lib/apartment.ts';
 import { parseForm } from '../lib/apartment.ts';
 import { cn } from '../lib/cn.ts';
 import { fmtPricePerSqm } from '../lib/format.ts';
+import { VatMarker } from './VatMarker.tsx';
+import { Checkbox } from './ui/Checkbox.tsx';
 import { Field, FieldError, FieldLabel } from './ui/Field.tsx';
 import { Input } from './ui/Input.tsx';
 import {
@@ -84,18 +86,39 @@ export function ApartmentForm({ values, onChange, errors, page, showUrl, disable
   const perSqm = preview.ok
     ? fmtPricePerSqm(preview.input.priceEur, preview.input.sqm)
     : '—';
+  const plusVat = values.pricePlusVat === 'yes';
+  // The before-VAT box is part of the price: "from page" when the page marked
+  // it, "edited" when the user changed what the page said.
+  const vatNote = !page
+    ? null
+    : values.pricePlusVat !== page.values.pricePlusVat
+      ? 'edited'
+      : plusVat
+        ? 'from page'
+        : null;
 
   return (
     <div className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4">
       {showUrl && text('url', 'Link', { span: 4 })}
       {text('title', 'Title', { span: 4 })}
-      {text('priceEur', 'Price €', { inputMode: 'numeric' })}
+      <div>
+        {text('priceEur', 'Price €', { inputMode: 'numeric' })}
+        <label className="mt-1 flex items-center gap-1.5 text-xs text-ink-dim">
+          <Checkbox
+            checked={plusVat}
+            onCheckedChange={(checked) => onChange('pricePlusVat', checked ? 'yes' : '')}
+            disabled={disabled}
+          />
+          + TVA (before VAT){vatNote && ` · ${vatNote}`}
+        </label>
+      </div>
       {text('rooms', 'Rooms', { inputMode: 'numeric' })}
       {text('sqm', 'Usable m²', { inputMode: 'decimal' })}
       <div>
         <span className="mb-1 block text-xs uppercase tracking-wide text-ink-dim">€/m²</span>
         <div className="flex h-7 items-center border border-rule-soft bg-panel-alt px-2 text-sm text-ink-dim">
           {perSqm}
+          <VatMarker show={plusVat && perSqm !== '—'} />
         </div>
       </div>
       {text('floor', 'Floor', { placeholder: 'P, D, 1, 2…' })}

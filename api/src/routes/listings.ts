@@ -18,6 +18,8 @@ export async function listingsRoutes(app: FastifyInstance): Promise<void> {
       url: r.url,
       title: r.title,
       priceEur: r.price_eur,
+      // NULL on rows from before the column, read as "not marked".
+      pricePlusVat: r.price_plus_vat === 1,
       rooms: r.rooms,
       sqm: r.sqm,
       location: r.location,

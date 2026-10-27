@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Listing, Source } from '../api.ts';
@@ -28,6 +28,7 @@ function listing(id: number, title: string, sourceId: string, lastSeen: number):
     url: `https://example.test/${id}`,
     title,
     priceEur: 90000,
+    pricePlusVat: false,
     rooms: 2,
     sqm: 50,
     location: null,
@@ -136,6 +137,22 @@ describe('<ListingsPage> staleness', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Another Refresh is already running. Try again when it has finished.',
     );
+  });
+});
+
+describe('<ListingsPage> prices before VAT', () => {
+  it('shows +TVA beside the price and the €/m² of a listing priced before VAT', async () => {
+    const net = { ...listing(5, 'New build, priced + TVA', 'storia', RUN - 200), pricePlusVat: true };
+    mockApi({
+      'GET /api/listings': () => [200, [net, LISTINGS[0]]],
+      'GET /api/sources': () => [200, SOURCES],
+    });
+    render(<ListingsPage onSaveLink={() => {}} />);
+
+    const marked = await screen.findByRole('row', { name: /New build, priced \+ TVA/ });
+    expect(within(marked).getAllByText('+TVA')).toHaveLength(2);
+    expect(within(marked).getByText('90.000 €')).toBeInTheDocument();
+    expect(within(row(/Seen in the last run/)).queryByText('+TVA')).not.toBeInTheDocument();
   });
 });
 

@@ -7,6 +7,8 @@ export interface SavedInput {
   url: string;
   title: string | null;
   priceEur: number | null;
+  /** The price is before VAT ("+ TVA"). */
+  pricePlusVat: boolean;
   rooms: number | null;
   sqm: number | null;
   floor: number | null;
@@ -67,6 +69,11 @@ export function parseSavedInput(raw: unknown): Result {
       throw new InputError(`partitioning must be one of ${PARTITIONINGS.join(', ')}`);
     }
 
+    const plusVat = body.pricePlusVat;
+    if (plusVat !== undefined && plusVat !== null && typeof plusVat !== 'boolean') {
+      throw new InputError('pricePlusVat must be true or false');
+    }
+
     const floor = number(body, 'floor', -2, 60, true);
     const floorsTotal = number(body, 'floorsTotal', 0, 60, true);
     if (floor !== null && floorsTotal !== null && floor > floorsTotal) {
@@ -79,6 +86,7 @@ export function parseSavedInput(raw: unknown): Result {
         url,
         title: text(body, 'title', 300),
         priceEur: number(body, 'priceEur', 0, 50_000_000, true),
+        pricePlusVat: plusVat === true,
         rooms: number(body, 'rooms', 1, 20, true),
         sqm: number(body, 'sqm', 1, 2_000, false),
         floor,

@@ -21,6 +21,7 @@ const DRAFT: ScrapeResult = {
     location: null,
     partitioning: null,
     imageUrl: null,
+    pricePlusVat: false,
   },
   found: ['title', 'priceEur', 'rooms', 'sqm', 'floor', 'floorsTotal', 'yearBuilt'],
   via: 'fetch',

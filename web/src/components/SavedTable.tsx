@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { SavedApartment } from '../api.ts';
 import { fmtFloor, fmtPrice, fmtPricePerSqm, fmtSqm } from '../lib/format.ts';
+import { VatMarker } from './VatMarker.tsx';
 import { Badge } from './ui/Badge.tsx';
 import { Button } from './ui/Button.tsx';
 import { Panel } from './ui/Panel.tsx';
@@ -81,8 +82,14 @@ export function SavedTable({ saved, onEdit, onDelete }: Props) {
                   <p className="mt-0.5 line-clamp-2 text-xs text-ink-dim">{s.notes}</p>
                 )}
               </td>
-              <td className={NUM}>{fmtPrice(s.priceEur)}</td>
-              <td className={NUM}>{fmtPricePerSqm(s.priceEur, s.sqm)}</td>
+              <td className={NUM}>
+                {fmtPrice(s.priceEur)}
+                <VatMarker show={s.pricePlusVat && s.priceEur !== null} />
+              </td>
+              <td className={NUM}>
+                {fmtPricePerSqm(s.priceEur, s.sqm)}
+                <VatMarker show={s.pricePlusVat && s.priceEur !== null && s.sqm !== null} />
+              </td>
               <td className={NUM}>{fmtSqm(s.sqm)}</td>
               <td className={CELL}>{s.rooms ?? '—'}</td>
               <td className={NUM}>{fmtFloor(s.floor, s.floorsTotal)}</td>

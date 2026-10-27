@@ -22,6 +22,7 @@ describe('extractDetails on real page shapes', () => {
     expect(r.fields).toEqual({
       title: 'Apartament 2 camere, Calea Șagului, balcon',
       priceEur: 72000,
+      pricePlusVat: false,
       rooms: 2,
       sqm: 42,
       floor: 4,
@@ -104,6 +105,20 @@ describe('extractDetails on real page shapes', () => {
     const r = extractDetails(html, 'https://agentie.ro/oferta/1');
     expect(r.fields.imageUrl).toBe('https://agentie.ro/img/1.jpg');
     expect(r.fields.rooms).toBe(1);
+  });
+
+  it('marks a price given before VAT, from the layer that read the price', () => {
+    const page = (price: string) =>
+      `<html><body><ul><li>Nr. camere: 2</li><li>${price}</li></ul></body></html>`;
+    const plus = extractDetails(page('Pret: 92.033 € + TVA'), 'https://agentie.ro/oferta/1');
+    expect(plus.fields.priceEur).toBe(92033);
+    expect(plus.fields.pricePlusVat).toBe(true);
+    expect(plus.found).not.toContain('pricePlusVat');
+    expect(extractDetails(page('Preț fără TVA: 92.033 €'), 'https://agentie.ro/oferta/1').fields)
+      .toMatchObject({ priceEur: 92033, pricePlusVat: true });
+    expect(extractDetails(page('Pret: 111.359 € TVA inclus'), 'https://agentie.ro/oferta/1').fields)
+      .toMatchObject({ priceEur: 111359, pricePlusVat: false });
+    expect(extractDetails(page('Etaj: 2'), 'https://agentie.ro/oferta/1').fields.pricePlusVat).toBeNull();
   });
 
   it('drops values outside sane ranges', () => {

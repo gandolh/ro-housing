@@ -1,8 +1,8 @@
 import * as cheerio from 'cheerio';
 import { createSession } from '../lib/fetch.ts';
 import {
+  cardPrice,
   cleanText,
-  extractPriceEur,
   parseRooms,
   parseSqm,
 } from '../lib/normalize.ts';
@@ -39,7 +39,7 @@ export const agentieImoTmAdapter: Adapter = {
         url,
         title: cleanText(root.find('h2, h3, b, strong').first().text()) ??
           cleanText($(el).text()),
-        priceEur: extractPriceEur(text),
+        ...cardPrice(text),
         rooms: roomsFromUrl && roomsFromUrl[1]
           ? Number(roomsFromUrl[1])
           : parseRooms(text.match(/\d+\s*(camere|camera|cam\b)/i)?.[0]),

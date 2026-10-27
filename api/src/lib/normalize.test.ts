@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cardPrice,
   cleanText,
+  extractPrice,
   extractPriceEur,
+  isPlusVat,
   locationFromImobiliareUrl,
   parsePriceEur,
   parseRooms,
@@ -80,6 +83,38 @@ describe('extractPriceEur', () => {
     expect(extractPriceEur('Apartament 2 camere zona Aradului')).toBeUndefined();
     expect(extractPriceEur('')).toBeUndefined();
     expect(extractPriceEur(null)).toBeUndefined();
+  });
+});
+
+describe('the before-VAT mark', () => {
+  // parsePriceEur('92.033 € + TVA') gave 92033 with nothing to say it was net.
+  it('reads "92.033 € + TVA" as 92033, marked', () => {
+    expect(extractPrice('92.033 € + TVA')).toEqual({ eur: 92033, plusVat: true });
+    expect(cardPrice('92.033 € + TVA')).toEqual({ priceEur: 92033, pricePlusVat: true });
+    expect(parsePriceEur('92.033 € + TVA')).toBe(92033);
+    expect(isPlusVat('92.033 € + TVA')).toBe(true);
+  });
+
+  it('knows "+TVA", "(+TVA)" and "fără TVA", after the price or before it', () => {
+    expect(extractPrice('92.033 €+TVA')?.plusVat).toBe(true);
+    expect(extractPrice('92.033 EUR (+TVA)')?.plusVat).toBe(true);
+    expect(extractPrice('92.033 € fără TVA')?.plusVat).toBe(true);
+    expect(extractPrice('Preț fără TVA: 92.033 €')?.plusVat).toBe(true);
+    expect(isPlusVat('92.033 € fara TVA')).toBe(true);
+  });
+
+  it('puts the mark on the amount it follows, not on the card', () => {
+    const text =
+      'Dezvoltator -3% Discount aplicat: Ap si Boxă + 2000 € Discount la parcare | Oferta limitata! 111.359 € 92.033 € +TVA';
+    expect(extractPrice(text)).toEqual({ eur: 111359, plusVat: false });
+  });
+
+  it('leaves VAT-included and unmarked prices alone', () => {
+    expect(extractPrice('111.359 € TVA inclus')).toEqual({ eur: 111359, plusVat: false });
+    expect(extractPrice('111.359 € cu TVA')?.plusVat).toBe(false);
+    expect(extractPrice('Pret 125.000 €')?.plusVat).toBe(false);
+    expect(isPlusVat('111.359 € TVA inclus')).toBe(false);
+    expect(cardPrice('contact for price')).toEqual({});
   });
 });
 

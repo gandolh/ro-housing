@@ -3,6 +3,8 @@ export interface ScrapedListing {
   url: string;
   title?: string;
   priceEur?: number;
+  /** The card marks the price as before VAT ("+ TVA", "fără TVA"). */
+  pricePlusVat?: boolean;
   rooms?: number;
   sqm?: number;
   location?: string;

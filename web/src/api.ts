@@ -14,6 +14,8 @@ export interface Listing {
   url: string;
   title: string | null;
   priceEur: number | null;
+  /** The card gave the price before VAT ("+ TVA"). */
+  pricePlusVat: boolean;
   rooms: number | null;
   sqm: number | null;
   location: string | null;
@@ -52,6 +54,9 @@ export interface ApartmentFields {
   location: string | null;
   partitioning: Partitioning | null;
   imageUrl: string | null;
+  /** The price is before VAT ("+ TVA", "fără TVA"). Part of the price, not
+   *  one of the counted fields. */
+  pricePlusVat: boolean | null;
 }
 
 export interface SavedInput extends ApartmentFields {

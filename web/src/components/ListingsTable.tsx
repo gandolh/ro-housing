@@ -2,6 +2,7 @@ import type { Listing, Source } from '../api.ts';
 import { cn } from '../lib/cn.ts';
 import { fmtPrice, fmtPricePerSqm, fmtSqm } from '../lib/format.ts';
 import { PriceHistory } from './PriceHistory.tsx';
+import { VatMarker } from './VatMarker.tsx';
 import { Badge } from './ui/Badge.tsx';
 import { Button } from './ui/Button.tsx';
 import { Panel } from './ui/Panel.tsx';
@@ -103,9 +104,13 @@ export function ListingsTable({ listings, sources, onSave }: Props) {
                 </td>
                 <td className="px-2 py-1.5">{l.rooms ?? '—'}</td>
                 <td className="whitespace-nowrap px-2 py-1.5">{fmtSqm(l.sqm)}</td>
-                <td className="whitespace-nowrap px-2 py-1.5">{fmtPrice(l.priceEur)}</td>
+                <td className="whitespace-nowrap px-2 py-1.5">
+                  {fmtPrice(l.priceEur)}
+                  <VatMarker show={l.pricePlusVat && l.priceEur !== null} />
+                </td>
                 <td className="whitespace-nowrap px-2 py-1.5">
                   {fmtPricePerSqm(l.priceEur, l.sqm)}
+                  <VatMarker show={l.pricePlusVat && l.priceEur !== null && l.sqm !== null} />
                 </td>
                 <td className="px-2 py-1.5">{l.location ?? '—'}</td>
                 <td

@@ -20,6 +20,8 @@ export interface FormValues {
   location: string;
   partitioning: string;
   imageUrl: string;
+  /** 'yes' when the price is before VAT, else ''. */
+  pricePlusVat: string;
   notes: string;
 }
 
@@ -45,6 +47,7 @@ export function formFromFields(
     location: asText(f?.location ?? null),
     partitioning: f?.partitioning ?? '',
     imageUrl: asText(f?.imageUrl ?? null),
+    pricePlusVat: f?.pricePlusVat ? 'yes' : '',
     notes: asText(notes),
   };
 }
@@ -140,6 +143,7 @@ export function parseForm(
     location: text(v.location),
     partitioning,
     imageUrl,
+    pricePlusVat: v.pricePlusVat === 'yes',
     notes: text(v.notes),
   };
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, input };

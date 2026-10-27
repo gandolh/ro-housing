@@ -7,6 +7,7 @@ export interface SavedRow {
   site: string;
   title: string | null;
   price_eur: number | null;
+  price_plus_vat: number | null;
   rooms: number | null;
   sqm: number | null;
   floor: number | null;
@@ -28,6 +29,7 @@ function columns(input: SavedInput, site: string) {
     site,
     title: input.title,
     price_eur: input.priceEur,
+    price_plus_vat: input.pricePlusVat ? 1 : 0,
     rooms: input.rooms,
     sqm: input.sqm,
     floor: input.floor,
@@ -53,9 +55,9 @@ export function getSavedByUrl(url: string): SavedRow | undefined {
 }
 
 const insertStmt = db.prepare(`
-  INSERT INTO saved (url, site, title, price_eur, rooms, sqm, floor, floors_total, year_built,
+  INSERT INTO saved (url, site, title, price_eur, price_plus_vat, rooms, sqm, floor, floors_total, year_built,
                      location, partitioning, image_url, notes, raw_json, fetched_at, saved_at, updated_at)
-  VALUES (@url, @site, @title, @price_eur, @rooms, @sqm, @floor, @floors_total, @year_built,
+  VALUES (@url, @site, @title, @price_eur, @price_plus_vat, @rooms, @sqm, @floor, @floors_total, @year_built,
           @location, @partitioning, @image_url, @notes, @raw_json, @fetched_at, @now, @now)
   RETURNING *
 `);
@@ -77,7 +79,7 @@ export function insertSaved(
 
 const updateStmt = db.prepare(`
   UPDATE saved SET url = @url, site = @site, title = @title, price_eur = @price_eur,
-    rooms = @rooms, sqm = @sqm, floor = @floor, floors_total = @floors_total,
+    price_plus_vat = @price_plus_vat, rooms = @rooms, sqm = @sqm, floor = @floor, floors_total = @floors_total,
     year_built = @year_built, location = @location, partitioning = @partitioning,
     image_url = @image_url, notes = @notes, updated_at = @now
   WHERE id = @id

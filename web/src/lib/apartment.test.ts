@@ -16,8 +16,16 @@ describe('formFromFields', () => {
       location: 'Calea Sagului',
       partitioning: 'decomandat',
       imageUrl: null,
+      pricePlusVat: true,
     });
-    expect(v).toMatchObject({ priceEur: '72000', sqm: '42.5', floor: 'P', imageUrl: '', notes: '' });
+    expect(v).toMatchObject({
+      priceEur: '72000',
+      sqm: '42.5',
+      floor: 'P',
+      imageUrl: '',
+      pricePlusVat: 'yes',
+      notes: '',
+    });
   });
 
   it('gives an empty form for a page that could not be read', () => {
@@ -73,6 +81,13 @@ describe('parseForm', () => {
   it('refuses a price that is not a number', () => {
     const r = parseForm({ ...base, priceEur: 'ask' });
     expect(!r.ok && r.errors.priceEur).toBe('Price in euro, digits only');
+  });
+
+  it('turns the +TVA box into a boolean', () => {
+    const yes = parseForm({ ...base, priceEur: '92.033', pricePlusVat: 'yes' });
+    expect(yes.ok && yes.input).toMatchObject({ priceEur: 92033, pricePlusVat: true });
+    const no = parseForm(base);
+    expect(no.ok && no.input.pricePlusVat).toBe(false);
   });
 
   it('keeps an empty partitioning as null', () => {

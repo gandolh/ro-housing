@@ -10,6 +10,7 @@ describe('parseSavedInput', () => {
         url: 'https://www.imobiliare.ro/oferta/x',
         title: null,
         priceEur: null,
+        pricePlusVat: false,
         rooms: null,
         sqm: null,
         floor: null,
@@ -65,5 +66,16 @@ describe('parseSavedInput', () => {
   it('rejects a non-object body', () => {
     expect(parseSavedInput(null).ok).toBe(false);
     expect(parseSavedInput([1]).ok).toBe(false);
+  });
+
+  it('keeps the before-VAT mark, and refuses anything but true or false', () => {
+    const url = 'https://www.storia.ro/ro/oferta/x';
+    const r = parseSavedInput({ url, priceEur: 92033, pricePlusVat: true });
+    expect(r.ok && r.value.pricePlusVat).toBe(true);
+    expect(parseSavedInput({ url, pricePlusVat: null })).toMatchObject({ ok: true });
+    expect(parseSavedInput({ url, pricePlusVat: 'yes' })).toEqual({
+      ok: false,
+      error: 'pricePlusVat must be true or false',
+    });
   });
 });

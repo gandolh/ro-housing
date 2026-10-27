@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ADAPTER_REGISTRY } from '../adapters/index.ts';
+import { addMissingColumns } from './migrate.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', '..', '..', 'data', 'ro-housing.db');
@@ -13,6 +14,7 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 db.exec(readFileSync(SCHEMA_PATH, 'utf8'));
+addMissingColumns(db);
 
 const DEFAULT_ENABLED = new Set(['imobiliare', 'storia']);
 

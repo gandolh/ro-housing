@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS listings (
   url          TEXT NOT NULL,
   title        TEXT,
   price_eur    INTEGER,
+  -- price_plus_vat: 1 when the price is before VAT ("+ TVA"); added 2026-10-27, see db/migrate.ts.
+  price_plus_vat INTEGER,
   rooms        INTEGER,
   sqm          REAL,
   location     TEXT,
@@ -42,6 +44,7 @@ CREATE TABLE IF NOT EXISTS saved (
   site         TEXT NOT NULL,
   title        TEXT,
   price_eur    INTEGER,
+  price_plus_vat INTEGER,
   rooms        INTEGER,
   sqm          REAL,
   floor        INTEGER,

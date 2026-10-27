@@ -75,6 +75,8 @@ Four tables. See `api/src/db/schema.sql` for the canonical version.
 - **saved** — apartments the user saved from a link (session 5). One row per normalized URL (`UNIQUE`). The columns hold what the user confirmed; `raw_json` holds what the page said at fetch time (the draft, which layer filled each field, the description) and `fetched_at` when. Never touched by Refresh, never linked to `listings`.
 - **price_history** — append-only. One row per (listing, observation). Primary key is the composite, so re-running refresh in the same millisecond is a no-op.
 
+`listings` and `saved` both have `price_plus_vat` (2026-10-27): 1 when the page gave the price before VAT ("+ TVA"), and the tables then show "+TVA" beside the price and the €/m². It is NULL on rows from before the column. Columns added after the first release are listed in `db/migrate.ts`, which adds each one to an existing database at boot when it is missing.
+
 Listings whose `last_seen` is older than the most recent refresh of their source are "stale" — likely delisted. UI dims them rather than deleting; the user might want to see the last known price. Since 2026-10-27 the table works this out from `/api/sources` on every load (`staleCutoffs` in `ListingsTable.tsx`): the source's `last_run_at` when its last run succeeded, else the newest `last_seen` among its listings, minus 5 seconds. A failed Refresh changes neither, so it dims nothing. The Age cell's title gives the last-seen time.
 
 ## Adapter strategy split
@@ -93,7 +95,7 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 ## What lives where
 
 - `api/src/server.ts` — Fastify bootstrap, the guard that refuses other websites' origins (`lib/origin.ts`; there is no CORS), route registration.
-- `api/src/db/` — schema, connection, typed query helpers. No ORM.
+- `api/src/db/` — schema, connection, typed query helpers, `migrate.ts` (columns added after the first release). No ORM.
 - `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`.
 - `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain fetch, Chromium fallback, bot-check detection), `extract.ts` (the four layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
 - `api/src/lib/` — shared infrastructure: `fetch.ts` (cookie-aware HTTP), `playwright.ts` (browser singleton), `normalize.ts` (Romanian price/rooms/m² parsers).

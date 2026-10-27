@@ -1,8 +1,8 @@
 import * as cheerio from 'cheerio';
 import { createSession } from '../lib/fetch.ts';
 import {
+  cardPrice,
   cleanText,
-  extractPriceEur,
   parseRooms,
   parseSqm,
   slugFromUrl,
@@ -41,7 +41,7 @@ export const districtAdapter: Adapter = {
         sourceUid,
         url,
         title: cleanText(root.find('h2, h3, .title').first().text()),
-        priceEur: extractPriceEur(text),
+        ...cardPrice(text),
         rooms: parseRooms(text.match(/\d+\s*(camere|camera|cam\b)/i)?.[0]),
         sqm: parseSqm(text.match(/[\d.,]+\s*(m\s*²|m\s*2|mp)/i)?.[0]),
         location: cleanText(
