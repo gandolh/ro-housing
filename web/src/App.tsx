@@ -31,17 +31,19 @@ export function App() {
             <TabsTab value="saved">Saved</TabsTab>
             <TabsTab value="sources">Sources</TabsTab>
           </TabsList>
-          <TabsPanel value="listings">
+          {/* keepMounted: a hidden page keeps its open draft, sort, filter and
+              running Refresh instead of starting over when its tab comes back. */}
+          <TabsPanel value="listings" keepMounted>
             <ListingsPage onSaveLink={saveLink} />
           </TabsPanel>
-          <TabsPanel value="saved">
+          <TabsPanel value="saved" keepMounted>
             <SavedPage
               incomingLink={incomingLink}
               onIncomingTaken={() => setIncomingLink(null)}
             />
           </TabsPanel>
-          <TabsPanel value="sources">
-            <SourcesPage />
+          <TabsPanel value="sources" keepMounted>
+            <SourcesPage active={tab === 'sources'} />
           </TabsPanel>
         </Tabs>
       </main>

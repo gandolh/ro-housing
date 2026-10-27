@@ -129,7 +129,7 @@ export const api = {
     return fetch(`/api/listings?${q}`).then(json<Listing[]>);
   },
   refresh: () =>
-    fetch('/api/refresh', { method: 'POST' }).then(json<RefreshResult>),
+    fetch('/api/refresh', { method: 'POST' }).then(jsonOrApiError<RefreshResult>),
   scrapeLink: (url: string) =>
     fetch('/api/saved/scrape', {
       method: 'POST',

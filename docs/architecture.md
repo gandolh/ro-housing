@@ -18,7 +18,7 @@ Two independent npm packages. No monorepo tooling — `npm install` and `npm run
 User clicks Refresh in web/
         │
         ▼
-POST /api/refresh
+POST /api/refresh          (409 if a refresh is already running)
         │
         ▼
 For each source where enabled=1 AND search_url IS NOT NULL (sequential, not parallel):

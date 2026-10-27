@@ -33,7 +33,13 @@ function isDirty(server: Source, draft: Draft): boolean {
   );
 }
 
-export function SourcesPage() {
+interface Props {
+  /** Whether the Sources tab is the open one. The page stays mounted behind
+   *  the tabs, so it re-reads the last runs each time it opens. */
+  active?: boolean;
+}
+
+export function SourcesPage({ active = true }: Props) {
   const [sources, setSources] = useState<Source[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [saving, setSaving] = useState(false);
@@ -44,9 +50,25 @@ export function SourcesPage() {
     setDrafts(Object.fromEntries(ss.map((s) => [s.id, toDraft(s)])));
   };
 
+  // Like reload, but a row with unsaved edits keeps them.
+  const reloadKeepingEdits = async () => {
+    const before = sources;
+    const ss = await api.listSources();
+    setSources(ss);
+    setDrafts((prev) =>
+      Object.fromEntries(
+        ss.map((s) => {
+          const draft = prev[s.id];
+          const old = before.find((o) => o.id === s.id);
+          return [s.id, draft && old && isDirty(old, draft) ? draft : toDraft(s)];
+        }),
+      ),
+    );
+  };
+
   useEffect(() => {
-    void reload();
-  }, []);
+    if (active) void reloadKeepingEdits();
+  }, [active]);
 
   const dirtyIds = useMemo(
     () =>

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValueLabel,
 } from '../components/ui/Select.tsx';
-import { api, type Listing, type RefreshResult, type Source } from '../api.ts';
+import { ApiError, api, type Listing, type RefreshResult, type Source } from '../api.ts';
 
 type Sort = 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
 type Order = 'asc' | 'desc';
@@ -68,7 +68,11 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
       setLastResult(result);
       await reload();
     } catch (err) {
-      setRefreshError(`Refresh failed: ${err instanceof Error ? err.message : String(err)}`);
+      setRefreshError(
+        err instanceof ApiError && err.status === 409
+          ? 'Another Refresh is already running. Try again when it has finished.'
+          : `Refresh failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setRefreshing(false);
     }

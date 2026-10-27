@@ -106,7 +106,7 @@ describe('<ListingsPage> staleness', () => {
     const calls = mockApi({
       'GET /api/listings': () => [200, LISTINGS],
       'GET /api/sources': () => [200, SOURCES],
-      'POST /api/refresh': () => [500, { error: 'boom' }],
+      'POST /api/refresh': () => [500, { error: 'database is locked' }],
     });
     const user = userEvent.setup();
     render(<ListingsPage onSaveLink={() => {}} />);
@@ -114,10 +114,27 @@ describe('<ListingsPage> staleness', () => {
 
     await user.click(screen.getByRole('button', { name: 'Refresh' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Refresh failed: HTTP 500');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Refresh failed: database is locked');
     expect(screen.getByRole('button', { name: 'Refresh' })).toBeEnabled();
     expect(row(/Seen in the last run/)).not.toHaveAttribute('data-stale');
     expect(row(/Seen in the last good run/)).not.toHaveAttribute('data-stale');
     expect(calls.filter((c) => c === 'GET /api/listings')).toHaveLength(1);
+  });
+
+  it('says when another Refresh is already running (409)', async () => {
+    mockApi({
+      'GET /api/listings': () => [200, LISTINGS],
+      'GET /api/sources': () => [200, SOURCES],
+      'POST /api/refresh': () => [409, { error: 'a refresh is already running' }],
+    });
+    const user = userEvent.setup();
+    render(<ListingsPage onSaveLink={() => {}} />);
+    await screen.findByText('Seen in the last run');
+
+    await user.click(screen.getByRole('button', { name: 'Refresh' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Another Refresh is already running. Try again when it has finished.',
+    );
   });
 });
