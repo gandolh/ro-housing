@@ -72,6 +72,29 @@ type Stage =
       page: { values: FormValues; found: FormField[] } | undefined;
     };
 
+const FIELD_NAMES: Record<FormField, string> = {
+  url: 'link',
+  title: 'title',
+  priceEur: 'price',
+  rooms: 'rooms',
+  sqm: 'm²',
+  floor: 'floor',
+  floorsTotal: 'floors',
+  yearBuilt: 'year built',
+  location: 'area',
+  partitioning: 'partitioning',
+  imageUrl: 'photo link',
+  notes: 'notes',
+};
+
+/** The fields the user changed in an open draft, notes included: compared
+ *  with what the page gave, or with an empty form when nothing was read. */
+function draftEdits(stage: Stage): FormField[] {
+  if (stage.kind !== 'draft') return [];
+  const base = stage.page?.values ?? formFromFields(stage.result.url, null);
+  return (Object.keys(stage.values) as FormField[]).filter((f) => stage.values[f] !== base[f]);
+}
+
 function message(err: unknown): string {
   return err instanceof ApiError || err instanceof Error ? err.message : String(err);
 }
@@ -94,6 +117,8 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  // A fetch waiting for the user to agree to replace a draft with edits.
+  const [pendingLink, setPendingLink] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<SavedApartment | null>(null);
   const [editValues, setEditValues] = useState<FormValues | null>(null);
@@ -131,6 +156,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
       setNotice({ tone: 'bad', text: 'Paste a listing link first.' });
       return;
     }
+    setPendingLink(null);
     setNotice(null);
     setErrors({});
     setStage({ kind: 'fetching' });
@@ -153,6 +179,16 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     }
   };
 
+  // A fetch rebuilds the whole draft, so with edits in the open one (Enter in
+  // the link box, a second click, a "save" from Listings) it asks first.
+  const requestFetch = (url: string) => {
+    if (draftEdits(stage).length > 0) {
+      setPendingLink(url);
+      return;
+    }
+    void fetchDetails(url);
+  };
+
   // StrictMode runs this effect twice in dev; the ref keeps it to one fetch
   // per hand-over, and resets once the parent clears the link.
   const handledLink = useRef<string | null>(null);
@@ -164,13 +200,13 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     if (handledLink.current === incomingLink) return;
     handledLink.current = incomingLink;
     setLink(incomingLink);
-    void fetchDetails(incomingLink);
+    requestFetch(incomingLink);
     onIncomingTaken();
   }, [incomingLink]);
 
   const onSubmitLink = (e: FormEvent) => {
     e.preventDefault();
-    void fetchDetails(link);
+    requestFetch(link);
   };
 
   const setDraftField = (field: FormField, value: string) => {
@@ -190,6 +226,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
       setStage({ kind: 'idle' });
       setLink('');
       setErrors({});
+      setPendingLink(null);
       setNotice({ tone: 'ok', text: `Saved: ${row.title ?? row.url}` });
       await reload();
     } catch (err) {
@@ -203,6 +240,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     setStage({ kind: 'idle' });
     setErrors({});
     setNotice(null);
+    setPendingLink(null);
   };
 
   const startEdit = (s: SavedApartment) => {
@@ -244,6 +282,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
 
   const sorted = useMemo(() => sortSaved(saved, sort), [saved, sort]);
   const hasDraft = stage.kind === 'draft';
+  const edits = draftEdits(stage);
 
   return (
     <div>
@@ -265,6 +304,23 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
             {stage.kind === 'fetching' ? 'Reading the page…' : 'Fetch details'}
           </Button>
         </form>
+        {pendingLink !== null && (
+          <div
+            role="alert"
+            className="mt-2 flex flex-wrap items-center gap-2 border border-accent bg-accent-soft px-2 py-1.5 text-xs"
+          >
+            <span className="flex-1">
+              Fetching again replaces the open draft.
+              {edits.length > 0 && ` Your edits to it are lost: ${edits.map((f) => FIELD_NAMES[f]).join(', ')}.`}
+            </span>
+            <Button variant="default" onClick={() => void fetchDetails(pendingLink)}>
+              Replace draft
+            </Button>
+            <Button variant="ghost" onClick={() => setPendingLink(null)}>
+              Keep editing
+            </Button>
+          </div>
+        )}
         {notice && (
           <p
             role={notice.tone === 'bad' ? 'alert' : 'status'}

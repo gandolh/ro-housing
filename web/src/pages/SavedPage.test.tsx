@@ -204,6 +204,82 @@ describe('<SavedPage> add by link', () => {
   });
 });
 
+describe('<SavedPage> fetching again with a draft open', () => {
+  const OTHER = 'https://www.storia.ro/ro/oferta/apartament-3-camere-XYZ';
+
+  it('asks before replacing a draft with edits, and keeps the notes until told', async () => {
+    const calls = mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [200, DRAFT],
+    });
+    const user = userEvent.setup();
+    render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+    const linkBox = screen.getByRole('textbox', { name: 'Listing link' });
+    const scrapes = () => calls.filter((c) => c.url === '/api/saved/scrape').length;
+
+    await user.type(linkBox, LINK);
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    const notes = await screen.findByRole('textbox', { name: 'Notes' });
+    await user.type(notes, 'ask about the parking');
+    await user.clear(screen.getByRole('textbox', { name: /Price €/ }));
+    await user.type(screen.getByRole('textbox', { name: /Price €/ }), '70000');
+
+    // A second click on the button: nothing is fetched yet.
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Fetching again replaces the open draft. Your edits to it are lost: price, notes.',
+    );
+    expect(scrapes()).toBe(1);
+    await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(notes).toHaveValue('ask about the parking');
+
+    // Enter in the link box asks too; this time the user agrees.
+    await user.type(linkBox, '{Enter}');
+    await user.click(await screen.findByRole('button', { name: 'Replace draft' }));
+    await waitFor(() => expect(scrapes()).toBe(2));
+    expect(await screen.findByRole('textbox', { name: 'Notes' })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: /Price €/ })).toHaveValue('72000');
+  });
+
+  it('fetches again at once when the draft has no edits', async () => {
+    const calls = mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [200, DRAFT],
+    });
+    const user = userEvent.setup();
+    render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+
+    await user.type(screen.getByRole('textbox', { name: 'Listing link' }), LINK);
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    await screen.findByRole('textbox', { name: 'Notes' });
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+
+    await waitFor(() => expect(calls.filter((c) => c.url === '/api/saved/scrape')).toHaveLength(2));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('asks before a "save" from Listings replaces a draft with edits', async () => {
+    const calls = mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [200, DRAFT],
+    });
+    const user = userEvent.setup();
+    const { rerender } = render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+
+    await user.type(screen.getByRole('textbox', { name: 'Listing link' }), LINK);
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Notes' }), 'second visit');
+
+    rerender(<SavedPage incomingLink={OTHER} onIncomingTaken={noop} />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Your edits to it are lost: notes.');
+    expect(calls.filter((c) => c.url === '/api/saved/scrape')).toHaveLength(1);
+    expect(screen.getByRole('textbox', { name: 'Notes' })).toHaveValue('second visit');
+    expect(screen.getByRole('textbox', { name: 'Listing link' })).toHaveValue(OTHER);
+  });
+});
+
 describe('<SavedPage> when the API is down', () => {
   it('shows the alert, not the empty shortlist, and Retry loads it', async () => {
     let up = false;

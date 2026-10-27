@@ -62,6 +62,8 @@ User checks each field ("from page" / "edited" / "not on page"), edits, clicks S
 POST /api/saved → validate → INSERT into saved (raw_json = what the page said)
 ```
 
+A second Fetch details rebuilds the whole draft, so when the open draft has edits (any field that differs from what the page gave, or notes), the page asks before replacing it; this also covers a "save" handed over from Listings.
+
 `PUT /api/saved/:id` replaces the whole record (the form always sends every field); `DELETE /api/saved/:id` removes it. Edits never re-fetch the page.
 
 ## Data model
