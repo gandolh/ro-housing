@@ -81,11 +81,6 @@ export interface ScrapeResult {
   } | null;
 }
 
-async function json<T>(res: Response): Promise<T> {
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return (await res.json()) as T;
-}
-
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -93,6 +88,22 @@ export class ApiError extends Error {
   ) {
     super(payload?.error ?? `HTTP ${status}`);
   }
+}
+
+const UNREACHABLE = "Can't reach the API: is it running?";
+
+/** Why a call to the API failed, as a sentence. fetch rejects with a
+ *  TypeError when nothing answers at all; Vite's proxy answers 502 (older
+ *  Vites 500), with no JSON body, when the API itself is not running. Else the
+ *  API's own error ("a refresh is already running") or "HTTP 500". */
+export function apiErrorMessage(err: unknown): string {
+  if (err instanceof TypeError) return UNREACHABLE;
+  if (err instanceof ApiError) {
+    const proxy = !err.payload && (err.status === 500 || (err.status >= 502 && err.status <= 504));
+    if (proxy) return UNREACHABLE;
+  }
+  const text = err instanceof Error ? err.message : String(err);
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 async function jsonOrApiError<T>(res: Response): Promise<T> {
@@ -107,7 +118,7 @@ async function jsonOrApiError<T>(res: Response): Promise<T> {
 }
 
 export const api = {
-  listSources: () => fetch('/api/sources').then(json<Source[]>),
+  listSources: () => fetch('/api/sources').then(jsonOrApiError<Source[]>),
   updateSource: (
     id: string,
     patch: { searchUrl?: string | null; enabled?: boolean },
@@ -116,7 +127,7 @@ export const api = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
-    }).then(json<{ ok: true }>),
+    }).then(jsonOrApiError<{ ok: true }>),
   listListings: (params: {
     sort?: 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
     order?: 'asc' | 'desc';
@@ -126,7 +137,7 @@ export const api = {
     if (params.sort) q.set('sort', params.sort);
     if (params.order) q.set('order', params.order);
     if (params.source) q.set('source', params.source);
-    return fetch(`/api/listings?${q}`).then(json<Listing[]>);
+    return fetch(`/api/listings?${q}`).then(jsonOrApiError<Listing[]>);
   },
   refresh: () =>
     fetch('/api/refresh', { method: 'POST' }).then(jsonOrApiError<RefreshResult>),
@@ -136,7 +147,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     }).then(jsonOrApiError<ScrapeResult>),
-  listSaved: () => fetch('/api/saved').then(json<SavedApartment[]>),
+  listSaved: () => fetch('/api/saved').then(jsonOrApiError<SavedApartment[]>),
   createSaved: (input: SavedInput) =>
     fetch('/api/saved', {
       method: 'POST',
@@ -154,7 +165,7 @@ export const api = {
     if (!res.ok) await jsonOrApiError<never>(res);
   },
   getIssuesStatus: () =>
-    fetch('/api/issues').then(json<{ count: number; max: number }>),
+    fetch('/api/issues').then(jsonOrApiError<{ count: number; max: number }>),
   submitIssue: (body: string) =>
     fetch('/api/issues', {
       method: 'POST',

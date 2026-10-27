@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { ApiError, api, type SavedApartment, type ScrapeResult } from '../api.ts';
 import { ApartmentForm } from '../components/ApartmentForm.tsx';
+import { ApiErrorNotice } from '../components/ApiErrorNotice.tsx';
 import { SavedTable } from '../components/SavedTable.tsx';
 import { Button } from '../components/ui/Button.tsx';
 import {
@@ -99,10 +100,29 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
   const [editErrors, setEditErrors] = useState<FormErrors>({});
   const [editProblem, setEditProblem] = useState<string | null>(null);
 
-  const reload = async () => setSaved(await api.listSaved());
+  const [loadError, setLoadError] = useState<{ error: unknown } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const reload = async () => {
+    setSaved(await api.listSaved());
+    setLoadError(null);
+  };
+
+  // The first load, and Retry: a failure shows in place of the table, so an
+  // API that is not running does not look like an empty shortlist.
+  const load = async () => {
+    setLoading(true);
+    try {
+      await reload();
+    } catch (error) {
+      setLoadError({ error });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    void reload();
+    void load();
   }, []);
 
   const fetchDetails = async (url: string) => {
@@ -332,11 +352,22 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
             ))}
           </SelectPopup>
         </Select>
-        <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">{saved.length} saved</span>
+        {!loadError && (
+          <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">{saved.length} saved</span>
+        )}
       </div>
 
       <div className="mt-3">
-        <SavedTable saved={sorted} onEdit={startEdit} onDelete={remove} />
+        {loadError ? (
+          <ApiErrorNotice
+            action="Couldn't load the saved apartments"
+            error={loadError.error}
+            onRetry={() => void load()}
+            busy={loading}
+          />
+        ) : (
+          <SavedTable saved={sorted} onEdit={startEdit} onDelete={remove} />
+        )}
       </div>
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>

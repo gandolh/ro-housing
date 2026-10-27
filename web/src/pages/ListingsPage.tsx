@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ApiErrorNotice } from '../components/ApiErrorNotice.tsx';
 import { ListingsTable } from '../components/ListingsTable.tsx';
 import { Badge } from '../components/ui/Badge.tsx';
 import { Button } from '../components/ui/Button.tsx';
@@ -9,7 +10,14 @@ import {
   SelectTrigger,
   SelectValueLabel,
 } from '../components/ui/Select.tsx';
-import { ApiError, api, type Listing, type RefreshResult, type Source } from '../api.ts';
+import {
+  ApiError,
+  api,
+  apiErrorMessage,
+  type Listing,
+  type RefreshResult,
+  type Source,
+} from '../api.ts';
 
 type Sort = 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
 type Order = 'asc' | 'desc';
@@ -35,6 +43,8 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
   const [refreshing, setRefreshing] = useState(false);
   const [lastResult, setLastResult] = useState<RefreshResult | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ error: unknown } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const sourceLabels = useMemo(
     () =>
@@ -46,12 +56,20 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
   );
 
   const reload = async () => {
-    const [ls, ss] = await Promise.all([
-      api.listListings({ sort, order, source: sourceFilter || undefined }),
-      api.listSources(),
-    ]);
-    setListings(ls);
-    setSources(ss);
+    setLoading(true);
+    try {
+      const [ls, ss] = await Promise.all([
+        api.listListings({ sort, order, source: sourceFilter || undefined }),
+        api.listSources(),
+      ]);
+      setListings(ls);
+      setSources(ss);
+      setLoadError(null);
+    } catch (error) {
+      setLoadError({ error });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -64,18 +82,18 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
     setRefreshing(true);
     setRefreshError(null);
     try {
-      const result = await api.refresh();
-      setLastResult(result);
-      await reload();
+      setLastResult(await api.refresh());
     } catch (err) {
       setRefreshError(
         err instanceof ApiError && err.status === 409
           ? 'Another Refresh is already running. Try again when it has finished.'
-          : `Refresh failed: ${err instanceof Error ? err.message : String(err)}`,
+          : `Refresh failed. ${apiErrorMessage(err)}`,
       );
+      return;
     } finally {
       setRefreshing(false);
     }
+    await reload();
   };
 
   return (
@@ -124,9 +142,11 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
           </SelectPopup>
         </Select>
 
-        <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">
-          {listings.length} listings
-        </span>
+        {!loadError && (
+          <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">
+            {listings.length} listings
+          </span>
+        )}
       </div>
 
       {refreshError && (
@@ -148,11 +168,20 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
       )}
 
       <div className="mt-4">
-        <ListingsTable
-          listings={listings}
-          sources={sources}
-          onSave={(l) => onSaveLink(l.url)}
-        />
+        {loadError ? (
+          <ApiErrorNotice
+            action="Couldn't load the listings"
+            error={loadError.error}
+            onRetry={() => void reload()}
+            busy={loading}
+          />
+        ) : (
+          <ListingsTable
+            listings={listings}
+            sources={sources}
+            onSave={(l) => onSaveLink(l.url)}
+          />
+        )}
       </div>
     </div>
   );

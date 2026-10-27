@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api, type Source } from '../api.ts';
 import { cn } from '../lib/cn.ts';
+import { ApiErrorNotice } from '../components/ApiErrorNotice.tsx';
 import { Button } from '../components/ui/Button.tsx';
 import { Checkbox } from '../components/ui/Checkbox.tsx';
 import { Input } from '../components/ui/Input.tsx';
@@ -43,6 +44,9 @@ export function SourcesPage({ active = true }: Props) {
   const [sources, setSources] = useState<Source[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<{ error: unknown } | null>(null);
+  const [loadError, setLoadError] = useState<{ error: unknown } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const reload = async () => {
     const ss = await api.listSources();
@@ -50,20 +54,29 @@ export function SourcesPage({ active = true }: Props) {
     setDrafts(Object.fromEntries(ss.map((s) => [s.id, toDraft(s)])));
   };
 
-  // Like reload, but a row with unsaved edits keeps them.
+  // Like reload, but a row with unsaved edits keeps them. A failure shows in
+  // place of the list, with Retry.
   const reloadKeepingEdits = async () => {
     const before = sources;
-    const ss = await api.listSources();
-    setSources(ss);
-    setDrafts((prev) =>
-      Object.fromEntries(
-        ss.map((s) => {
-          const draft = prev[s.id];
-          const old = before.find((o) => o.id === s.id);
-          return [s.id, draft && old && isDirty(old, draft) ? draft : toDraft(s)];
-        }),
-      ),
-    );
+    setLoading(true);
+    try {
+      const ss = await api.listSources();
+      setSources(ss);
+      setDrafts((prev) =>
+        Object.fromEntries(
+          ss.map((s) => {
+            const draft = prev[s.id];
+            const old = before.find((o) => o.id === s.id);
+            return [s.id, draft && old && isDirty(old, draft) ? draft : toDraft(s)];
+          }),
+        ),
+      );
+      setLoadError(null);
+    } catch (error) {
+      setLoadError({ error });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -92,7 +105,10 @@ export function SourcesPage({ active = true }: Props) {
   const save = async () => {
     if (dirtyIds.length === 0) return;
     setSaving(true);
+    setSaveError(null);
     try {
+      // Rows saved before a failure still count as edited here; saving them
+      // again on Retry writes the same values.
       for (const id of dirtyIds) {
         const d = drafts[id];
         if (!d) continue;
@@ -102,6 +118,8 @@ export function SourcesPage({ active = true }: Props) {
         });
       }
       await reload();
+    } catch (error) {
+      setSaveError({ error });
     } finally {
       setSaving(false);
     }
@@ -109,6 +127,7 @@ export function SourcesPage({ active = true }: Props) {
 
   const discard = () => {
     setDrafts(Object.fromEntries(sources.map((s) => [s.id, toDraft(s)])));
+    setSaveError(null);
   };
 
   const hasChanges = dirtyIds.length > 0;
@@ -136,6 +155,21 @@ export function SourcesPage({ active = true }: Props) {
           </span>
         )}
       </div>
+
+      {saveError && (
+        <div className="mb-3">
+          <ApiErrorNotice action="Not saved" error={saveError.error} onRetry={() => void save()} busy={saving} />
+        </div>
+      )}
+
+      {loadError && (
+        <ApiErrorNotice
+          action="Couldn't load the sources"
+          error={loadError.error}
+          onRetry={() => void reloadKeepingEdits()}
+          busy={loading}
+        />
+      )}
 
       <div className="flex flex-col gap-2">
         {sources.map((s) => {

@@ -98,4 +98,4 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 - `api/src/routes/` — route handlers. Thin; business logic lives in adapters and db.
 - `web/src/pages/` — `ListingsPage` (the unified table), `SavedPage` (add by link, the draft, the saved table, the edit dialog) and `SourcesPage` (per-source URL + enable toggle).
 - `web/src/lib/` — `format.ts` (price, m², €/m², floor formatting shared by both tables), `apartment.ts` (form strings ↔ saved record, floor input "P"/"D").
-- `web/src/components/` — `ListingsTable`, `PriceHistory` (inline-SVG sparkline), `ApartmentForm` (the draft and edit form), `SavedTable`, `ReportIssueButton`.
+- `web/src/components/` — `ListingsTable`, `PriceHistory` (inline-SVG sparkline), `ApartmentForm` (the draft and edit form), `SavedTable`, `ReportIssueButton`, `ApiErrorNotice` (the alert with Retry that a page shows in place of its list when the API fails, worded by `apiErrorMessage` in `api.ts`).

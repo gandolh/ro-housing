@@ -114,7 +114,7 @@ describe('<ListingsPage> staleness', () => {
 
     await user.click(screen.getByRole('button', { name: 'Refresh' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Refresh failed: database is locked');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Refresh failed. Database is locked');
     expect(screen.getByRole('button', { name: 'Refresh' })).toBeEnabled();
     expect(row(/Seen in the last run/)).not.toHaveAttribute('data-stale');
     expect(row(/Seen in the last good run/)).not.toHaveAttribute('data-stale');
@@ -136,5 +136,33 @@ describe('<ListingsPage> staleness', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Another Refresh is already running. Try again when it has finished.',
     );
+  });
+});
+
+describe('<ListingsPage> when the API is down', () => {
+  it('shows the alert, not "No listings yet", and Retry loads the table', async () => {
+    let up = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: string) => {
+        // Vite's proxy answers 502 with a plain-text body when the API is not running.
+        if (!up) return new Response('', { status: 502, headers: { 'Content-Type': 'text/plain' } });
+        const body = input.startsWith('/api/sources') ? SOURCES : LISTINGS;
+        return new Response(JSON.stringify(body), { status: 200 });
+      }),
+    );
+    const user = userEvent.setup();
+    render(<ListingsPage onSaveLink={() => {}} />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "Couldn't load the listings. Can't reach the API: is it running?",
+    );
+    expect(screen.queryByText(/No listings yet/)).not.toBeInTheDocument();
+    expect(screen.queryByText('0 listings')).not.toBeInTheDocument();
+
+    up = true;
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText('Seen in the last run')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

@@ -203,3 +203,30 @@ describe('<SavedPage> add by link', () => {
     await waitFor(() => expect(screen.getByText(/Nothing saved yet/)).toBeInTheDocument());
   });
 });
+
+describe('<SavedPage> when the API is down', () => {
+  it('shows the alert, not the empty shortlist, and Retry loads it', async () => {
+    let up = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        // fetch rejects like this when nothing answers on the port.
+        if (!up) throw new TypeError('Failed to fetch');
+        return new Response(JSON.stringify([]), { status: 200 });
+      }),
+    );
+    const user = userEvent.setup();
+    render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "Couldn't load the saved apartments. Can't reach the API: is it running?",
+    );
+    expect(screen.queryByText(/Nothing saved yet/)).not.toBeInTheDocument();
+    expect(screen.queryByText('0 saved')).not.toBeInTheDocument();
+
+    up = true;
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText(/Nothing saved yet/)).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
