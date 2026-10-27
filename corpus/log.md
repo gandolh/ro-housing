@@ -45,3 +45,11 @@ The Listings table dims a row against its source's last successful run, read fro
 on every load (or, when that source's last run failed, its newest `lastSeen`), not against a click
 time held in page state. The Age cell's title shows the last-seen time. A failed Refresh shows a
 `role="alert"` line and changes no row. Code d031d1d. Checks: web 52/52, tsc -b clean.
+
+## [2026-10-27] done | Brief 06: Keep the pages alive when switching tabs
+
+The three tab panels are `keepMounted`, so an open draft, the Listings sort and filter, and a
+running Refresh survive a tab switch. Sources, the one page whose data changes behind it, re-reads
+its last runs each time it opens and keeps unsaved edits (outside the brief's file list, see its
+outcome). The API refuses a second Refresh during a run with 409, and the page says so. Code
+23b71aa. Checks: api 109/109, web 55/55, tsc clean, vite build clean.
