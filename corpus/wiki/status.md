@@ -1,5 +1,5 @@
 ---
-summary: One line per brief and where it stands; the 2026-10-20 sweep's briefs are being built in number order.
+summary: One line per brief and where it stands; all ten briefs from the 2026-10-20 sweep were built on 2026-10-27, none is open.
 updated: 2026-10-27
 ---
 
@@ -7,7 +7,8 @@ updated: 2026-10-27
 
 Briefs 01-10 are every Now and Next item of the 2026-10-20 improvement sweep. 01-06 are Now:
 the API answers any website, three price parsers store wrong numbers, delisted flats look live,
-and switching tabs throws work away. The sweep's watch list is not briefed.
+and switching tabs throws work away. The sweep's watch list is not briefed. All ten were built
+on 2026-10-27, one commit for the code and one for the record each; nothing is pushed.
 
 - [01](../briefs/done/01-close-api-to-other-sites.md) (Now, done 2026-10-27): Close the API to other websites
 - [02](../briefs/done/02-adapter-price-token.md) (Now, done 2026-10-27): Adapters: read the price, not the numbers before it
@@ -18,4 +19,4 @@ and switching tabs throws work away. The sweep's watch list is not briefed.
 - [07](../briefs/done/07-api-down-shows-error.md) (Next, done 2026-10-27): Show an error when the API is down, not an empty shortlist
 - [08](../briefs/done/08-refetch-keeps-draft-edits.md) (Next, done 2026-10-27): A second "Fetch details" must not wipe the open draft
 - [09](../briefs/done/09-playwright-recovers.md) (Next, done 2026-10-27): Recover from a failed or crashed Chromium without a restart
-- [10](../briefs/todo/10-vat-excluded-prices.md) (Next, todo): Mark "+ TVA" prices so €/m² compares like with like
+- [10](../briefs/done/10-vat-excluded-prices.md) (Next, done 2026-10-27): Mark "+ TVA" prices so €/m² compares like with like

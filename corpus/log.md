@@ -75,3 +75,19 @@ another flat. Code 117f738. Checks: web 62/62, tsc -b and vite build clean.
 storia and the Saved tab's browser fallback work again on the next call. Code 17893c8. Checks: api
 114/114 (a launch stub failing once, then succeeding), tsc clean, and a close-and-relaunch on the
 real local Chromium with no site opened.
+
+## [2026-10-27] done | Brief 10: Mark "+ TVA" prices so €/m² compares like with like
+
+The price readers note "+ TVA" / "fără TVA" on the amount they take, a `price_plus_vat` column on
+`listings` and `saved` stores it (added to old databases at boot by the new `db/migrate.ts`), and
+both tables show "+TVA" beside the price and €/m²; the Saved form has a tick box for it. No gross
+price is computed, as the brief left that to the owner. The owner's database gets the column on the
+API's next start. Code f8152b9. Checks: api 122/122, web 65/65, tsc clean, vite build clean, boots
+on a copy of the owner's database and a Chrome pass on a throwaway copy.
+
+## [2026-10-27] done | Briefs 01-10 built
+
+All ten sweep briefs are in done/, each with a code commit and a record commit on main, not pushed.
+One extra docs commit (8848481) put back the "What we'd revisit" heading that brief 01's edit had
+dropped from docs/decisions.md. Several briefs touched files outside their lists (06, 07, 10), named in
+their outcomes. Open question for the owner: DNS rebinding straight at port 3000 (brief 01).

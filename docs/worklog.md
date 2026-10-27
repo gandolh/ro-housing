@@ -20,6 +20,17 @@ Built from `corpus/briefs/`, in number order; each brief's outcome note has the 
 - Brief 07: with the API down, each page shows "Can't reach the API: is it running?" with Retry (`ApiErrorNotice`) instead of its empty state; a failed Sources Save says so and keeps the edits.
 - Brief 08: fetching again over a Saved draft with edits (button, Enter, a "save" from Listings) asks before replacing it.
 - Brief 09: a failed Chromium launch or a disconnected browser clears the shared one, so the next call launches again without restarting the API.
+- Brief 10: prices marked "+ TVA" / "fără TVA" carry a `price_plus_vat` flag (a new column, added to old databases by `db/migrate.ts` at boot) and show "+TVA" beside the price and €/m²; the Saved form has a tick box for it.
+
+**Verified:**
+- api 122/122 and web 65/65 tests; `tsc` clean in both; `vite build` clean.
+- A throwaway copy (API on 3017, Vite on 5287, `WEB_ORIGINS` set): another origin gets 403, the app's own writes pass; two boots on a copy of the owner's database add the new column once. In Chrome, on demo-seed data with every source switched off so Refresh could reach no site: stale rows dimmed after a fresh load with the last-seen title, "+TVA" on a flagged row, an open draft's notes kept across a tab switch, a second Fetch details asks first, and with the API stopped each page shows "Can't reach the API" and Retry recovers.
+- No listing site was fetched.
+
+**Next:**
+- The owner's `data/ro-housing.db` gets `price_plus_vat` on the API's next start.
+- Open from brief 01: DNS rebinding straight at port 3000 (a same-origin GET carries no `Origin`); a `Host` check would close it.
+- imobiliare's own price element (brief 03), once its bot check lifts.
 
 ## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
 
