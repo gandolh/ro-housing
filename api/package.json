@@ -11,7 +11,6 @@
     "postinstall": "playwright install chromium"
   },
   "dependencies": {
-    "@fastify/cors": "11.2.0",
     "better-sqlite3": "12.10.0",
     "cheerio": "1.2.0",
     "fastify": "5.12.7",

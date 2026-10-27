@@ -23,6 +23,7 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 | File | What it exercises |
 |------|-------------------|
 | `src/lib/normalize.test.ts` | All five `normalize.ts` helpers — `parsePriceEur`, `pickLargestPriceEur`, `parseRooms`, `parseSqm`, `cleanText`, `slugFromUrl`, `stripTrailingPrice`, `locationFromImobiliareUrl`. Includes regression tests for the imobiliare data-quality bugs (discount-fragment price, fractional rooms, embedded title price, neighborhood extraction). |
+| `src/lib/origin.test.ts` | The guard that refuses other websites: the allowed-origin list and `WEB_ORIGINS`, and a bare Fastify instance driven with `inject()` (no port, no database) answering 403 to `Origin: https://evil.example` on a read, a form post and a preflight, and serving requests with no Origin or the app's own. |
 | `src/routes/issues.test.ts` | The slugify function used by the issue-write endpoint and the cap-counting logic. Uses a fresh `mkdtempSync` directory per test. |
 | `src/details/extract.test.ts` | The listing-page extractor against trimmed real pages in `src/details/fixtures/` (storia, foxfort, primum, apostu, a DataDome page), plus the floor / top-floor / partitioning label parsers and the sanity ranges. |
 | `src/details/fetchPage.test.ts` | `looksBlocked`: both imobiliare bot-check pages are caught, the four real listing pages pass. |

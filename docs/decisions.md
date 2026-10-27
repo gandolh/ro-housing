@@ -73,7 +73,15 @@ Keeps the "no image storage" scope. The thumbnail breaks if the listing is taken
 ### Refuse local addresses in the scrape endpoint
 The API answers any origin (`cors: origin: true`), so any page open in the browser could ask it to fetch a URL. The endpoint refuses `localhost` and private-network IPs (checked after DNS). Only the first hop is checked; redirects are followed unchecked. Enough for a localhost tool.
 
-## What we'd revisit if usage proves us wrong
+Since 2026-10-27 the API no longer answers other origins (see "Only the web app's own origin" below), so the first sentence no longer holds. The local-address guard stays as a second line.
+
+## Improvement sweep briefs (2026-10-27)
+
+### Only the web app's own origin
+The API had `@fastify/cors` with `origin: true` and no sign-in, so any page open in the browser could read the saved flats with their notes, start a Refresh, or write files into `issues/` that read like the owner's own feedback. The web app never needed CORS: it reaches the API through Vite's proxy, on its own origin. So the plugin is gone, and an `onRequest` hook (`api/src/lib/origin.ts`) answers 403 to any request whose `Origin` header is present and is not the app's: `http://127.0.0.1:5173` or `http://localhost:5173`, or the comma-separated list in `WEB_ORIGINS`. Vite's proxy rewrites `Host` but passes `Origin` on unchanged. Requests with no `Origin` (curl, a same-origin GET) pass.
+
+The check is on `Origin`, not only on the missing CORS headers, because a plain form post from another page needs no preflight and would still have been run. Another local port counts as another website: when Vite moves to 5174 because 5173 is taken, saves are refused until that origin is in `WEB_ORIGINS`. Not covered: DNS rebinding straight at port 3000, where a same-origin GET carries no `Origin`; a `Host` check would close it.
+
 
 - **Dedup**: if the same apartment appears 3+ times across sources every refresh, that noise might outweigh the false-positive risk. Add a "group by (rooms, m², ±5% price, fuzzy-neighborhood)" view as a toggle.
 - **Scheduler**: if the user actually wants meaningful price history and refresh-click density isn't enough, add an optional single daily cron — not a heavy scheduler.
