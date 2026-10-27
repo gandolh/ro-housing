@@ -30,3 +30,21 @@ Improvement sweep of 2026-10-20 (API correctness and safety lens), vetted agains
 
 - Unit tests for the strings above and the existing samples.
 - All eight adapters call the shared function (grep).
+
+## Outcome (2026-10-27)
+
+Done in fd14226. `extractPriceEur(text)` in `api/src/lib/normalize.ts` takes a price token that
+starts at a fresh number (not after a digit, "." or ","): thousands groups split by ".", "," or a
+space, or 4-7 bare digits, an optional ",00", then €, eur or euro, and not followed by "/m²". It
+skips amounts outside 5,000-5,000,000 € and every amount equal to one labelled "Preț vechi", and
+returns the first left. The eight adapters call it instead of their regex.
+
+Two calls the brief left open, pinned in tests: where a space-grouped number reads more than one
+way, the shortest reading in range wins, so "Strada Aradului 12 299 000 €" gives 299000 and a real
+"1 299 000 €" gives 299000 too (rarer for a flat here than a number in front of the price); the
+range "75.000 - 80.000 €" gives 80000, the only amount with a currency sign after it. Comma
+thousands ("109,000 EUR", an existing sample) count as a separator.
+
+Checked: unit tests for the brief's three strings and the old samples (api 104/104), tsc clean;
+`grep -n "extractPriceEur\|parsePriceEur" api/src/adapters/*.ts` shows the eight adapters on
+`extractPriceEur` and none on `parsePriceEur`. No search page was fetched.

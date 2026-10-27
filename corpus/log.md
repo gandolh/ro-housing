@@ -16,3 +16,11 @@ names another site; the app's own origins (Vite on 5173, as `127.0.0.1` or `loca
 requests with no `Origin` pass. `WEB_ORIGINS` overrides the list. Code d58329c. Checks: api 97/97,
 tsc clean; on a throwaway copy evil.example got 403 direct and through the Vite proxy, and the app's
 own writes from Chrome got 200. Decision recorded in docs/decisions.md.
+
+## [2026-10-27] done | Brief 02: Adapters read the price, not the numbers before it
+
+One shared `extractPriceEur()` in `normalize.ts` replaces the eight adapters' loose regex: a price
+token starting at a fresh number, 5,000-5,000,000 €, not €/m², not the "Preț vechi" amount, first
+one wins. "Etaj 2 89.000 €" now gives 89000 and "Strada Aradului 12 299 000 €" 299000. Open calls
+settled and pinned in tests: a range gives its upper end; a space-grouped price over 1,000,000 €
+loses its millions. Code fd14226. Checks: api 104/104, tsc clean, grep on the adapters.
