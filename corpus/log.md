@@ -32,3 +32,9 @@ The imobiliare adapter reads its price with `extractPriceEur` instead of the lar
 not only by the 5,000 € floor. `pickLargestPriceEur` is removed. Reading imobiliare's own price
 element waits until its bot check lifts. Code 73aa338. Checks: api 107/107 (an adapter test on
 made-up cards), tsc clean.
+
+## [2026-10-27] done | Brief 04: The form's price field: decimals are not thousands
+
+The Saved form's price parser drops the currency, then a one- or two-digit decimal part, then the
+thousands separators, and refuses prices over 10,000,000 €. "72000.00" was 7200000 and is now
+72000. Code 3c5c673. Checks: web 49/49, tsc -b and vite build clean.

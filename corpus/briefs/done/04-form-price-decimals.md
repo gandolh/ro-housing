@@ -22,3 +22,14 @@ Improvement sweep of 2026-10-20 (web app lens), vetted against the code; the ran
 ## Acceptance
 
 - Tests: "72.000 €", "72000.00", "72000 euro" and "72 000" give 72000; "85.500,00 EUR" gives 85500.
+
+## Outcome (2026-10-27)
+
+Done in 3c5c673. `price()` in `web/src/lib/apartment.ts` now removes €, eur and euro first, then a
+trailing decimal part (one or two digits after the last "." or ","), then spaces, "." and ",", and
+refuses anything over 10,000,000 € with "Price looks too large". The API's own limit stays at
+50,000,000.
+
+Checked: tests for "72.000 €", "72000.00", "72000 euro", "72 000" (72000), "85.500,00 EUR" (85500),
+"72000,5", an empty field, the cap and a non-number; five of them fail on the old parser. web 49/49,
+`tsc -b` and `vite build` clean.
