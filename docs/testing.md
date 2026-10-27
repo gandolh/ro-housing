@@ -56,6 +56,7 @@ Both `test` scripts run `vitest run` (single-shot, suitable for CI). `test:watch
 | `src/components/ui/Tabs.test.tsx` | Default tab renders its panel; click switches panel. The selected tab, and only it, carries `data-active`, the attribute the active-tab styles key on. |
 | `src/lib/format.test.ts` | Floor formatting ("P/4", "3/4"), €/m². |
 | `src/lib/apartment.test.ts` | Form strings ↔ saved record: prices as typed ("72.000 €", "72000.00", "72000 euro", "72 000", "85.500,00 EUR") and the 10,000,000 € cap, "42,5 mp", "parter", per-field errors. |
+| `src/pages/ListingsPage.test.tsx` | Staleness with `fetch` stubbed: on a fresh load, rows older than their source's last good run carry `data-stale` (also for a source whose last run failed), the Age cell's title has the last-seen time, and a failed Refresh shows an alert and dims nothing. |
 | `src/pages/SavedPage.test.tsx` | The add-by-link flow with `fetch` stubbed: draft → edit → save (checks the POST body), the bot-check message, "already saved", a link handed over from Listings, two-click delete. |
 
 **Conventions**

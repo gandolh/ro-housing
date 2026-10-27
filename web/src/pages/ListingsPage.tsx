@@ -34,7 +34,7 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
   const [sourceFilter, setSourceFilter] = useState<string>('');
   const [refreshing, setRefreshing] = useState(false);
   const [lastResult, setLastResult] = useState<RefreshResult | null>(null);
-  const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
 
   const sourceLabels = useMemo(
     () =>
@@ -58,13 +58,17 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
     void reload();
   }, [sort, order, sourceFilter]);
 
+  // Staleness comes from each source's last run as the API reports it, so a
+  // Refresh that fails changes nothing on the rows; it only says so.
   const refresh = async () => {
     setRefreshing(true);
+    setRefreshError(null);
     try {
-      setLastRefreshAt(Date.now());
       const result = await api.refresh();
       setLastResult(result);
       await reload();
+    } catch (err) {
+      setRefreshError(`Refresh failed: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setRefreshing(false);
     }
@@ -121,6 +125,12 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
         </span>
       </div>
 
+      {refreshError && (
+        <p role="alert" className="mt-3 border border-bad bg-bad-soft px-2 py-1.5 text-xs text-bad">
+          {refreshError}
+        </p>
+      )}
+
       {lastResult && (
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border border-ink bg-panel px-3 py-2 text-xs">
           {lastResult.perSource.map((p) => (
@@ -136,7 +146,7 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
       <div className="mt-4">
         <ListingsTable
           listings={listings}
-          lastRefreshAt={lastRefreshAt}
+          sources={sources}
           onSave={(l) => onSaveLink(l.url)}
         />
       </div>

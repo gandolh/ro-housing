@@ -1,4 +1,4 @@
-import type { Listing } from '../api.ts';
+import type { Listing, Source } from '../api.ts';
 import { cn } from '../lib/cn.ts';
 import { fmtPrice, fmtPricePerSqm, fmtSqm } from '../lib/format.ts';
 import { PriceHistory } from './PriceHistory.tsx';
@@ -8,9 +8,34 @@ import { Panel } from './ui/Panel.tsx';
 
 interface Props {
   listings: Listing[];
-  lastRefreshAt: number | null;
+  /** Each source's last run, which says which of its listings are stale. */
+  sources: Source[];
   /** Opens the listing in the Saved tab's fetch-and-confirm flow. */
   onSave: (listing: Listing) => void;
+}
+
+/** Rows from one run share its timestamp, and the source's run is stamped just
+ *  after them; the margin absorbs that gap and some clock skew. */
+const STALE_MARGIN_MS = 5_000;
+
+/** For each source, the time of its last successful run that found anything:
+ *  the run itself when the last run succeeded, else its newest `lastSeen`.
+ *  A listing seen before that is stale, likely delisted. */
+export function staleCutoffs(sources: Source[], listings: Listing[]): Map<string, number> {
+  const cutoffs = new Map<string, number>();
+  for (const l of listings) {
+    cutoffs.set(l.sourceId, Math.max(cutoffs.get(l.sourceId) ?? 0, l.lastSeen));
+  }
+  for (const s of sources) {
+    if (s.lastRunOk && s.lastRunAt !== null) cutoffs.set(s.id, s.lastRunAt);
+  }
+  return cutoffs;
+}
+
+function fmtDateTime(ms: number): string {
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function fmtAge(firstSeen: number): string {
@@ -22,7 +47,7 @@ function fmtAge(firstSeen: number): string {
 
 const HEAD = 'border-b border-ink bg-panel-alt px-2 py-1.5 text-xs uppercase tracking-wide text-ink-dim text-left';
 
-export function ListingsTable({ listings, lastRefreshAt, onSave }: Props) {
+export function ListingsTable({ listings, sources, onSave }: Props) {
   if (listings.length === 0) {
     return (
       <Panel className="px-6 py-12 text-center text-sm text-ink-dim">
@@ -30,6 +55,7 @@ export function ListingsTable({ listings, lastRefreshAt, onSave }: Props) {
       </Panel>
     );
   }
+  const cutoffs = staleCutoffs(sources, listings);
   return (
     <Panel>
       <table className="w-full">
@@ -51,11 +77,12 @@ export function ListingsTable({ listings, lastRefreshAt, onSave }: Props) {
         </thead>
         <tbody>
           {listings.map((l) => {
-            const stale =
-              lastRefreshAt !== null && l.lastSeen < lastRefreshAt - 5_000;
+            const cutoff = cutoffs.get(l.sourceId);
+            const stale = cutoff !== undefined && l.lastSeen < cutoff - STALE_MARGIN_MS;
             return (
               <tr
                 key={l.id}
+                data-stale={stale || undefined}
                 className={cn(
                   'border-b border-rule-soft last:border-b-0',
                   stale && 'text-ink-faint',
@@ -81,7 +108,14 @@ export function ListingsTable({ listings, lastRefreshAt, onSave }: Props) {
                   {fmtPricePerSqm(l.priceEur, l.sqm)}
                 </td>
                 <td className="px-2 py-1.5">{l.location ?? '—'}</td>
-                <td className="px-2 py-1.5">{fmtAge(l.firstSeen)}</td>
+                <td
+                  className="px-2 py-1.5"
+                  title={`Last seen ${fmtDateTime(l.lastSeen)}${
+                    stale ? ', not found by its source’s last refresh' : ''
+                  }`}
+                >
+                  {fmtAge(l.firstSeen)}
+                </td>
                 <td className="px-2 py-1.5">
                   <PriceHistory history={l.history} />
                 </td>

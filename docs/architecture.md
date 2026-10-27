@@ -73,7 +73,7 @@ Four tables. See `api/src/db/schema.sql` for the canonical version.
 - **saved** — apartments the user saved from a link (session 5). One row per normalized URL (`UNIQUE`). The columns hold what the user confirmed; `raw_json` holds what the page said at fetch time (the draft, which layer filled each field, the description) and `fetched_at` when. Never touched by Refresh, never linked to `listings`.
 - **price_history** — append-only. One row per (listing, observation). Primary key is the composite, so re-running refresh in the same millisecond is a no-op.
 
-Listings whose `last_seen` is older than the most recent refresh of their source are "stale" — likely delisted. UI dims them rather than deleting; the user might want to see the last known price.
+Listings whose `last_seen` is older than the most recent refresh of their source are "stale" — likely delisted. UI dims them rather than deleting; the user might want to see the last known price. Since 2026-10-27 the table works this out from `/api/sources` on every load (`staleCutoffs` in `ListingsTable.tsx`): the source's `last_run_at` when its last run succeeded, else the newest `last_seen` among its listings, minus 5 seconds. A failed Refresh changes neither, so it dims nothing. The Age cell's title gives the last-seen time.
 
 ## Adapter strategy split
 
