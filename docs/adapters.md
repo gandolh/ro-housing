@@ -26,7 +26,7 @@ For sites whose listing cards are present in the raw HTML response. Use `lib/fet
 
 For sites where the initial HTML is a SPA shell and listing data only appears after JS runs (storia.ro), or where anti-bot challenges block plain fetch. Open a page, wait for a known listing-grid selector, then either dump `page.content()` into cheerio or query directly through Playwright's locator API.
 
-Reuse the chromium instance across adapter calls within a single refresh — `lib/playwright.ts` exposes a singleton with a lazy launch and an explicit `closeBrowser()` for shutdown.
+Reuse the chromium instance across adapter calls within a single refresh — `lib/playwright.ts` exposes a singleton with a lazy launch and an explicit `closeBrowser()` for shutdown. Since 2026-10-27 a failed launch (Chromium not installed yet) and a browser that disconnects (a crash, the laptop sleeping) clear the singleton, so the next call launches again; before, both kept failing until the API was restarted.
 
 ## Reading the price from a card
 

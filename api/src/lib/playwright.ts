@@ -2,18 +2,35 @@ import { chromium, type Browser } from 'playwright';
 
 let browserPromise: Promise<Browser> | null = null;
 
+/** One shared Chromium, launched on first use. A launch that fails (Chromium
+ *  not installed yet) and a browser that goes away (a crash, the laptop
+ *  sleeping) clear the cache, so the next call launches again instead of
+ *  failing until the API is restarted. */
 export function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
-    browserPromise = chromium.launch({ headless: true });
+    const launching: Promise<Browser> = chromium.launch({ headless: true }).then(
+      (browser) => {
+        browser.on('disconnected', () => {
+          if (browserPromise === launching) browserPromise = null;
+        });
+        return browser;
+      },
+      (err: unknown) => {
+        if (browserPromise === launching) browserPromise = null;
+        throw err;
+      },
+    );
+    browserPromise = launching;
   }
   return browserPromise;
 }
 
 export async function closeBrowser(): Promise<void> {
   if (!browserPromise) return;
-  const b = await browserPromise;
+  const pending = browserPromise;
   browserPromise = null;
-  await b.close();
+  const b = await pending.catch(() => null);
+  await b?.close();
 }
 
 export async function fetchRenderedHtml(
