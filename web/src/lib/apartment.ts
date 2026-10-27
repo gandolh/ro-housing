@@ -62,12 +62,22 @@ function whole(v: string): number | null {
   return Number(t);
 }
 
-/** "72.000", "72 000 €", "72,000" → 72000. Prices are never fractional. */
+const MAX_PRICE_EUR = 10_000_000;
+
+/** "72.000 €", "72 000", "72000 euro", "72000.00", "85.500,00 EUR" → whole
+ *  euros. The currency goes first, then a decimal part (one or two digits
+ *  after the last "." or ","), then the thousands separators. */
 function price(v: string): number | null {
-  const t = v.replace(/[\s.,€]|eur/gi, '');
+  const t = v
+    .replace(/€|euro?/gi, '')
+    .trim()
+    .replace(/[.,]\d{1,2}$/, '')
+    .replace(/[\s.,]/g, '');
   if (!t) return null;
   if (!/^\d+$/.test(t)) throw new FieldError('Price in euro, digits only');
-  return Number(t);
+  const n = Number(t);
+  if (n > MAX_PRICE_EUR) throw new FieldError('Price looks too large');
+  return n;
 }
 
 /** "42,5" or "42.5" → 42.5. */

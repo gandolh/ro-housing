@@ -50,6 +50,31 @@ describe('parseForm', () => {
     });
   });
 
+  // Removing every "." and "," made "72000.00" 7200000 and "85.500,00 EUR"
+  // 8550000; removing "eur" left the "o" of "euro" and refused it.
+  it.each([
+    ['72.000 €', 72000],
+    ['72000.00', 72000],
+    ['72000 euro', 72000],
+    ['72 000', 72000],
+    ['72000,5', 72000],
+    ['85.500,00 EUR', 85500],
+    ['', null],
+  ])('reads the price %j as %s', (priceEur, expected) => {
+    const r = parseForm({ ...base, priceEur });
+    expect(r.ok && r.input.priceEur).toBe(expected);
+  });
+
+  it('refuses a price over 10,000,000 €', () => {
+    const r = parseForm({ ...base, priceEur: '72.000.000 €' });
+    expect(!r.ok && r.errors.priceEur).toBe('Price looks too large');
+  });
+
+  it('refuses a price that is not a number', () => {
+    const r = parseForm({ ...base, priceEur: 'ask' });
+    expect(!r.ok && r.errors.priceEur).toBe('Price in euro, digits only');
+  });
+
   it('keeps an empty partitioning as null', () => {
     const r = parseForm(base);
     expect(r.ok && r.input.partitioning).toBeNull();
