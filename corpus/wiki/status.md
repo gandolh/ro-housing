@@ -16,6 +16,6 @@ and switching tabs throws work away. The sweep's watch list is not briefed.
 - [05](../briefs/done/05-staleness-from-source-runs.md) (Now, done 2026-10-27): Staleness from each source's last run, and a failed Refresh says so
 - [06](../briefs/done/06-keep-tabs-mounted.md) (Now, done 2026-10-27): Keep the pages alive when switching tabs
 - [07](../briefs/done/07-api-down-shows-error.md) (Next, done 2026-10-27): Show an error when the API is down, not an empty shortlist
-- [08](../briefs/todo/08-refetch-keeps-draft-edits.md) (Next, todo): A second "Fetch details" must not wipe the open draft
+- [08](../briefs/done/08-refetch-keeps-draft-edits.md) (Next, done 2026-10-27): A second "Fetch details" must not wipe the open draft
 - [09](../briefs/todo/09-playwright-recovers.md) (Next, todo): Recover from a failed or crashed Chromium without a restart
 - [10](../briefs/todo/10-vat-excluded-prices.md) (Next, todo): Mark "+ TVA" prices so €/m² compares like with like

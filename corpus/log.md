@@ -61,3 +61,10 @@ stopped API reads "Can't reach the API: is it running?" instead of "Nothing save
 notice covers a failed Sources Save, which keeps the edits. The list calls in `api.ts` now throw
 `ApiError`, so a proxy 502 is told apart from the API's own error. Code 95430d3. Checks: web 59/59,
 tsc -b and vite build clean.
+
+## [2026-10-27] done | Brief 08: A second "Fetch details" must not wipe the open draft
+
+When the open draft has edits (notes included), a second Fetch details, Enter in the link box or a
+"save" from Listings shows an inline question naming the edited fields, with Replace draft and
+Keep editing; without edits it fetches at once. Asking, not merging, because the new link may be
+another flat. Code 117f738. Checks: web 62/62, tsc -b and vite build clean.
