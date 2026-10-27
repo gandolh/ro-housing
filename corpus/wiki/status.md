@@ -1,15 +1,15 @@
 ---
-summary: One line per brief and where it stands; the briefs from the 2026-10-20 improvement sweep are all open.
-updated: 2026-10-21
+summary: One line per brief and where it stands; the 2026-10-20 sweep's briefs are being built in number order.
+updated: 2026-10-27
 ---
 
-# Status: 2026-10-21
+# Status: 2026-10-27
 
 Briefs 01-10 are every Now and Next item of the 2026-10-20 improvement sweep. 01-06 are Now:
 the API answers any website, three price parsers store wrong numbers, delisted flats look live,
 and switching tabs throws work away. The sweep's watch list is not briefed.
 
-- [01](../briefs/todo/01-close-api-to-other-sites.md) (Now, todo): Close the API to other websites
+- [01](../briefs/done/01-close-api-to-other-sites.md) (Now, done 2026-10-27): Close the API to other websites
 - [02](../briefs/todo/02-adapter-price-token.md) (Now, todo): Adapters: read the price, not the numbers before it
 - [03](../briefs/todo/03-not-the-old-price.md) (Now, todo): Don't take the crossed-out old price
 - [04](../briefs/todo/04-form-price-decimals.md) (Now, todo): The form's price field: decimals are not thousands

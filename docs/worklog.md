@@ -6,6 +6,13 @@ Format: date + 2–6 lines per session. What got built, what's next, anything we
 
 ---
 
+## Session 6 (2026-10-27) — the 2026-10-20 sweep's briefs, one at a time
+
+Built from `corpus/briefs/`, in number order; each brief's outcome note has the details.
+
+**Built:**
+- Brief 01: no CORS; the API answers 403 to any request whose `Origin` is another site's (`api/src/lib/origin.ts`, `WEB_ORIGINS`).
+
 ## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
 
 **Built:**

@@ -35,3 +35,22 @@ Improvement sweep of 2026-10-20 (API correctness and safety lens), vetted agains
 
 - A test: a request with `Origin: https://evil.example` gets 403.
 - Requests with no Origin or the app's own work, and the web app works in dev.
+
+## Outcome (2026-10-27)
+
+Done in d58329c. `@fastify/cors` is gone. A new `api/src/lib/origin.ts` adds an `onRequest` hook,
+registered in `server.ts` before the routes, that answers 403 `{ error: "requests from other
+websites are refused" }` when `Origin` is present and is not `http://127.0.0.1:5173` or
+`http://localhost:5173`. A comma list in the new `WEB_ORIGINS` variable replaces those, for when
+Vite has to move off 5173. Vite's proxy rewrites `Host` and passes `Origin` on unchanged, so the
+app's own requests pass. `docs/decisions.md` has a new entry and a note on the old one;
+getting-started and architecture are updated.
+
+Checked: `origin.test.ts` (9 tests on a bare Fastify instance with `inject()`): evil.example gets
+403 on a GET, a form post and a preflight; "null" gets 403; no Origin and the app's own get 200.
+api 97/97, tsc clean. On a throwaway copy (API :3017, Vite :5181 with `WEB_ORIGINS` set): evil
+Origin 403 direct and through the proxy, the app's origin 200 through the proxy, and in Chrome the
+app's own `PUT /api/sources` and `POST /api/issues` answered 200.
+
+Left open: DNS rebinding straight at port 3000 (a same-origin GET carries no `Origin`); a `Host`
+check would close it.
