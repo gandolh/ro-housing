@@ -91,3 +91,12 @@ All ten sweep briefs are in done/, each with a code commit and a record commit o
 One extra docs commit (8848481) put back the "What we'd revisit" heading that brief 01's edit had
 dropped from docs/decisions.md. Several briefs touched files outside their lists (06, 07, 10), named in
 their outcomes. Open question for the owner: DNS rebinding straight at port 3000 (brief 01).
+
+## [2026-10-27] todo | Brief 11 filed: research Firecrawl and Ollama
+
+The owner asked whether to self-host Firecrawl with Ollama, or only Ollama, to make scraping and
+searching for listings easier. [Brief 11](briefs/todo/11-research-firecrawl-and-ollama.md) is a
+research brief: it splits the question into finding listings, reading one listing and getting past
+blocking sites, scores small models on this laptop's CPU (no GPU is visible to WSL) against the
+layered extractor, and ends in a recommendation. The CAPTCHA decision bounds it; self-hosted
+Firecrawl lacks the hosted service's anti-bot engine, which the brief asks to confirm.

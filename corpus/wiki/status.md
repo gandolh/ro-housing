@@ -1,5 +1,5 @@
 ---
-summary: One line per brief and where it stands; all ten briefs from the 2026-10-20 sweep were built on 2026-10-27, none is open.
+summary: One line per brief and where it stands; all ten briefs from the 2026-10-20 sweep were built on 2026-10-27; brief 11 (research Firecrawl and Ollama) is open.
 updated: 2026-10-27
 ---
 
@@ -20,3 +20,7 @@ on 2026-10-27, one commit for the code and one for the record each; nothing is p
 - [08](../briefs/done/08-refetch-keeps-draft-edits.md) (Next, done 2026-10-27): A second "Fetch details" must not wipe the open draft
 - [09](../briefs/done/09-playwright-recovers.md) (Next, done 2026-10-27): Recover from a failed or crashed Chromium without a restart
 - [10](../briefs/done/10-vat-excluded-prices.md) (Next, done 2026-10-27): Mark "+ TVA" prices so €/m² compares like with like
+
+Filed after the sweep:
+
+- [11](../briefs/todo/11-research-firecrawl-and-ollama.md) (todo, filed 2026-10-27, not grilled): Research whether self-hosted Firecrawl with Ollama, or Ollama alone, makes finding and reading listings easier
