@@ -53,3 +53,11 @@ running Refresh survive a tab switch. Sources, the one page whose data changes b
 its last runs each time it opens and keeps unsaved edits (outside the brief's file list, see its
 outcome). The API refuses a second Refresh during a run with 409, and the page says so. Code
 23b71aa. Checks: api 109/109, web 55/55, tsc clean, vite build clean.
+
+## [2026-10-27] done | Brief 07: Show an error when the API is down, not an empty shortlist
+
+A shared `ApiErrorNotice` (role="alert" plus Retry) replaces a page's list when its load fails, so a
+stopped API reads "Can't reach the API: is it running?" instead of "Nothing saved yet"; the same
+notice covers a failed Sources Save, which keeps the edits. The list calls in `api.ts` now throw
+`ApiError`, so a proxy 502 is told apart from the API's own error. Code 95430d3. Checks: web 59/59,
+tsc -b and vite build clean.

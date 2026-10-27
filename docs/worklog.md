@@ -17,6 +17,7 @@ Built from `corpus/briefs/`, in number order; each brief's outcome note has the 
 - Brief 04: the Saved form's price reads "72000.00" and "85.500,00 EUR" as 72000 and 85500, accepts "euro", and refuses over 10,000,000 €.
 - Brief 05: stale rows come from each source's last run (`staleCutoffs`), so they stay dimmed after a reload; the Age cell's title has the last-seen time; a failed Refresh shows an alert.
 - Brief 06: the tab pages stay mounted (drafts, sort and a running Refresh survive a tab switch; Sources re-reads its last runs when opened); a second `POST /api/refresh` during a run gets 409.
+- Brief 07: with the API down, each page shows "Can't reach the API: is it running?" with Retry (`ApiErrorNotice`) instead of its empty state; a failed Sources Save says so and keeps the edits.
 
 ## Session 5 (2026-10-16) — Saved tab: paste a link, confirm, compare
 
