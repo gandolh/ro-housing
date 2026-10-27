@@ -85,6 +85,7 @@ The check is on `Origin`, not only on the missing CORS headers, because a plain 
 ### The tab pages stay mounted; one Refresh at a time
 Base UI unmounts a hidden tab panel by default, so leaving Saved threw away an open draft with its notes, and leaving Listings dropped the sort, the filter and the result of a running Refresh, then offered Refresh again. All three panels now use `keepMounted`. The cost is that a hidden page does not re-read the API when it comes back; only Sources needs to (its last-run lines change with every Refresh), so it re-reads them each time its tab opens and keeps rows with unsaved edits. Separately, `POST /api/refresh` answers 409 while a run is in progress, so two Refreshes never hit the sites in parallel, whatever the UI does.
 
+## What we'd revisit if usage proves us wrong
 
 - **Dedup**: if the same apartment appears 3+ times across sources every refresh, that noise might outweigh the false-positive risk. Add a "group by (rooms, m², ±5% price, fuzzy-neighborhood)" view as a toggle.
 - **Scheduler**: if the user actually wants meaningful price history and refresh-click density isn't enough, add an optional single daily cron — not a heavy scheduler.
