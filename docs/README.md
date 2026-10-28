@@ -12,6 +12,7 @@ Start with the [main README](../README.md). This folder holds what it links to, 
 | [design.md](design.md) | The terminal-style design system: palette, type scale, the shared UI components, anti-goals |
 | [testing.md](testing.md) | The Vitest setup in both packages, what each test file covers, how to add one |
 | [decisions.md](decisions.md) | Append-only log of design choices and their trade-offs. Read it before changing a rule |
+| [research-firecrawl-ollama.md](research-firecrawl-ollama.md) | Brief 11's research on self-hosted Firecrawl and Ollama for finding and reading listings. In progress: the Firecrawl source findings so far, no runs or recommendation yet |
 | [issues.md](issues.md) | How the in-app Report button writes files to `issues/`, and how Claude works through them |
 | [base-ui.txt](base-ui.txt) | Index of the Base UI component docs, for anyone adding a component to `web/src/components/ui/` |
 | [images/](images/shots.md) | The screenshots in the README, how each was made, and the demo seed |
