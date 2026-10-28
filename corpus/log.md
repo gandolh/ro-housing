@@ -106,3 +106,12 @@ Firecrawl lacks the hosted service's anti-bot engine, which the brief asks to co
 The owner answered the question brief 01 left open: yes, the API should check
 the `Host` header so a page rebinding its name to 127.0.0.1 is refused. Brief 12
 is to be written; its line is in [wiki/status.md](wiki/status.md).
+
+## [2026-10-28] done | Brief 12: Refuse requests whose Host is not this machine
+
+A second `onRequest` hook (`api/src/lib/host.ts`, before brief 01's Origin hook) answers 403 when
+`Host` is missing or its hostname is not `localhost`, `127.0.0.1`, `[::1]` or the `HOST` address,
+so a page rebinding its name to 127.0.0.1 is refused straight at port 3000. The port is not
+compared. Vite's proxy shorthand sets `changeOrigin`, so the app's own requests arrive as
+`127.0.0.1:<port>`. Code 4c25974. Checks: api 133/133, tsc clean, and a throwaway copy with a fresh
+database: rebound Host 403 by curl, and in Chrome the Listings and Saved tabs load and a save works.
