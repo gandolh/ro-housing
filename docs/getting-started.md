@@ -39,7 +39,7 @@ There is no `.env`. The API reads three environment variables:
 | Variable | Default | What it does |
 |---|---|---|
 | `PORT` | `3000` | Port the API listens on |
-| `HOST` | `127.0.0.1` | Address it binds to. Keep it local, since the API has no sign-in |
+| `HOST` | `127.0.0.1` | Address it binds to. Keep it local, since the API has no sign-in. The API answers only requests addressed to `localhost`, `127.0.0.1`, `[::1]` or this address (the `Host` header); any other name gets 403, so set a LAN address itself here, not `0.0.0.0` |
 | `WEB_ORIGINS` | `http://127.0.0.1:5173,http://localhost:5173` | The web app's origins. A request whose `Origin` header names any other site gets 403, so other pages open in the browser cannot use the API |
 
 The web app's proxy target is fixed at `http://127.0.0.1:3000` in [web/vite.config.ts](../web/vite.config.ts). If you change `PORT`, change it there too.
@@ -69,5 +69,6 @@ npx tsc --noEmit    # typecheck
 - **`ENOSPC: System limit for number of file watchers reached`** when starting Vite or `tsx watch`. On Linux every watched folder uses an inotify watch, shared by every program you run, and an editor that has a large folder open can use them all. Make the editor watch less, or raise `fs.inotify.max_user_watches`. In VS Code, add `node_modules`, `dist` and similar folders to `files.watcherExclude`. Without watchers, `npm start` runs the API and `npm run build && npx vite preview --port 5173` serves the web app.
 - **"Can't reach the API: is it running?"** in place of a list. The web app is up but the API is not, or it stopped. Start it in its terminal (`cd api && npm run dev`) and press Retry.
 - **`Port 5173 is in use, trying another one...`** Something else holds the port, often an earlier Vite. Vite moves to the next free port and prints it. Lists still load, but the API refuses Save, Refresh and Report from that origin with 403 ("requests from other websites are refused"). Free port 5173, or start the API with that origin allowed, such as `WEB_ORIGINS=http://127.0.0.1:5174 npm run dev`.
+- **`requests for other host names are refused`** (403) from the API. The request was addressed to a name other than `localhost`, `127.0.0.1` or `[::1]`, such as the computer's network name. That check stops DNS rebinding. Use one of those names, or start the API with `HOST` set to the address you use.
 - **imobiliare.ro gives nothing.** Since 2026-10-16 it answers plain requests with a Cloudflare block and headless Chromium with a CAPTCHA, so its search scraper fails and a pasted imobiliare link opens an empty form. The app does not try to get past either. Notes in [adapters.md](adapters.md).
 - **A site's column goes empty after a Refresh.** Its markup changed. [adapters.md](adapters.md) says how to fix a scraper.

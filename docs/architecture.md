@@ -94,7 +94,7 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 
 ## What lives where
 
-- `api/src/server.ts` — Fastify bootstrap, the guard that refuses other websites' origins (`lib/origin.ts`; there is no CORS), route registration.
+- `api/src/server.ts` — Fastify bootstrap, the guards that refuse a `Host` other than this machine (`lib/host.ts`, against DNS rebinding) and other websites' origins (`lib/origin.ts`; there is no CORS), route registration.
 - `api/src/db/` — schema, connection, typed query helpers, `migrate.ts` (columns added after the first release). No ORM.
 - `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`.
 - `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain fetch, Chromium fallback, bot-check detection), `extract.ts` (the four layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
