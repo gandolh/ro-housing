@@ -124,3 +124,16 @@ Fire-engine, so plain Playwright and fetch only; six services, two of them with 
 limits; `/search` uses SearXNG if set, else scrapes DuckDuckGo. No containers, models or site
 requests were run, so there are no scores and no recommendation. The brief stays in todo with a
 note on where it stopped.
+
+## [2026-10-28] paused | Brief 11: research Firecrawl and Ollama, second pass
+
+Resumed after brief 12 and paused again when the owner cut the run to three agents. c554454 adds
+to `docs/research-firecrawl-ollama.md` the Firecrawl run (2.0 to 2.9 GiB idle, 403 from
+imobiliare.ro, one call became up to seven requests, `/search` scraped DuckDuckGo into ten search
+pages, JSON extraction only via Ollama's OpenAI-compatible endpoint), scores on seven pages
+(extractor 67/70, `qwen2.5:3b` 67/70 with nothing invented, layered 69/70, Firecrawl +
+`qwen2.5:3b` 40/70 with a flat invented on the CAPTCHA page), the search comparison, the table and
+a provisional recommendation: no Firecrawl; two extractor rules and an "OK, 0" warning first; the
+owner to decide on imobiliare's RSS feed; a model only as an opt-in button. A laptop restart
+cleared `/tmp` midway, losing `llama3.2:3b`'s first answers. Still missing: `llama3.2:3b` and
+`qwen2.5:7b` scores. The brief stays in todo with a note.

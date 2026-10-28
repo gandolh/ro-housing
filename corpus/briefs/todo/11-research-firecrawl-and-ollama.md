@@ -85,3 +85,29 @@ started, no models pulled, no site requested. Left: the rest of step 2 (run Fire
 RAM, one slow try at imobiliare.ro) and steps 3 to 6 (model scores, search, the table, the
 recommendation). The findings page lists them. Resume by re-cloning Firecrawl at a tagged release
 into a scratch folder outside the repo; the clone used here was deleted.
+
+## Stopped again (2026-10-28, afternoon)
+
+Resumed and paused a second time when the owner cut the parallel run to three agents. Done, in
+c554454 (`docs/research-firecrawl-ollama.md`, still marked in progress):
+
+- Step 2: Firecrawl v2.11.0 ran in `/tmp/ro-run/` (prebuilt API image for the release commit, the
+  Playwright service and nuq-postgres built from the tag). Idle RAM 2.9 GiB as shipped, 2.0 GiB with
+  one queue worker; 3.3 GB of images. imobiliare.ro answered its Chromium with 403, and Firecrawl's
+  retries turned the one call into up to seven requests. JSON extraction reaches Ollama only through
+  Ollama's OpenAI-compatible endpoint (`llmExtract.ts` fixes the provider to "openai").
+- Step 3, part: the extractor and `qwen2.5:3b` scored on the five fixtures plus two full pages
+  (foxfort, and hitchmosher as a site the extractor has never seen): extractor 67/70, `qwen2.5:3b`
+  67/70 with nothing invented, the two layered 69/70, Firecrawl + `qwen2.5:3b` 40/70 with 7
+  invented on the CAPTCHA page.
+- Step 4: one `/search` query (DuckDuckGo) gave 10 search pages and no listing; Brave and Google
+  APIs checked; robots.txt read for five sites; imobiliare's RSS feed answers without a bot check.
+- Steps 5 and 6: the table and a provisional recommendation with proposals A to D.
+
+Missing: `llama3.2:3b` scores (its first run's answers were lost when the laptop restarted and
+cleared `/tmp`; the second run was stopped on its first page) and `qwen2.5:7b` scores (never run:
+too little free RAM while other builds ran; the model was deleted to stay under 6 GB and has to
+be pulled again). Timings on a quiet machine are missing too. `qwen2.5:3b` and `llama3.2:3b` are
+still pulled (3.9 GB). The scratch scripts in `/tmp/ro-run/scripts/` will not survive a restart;
+the findings page describes the input, prompt, schema and scoring well enough to rebuild them.
+Resume with "To finish" at the end of the findings page.
