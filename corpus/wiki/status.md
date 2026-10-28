@@ -1,5 +1,5 @@
 ---
-summary: One line per brief and where it stands; all ten briefs from the 2026-10-20 sweep were built on 2026-10-27; brief 11 (research Firecrawl and Ollama) is open; brief 12 (a Host check against DNS rebinding) is to be written, the owner said yes on 2026-10-28.
+summary: One line per brief and where it stands; all ten briefs from the 2026-10-20 sweep were built on 2026-10-27; brief 11 (research Firecrawl and Ollama) is open; brief 12 (a Host check against DNS rebinding, the owner's call of 2026-10-28) is in todo.
 updated: 2026-10-28
 ---
 
@@ -24,4 +24,4 @@ on 2026-10-27, one commit for the code and one for the record each; nothing is p
 Filed after the sweep:
 
 - [11](../briefs/todo/11-research-firecrawl-and-ollama.md) (todo, filed 2026-10-27, not grilled): Research whether self-hosted Firecrawl with Ollama, or Ollama alone, makes finding and reading listings easier
-- 12 (to write; the owner said yes on 2026-10-28): the API checks the `Host` header, so DNS rebinding straight at port 3000 is refused. Only `localhost` and `127.0.0.1` on the API's port are answered; anything else gets 403. Closes the gap brief 01 left open.
+- [12](../briefs/todo/12-host-check-against-dns-rebinding.md) (todo, filed 2026-10-28; the owner chose it): the API checks the `Host` header, so DNS rebinding straight at port 3000 is refused. Only the hostnames `localhost`, `127.0.0.1` and `[::1]` (plus `HOST` if set) are answered; anything else gets 403. Closes the gap brief 01 left open.
