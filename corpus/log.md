@@ -100,3 +100,9 @@ research brief: it splits the question into finding listings, reading one listin
 blocking sites, scores small models on this laptop's CPU (no GPU is visible to WSL) against the
 layered extractor, and ends in a recommendation. The CAPTCHA decision bounds it; self-hosted
 Firecrawl lacks the hosted service's anti-bot engine, which the brief asks to confirm.
+
+## [2026-10-28] decision | A Host check against DNS rebinding
+
+The owner answered the question brief 01 left open: yes, the API should check
+the `Host` header so a page rebinding its name to 127.0.0.1 is refused. Brief 12
+is to be written; its line is in [wiki/status.md](wiki/status.md).
