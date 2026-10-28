@@ -72,3 +72,16 @@ version, and the VPS (under 4 GiB of RAM) is not a candidate.
   read.
 - No listing data, search results or personal notes from the owner's database are copied into the
   repo; the fixtures already there are the test pages.
+
+## Stopped (2026-10-28)
+
+The owner paused the run partway through step 2. Done so far, in 982c5ef:
+`docs/research-firecrawl-ollama.md` (linked from docs/README.md, marked in progress) with what
+Firecrawl v2.11.0's `SELF_HOST.md`, `docker-compose.yaml` and source say: no Fire-engine
+self-hosted, so scrapes use plain Playwright or fetch; the compose services and their memory
+limits; `/search` falling back from SearXNG to scraping DuckDuckGo's HTML (the guide still says
+Google); and how `OLLAMA_BASE_URL` and `MODEL_NAME` are used. Nothing was run: no containers were
+started, no models pulled, no site requested. Left: the rest of step 2 (run Firecrawl, measure its
+RAM, one slow try at imobiliare.ro) and steps 3 to 6 (model scores, search, the table, the
+recommendation). The findings page lists them. Resume by re-cloning Firecrawl at a tagged release
+into a scratch folder outside the repo; the clone used here was deleted.

@@ -115,3 +115,12 @@ so a page rebinding its name to 127.0.0.1 is refused straight at port 3000. The 
 compared. Vite's proxy shorthand sets `changeOrigin`, so the app's own requests arrive as
 `127.0.0.1:<port>`. Code 4c25974. Checks: api 133/133, tsc clean, and a throwaway copy with a fresh
 database: rebound Host 403 by curl, and in Chrome the Listings and Saved tabs load and a save works.
+
+## [2026-10-28] paused | Brief 11: research Firecrawl and Ollama
+
+Started after brief 12 and paused by the owner during step 2. `docs/research-firecrawl-ollama.md`
+(982c5ef) holds what Firecrawl v2.11.0's guide and source say about the self-hosted build: no
+Fire-engine, so plain Playwright and fetch only; six services, two of them with 8 GB and 4 GB
+limits; `/search` uses SearXNG if set, else scrapes DuckDuckGo. No containers, models or site
+requests were run, so there are no scores and no recommendation. The brief stays in todo with a
+note on where it stopped.
