@@ -141,3 +141,5 @@ cleared `/tmp` midway, losing `llama3.2:3b`'s first answers. Still missing: `lla
 ## [2026-10-31] maintenance | README images retaken; the README names the "+ TVA" mark
 
 A README refresh pass with the readme-docs standard. The 2026-10-27 fixes changed the screens the desktop images show, so `hero.webp`, `saved.webp` and `sources.webp` were taken again from `docs/images/demo-seed.mjs` in a scratch clone. The two phone shots stay: one needs the staged scrape mock and the other a live bot check from imobiliare.ro, which the workspace cannot reach. The README now says a price quoted before VAT is marked "+ TVA". Checked: `npm install` and `npm run dev` in `api/` and `web/`; the API's install could not download Playwright's Chromium here (`cdn.playwright.dev` is blocked), which only scraping needs, and the API and the web app both started.
+
+The corpus also got the parts corpus-flow's bootstrap names that it lacked: `routing.md`, `lint.sh` (which also writes the wiki catalog into `index.md`) and `todos/`. Wiki pages beyond `status.md` were not added, since `docs/` keeps the knowledge here by the owner's choice; `CLAUDE.md` says so. `bash corpus/lint.sh` passes.
