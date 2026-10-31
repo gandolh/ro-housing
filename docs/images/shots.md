@@ -6,9 +6,9 @@ All of them come from a throwaway clone of the repo with both dev servers runnin
 
 | File | Shows | How to reach that state | Viewport | Taken |
 |---|---|---|---|---|
-| hero.webp | Listings with eleven listings and their price lines | Fresh seed, open the app | 1100×804 @2x, scaled to 1600 px wide | 2026-10-16 |
-| saved.webp | The Saved tab sorted by €/m² | Saved, empty the link box, Sort: €/m², low first; cropped to the tab with a 16 px margin | 1100×900 @2x, scaled to 1600 px | 2026-10-16 |
-| sources.webp | Sources, with imobiliare.ro failed | Sources; cropped to the tab with a 16 px margin | 1100×900 @2x, scaled to 1600 px | 2026-10-16 |
+| hero.webp | Listings with eleven listings and their price lines | Fresh seed, open the app | 1100×804 @2x, scaled to 1600 px wide | 2026-10-31 |
+| saved.webp | The Saved tab sorted by €/m² | Saved, empty the link box, Sort: €/m², low first; cropped to the tab with a 16 px margin | 1100×900 @2x, scaled to 1600 px | 2026-10-31 |
+| sources.webp | Sources, with imobiliare.ro failed | Sources; cropped to the tab with a 16 px margin | 1100×900 @2x, scaled to 1600 px | 2026-10-31 |
 | draft-phone.webp | A draft with one field edited | Saved, with `/api/saved/scrape` staged as in the next section; paste `https://www.exemplu.ro/oferta/apartament-2-camere-girocului`, Fetch details, set the price to `97.000`, type the note `Asked for 97.000 on the phone. Visit on Tuesday.`; cropped to the panel with a 12 px margin | 390×1200 @3x, scaled to 780 px | 2026-10-16 |
 | blocked-phone.webp | The bot-check notice and the empty form | Saved, no mock; paste `https://www.imobiliare.ro/oferta/apartament-de-vanzare-2-camere-timisoara-exemplu`, whose path is made up, and Fetch details; cropped from the panel's top to the price row | 390×1200 @3x, scaled to 780 px | 2026-10-16 |
 
@@ -39,6 +39,6 @@ The bot-check image is not staged: the clone's API really asked imobiliare.ro, g
 
 ## Capture method
 
-- Browser: `agent-browser --session rohousing-readme`. `set viewport 1100 804 2` for the hero and `1100 900 2` for the other desktop shots. Use `set viewport 390 1200 3` for the narrow ones. Stage the draft with `network route "**/api/saved/scrape" --body "<the JSON above>"` and remove it with `network unroute`. Move the pointer to a corner with `mouse move 1 1`, so no button shows its hover state.
+- Browser: on 2026-10-31 the three desktop shots were retaken with Playwright and Chrome at the same viewports, from a scratch clone whose `npm install` could not download Playwright's Chromium (the API still started; only scraping needs it). Earlier: `agent-browser --session rohousing-readme`. `set viewport 1100 804 2` for the hero and `1100 900 2` for the other desktop shots. Use `set viewport 390 1200 3` for the narrow ones. Stage the draft with `network route "**/api/saved/scrape" --body "<the JSON above>"` and remove it with `network unroute`. Move the pointer to a corner with `mouse move 1 1`, so no button shows its hover state.
 - Crops: `eval` returns the panel's box from `getBoundingClientRect()` on `[role=tabpanel]:not([hidden]) > div` or its first child. Take a viewport screenshot and crop it with ffmpeg's `-vf "crop=W:H:X:Y"`, each value multiplied by the pixel ratio, 2 or 3.
 - Stills: PNG to WebP with `ffmpeg -i in.png -vf scale=1600:-1:flags=lanczos -c:v libwebp -quality 82 out.webp`, with 780 instead of 1600 for the narrow ones.

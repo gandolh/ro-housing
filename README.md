@@ -10,7 +10,7 @@ A house-hunting tool for one person looking to buy a flat in Timișoara. It pull
 
 ## What it does
 
-- Collects listings from up to nine sites into one table you can sort by price, m² or date and filter by site, with €/m² worked out for every row.
+- Collects listings from up to nine sites into one table you can sort by price, m² or date and filter by site, with €/m² worked out for every row. A price quoted before VAT ("+ TVA") is marked as such, so €/m² compares like with like.
 - Keeps each listing's price history, one point per Refresh, drawn as a small line beside it.
 - Saves one listing from its link. The app reads price, rooms, m², floor, year built, area, partitioning and photo from the page into a form. Each field says "from page", "edited" or "not on page", and nothing is stored until you press Save. When a site shows a bot check instead of the ad, the form opens empty with the link kept.
 - Lines up the saved flats with your notes, sorted by price, €/m², m² or year built. You can edit any of them later. Deleting one takes two clicks.
