@@ -5,7 +5,7 @@
 **Review skill:** a general-purpose agent over the diff, plus `npm test` in `api/` and `web/`
 **PR skill:** propose git commands
 **Issue tracker:** none. The owner's feedback channel is `issues/`, see [docs/issues.md](../docs/issues.md)
-**Code host:** GitHub, gandolh/ro-housing
+**Code host:** GitHub, `<owner>/ro-housing`
 
 ## Intent routing
 | Signal | Intent | Route to |
