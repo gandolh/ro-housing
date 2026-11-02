@@ -26,7 +26,7 @@ This corpus is small on purpose: `docs/` plays the wiki's part.
 | "Why is it built this way?" | [docs/decisions.md](../docs/decisions.md) |
 | "How is it put together?" | [docs/architecture.md](../docs/architecture.md) |
 | "How does the scraper for site X work?" | [docs/adapters.md](../docs/adapters.md) |
-| "Where does brief N stand?" | [wiki/status.md](wiki/status.md) |
+| "Where does the work stand?" | [wiki/status.md](wiki/status.md) |
 | "Did I get every usage?" | `grep -rnw` |
 | Does a change break behaviour | `npm test` in `api/` and `web/`, see [docs/testing.md](../docs/testing.md) |
 

@@ -1,4 +1,4 @@
-# Task 11: Research Firecrawl and Ollama for finding listings
+# Task 01: Research Firecrawl and Ollama for finding listings
 
 **Research only, not grilled yet.** Filed 2026-10-27. The owner asked whether to self-host
 Firecrawl with Ollama, or Ollama alone, "so that it's easier to scrape and search online for

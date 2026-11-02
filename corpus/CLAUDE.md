@@ -16,7 +16,7 @@ corpus/
   log.md          chronological record, newest last, absolute dates
   todos/          captured ideas as prose, before they become briefs
   briefs/         numbered work specs: todo/ done/ superseded/
-  wiki/status.md  one line per brief
+  wiki/status.md  a dated snapshot per area
 ```
 
 ## Rules
@@ -28,7 +28,13 @@ corpus/
   `briefs/superseded/` with a one-line note on top.
 - Each finished brief gets a `log.md` entry, and anything durable it taught goes into `docs/`
   (decisions in [docs/decisions.md](../docs/decisions.md)).
-- `wiki/status.md` holds one line per brief; read it instead of opening every brief.
+- `wiki/status.md` holds a dated snapshot per area; read it instead of opening every brief.
+  Briefs run in number order.
+- Numbering restarted at 01 on 2026-11-02. The eleven done briefs before that were deleted (their
+  knowledge was already in `docs/`) and the open research brief became 01; the last commit holding
+  them is `9bd7f41` ([log.md](log.md), "Briefs reset").
+- Code comments don't cite brief numbers ("brief 05", "(brief 12)"). Say what the code does and
+  why; the history belongs in `log.md`.
 - The issues/ folder (see [docs/issues.md](../docs/issues.md)) stays the owner's feedback channel;
   briefs are the specs work is built from.
 - Absolute dates only. Commit corpus changes only when the owner asks.

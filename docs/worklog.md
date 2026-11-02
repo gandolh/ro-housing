@@ -6,9 +6,18 @@ Format: date + 2–6 lines per session. What got built, what's next, anything we
 
 ---
 
+## Session 7 (2026-10-28 – 2026-11-02) — Host check, research paused, briefs reset
+
+**Built:**
+- The API checks the `Host` header (`api/src/lib/host.ts`, before the `Origin` check): only `localhost`, `127.0.0.1`, `[::1]` and `HOST` if set are answered, anything else gets 403. DNS rebinding straight at port 3000, left open in session 6, is closed.
+
+**Paused:** the Firecrawl and Ollama research ([research-firecrawl-ollama.md](research-firecrawl-ollama.md)), twice on 2026-10-28; `llama3.2:3b` and `qwen2.5:7b` are not scored yet.
+
+**Corpus:** on 2026-11-02 the done briefs were deleted (their knowledge was already here) and numbering restarted at 01; the open research brief is now 01. The briefs named below are readable with `git show 9bd7f41:corpus/briefs/done/<file>`.
+
 ## Session 6 (2026-10-27) — the 2026-10-20 sweep's briefs, one at a time
 
-Built from `corpus/briefs/`, in number order; each brief's outcome note has the details.
+Built from `corpus/briefs/`, in number order; each brief's outcome note had the details.
 
 **Built:**
 - Brief 01: no CORS; the API answers 403 to any request whose `Origin` is another site's (`api/src/lib/origin.ts`, `WEB_ORIGINS`).

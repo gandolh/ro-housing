@@ -5,7 +5,7 @@ three agents because five overloaded the laptop. Done: the Firecrawl run, the im
 the search check, and the scores of the extractor, of `qwen2.5:3b` and of Firecrawl with
 `qwen2.5:3b`. Missing: the scores of `llama3.2:3b` (stopped on its first page) and `qwen2.5:7b` (not
 started), and timings on a quiet machine. The recommendation below is provisional until those are
-in; [brief 11](../corpus/briefs/todo/11-research-firecrawl-and-ollama.md) stays in todo.
+in; [brief 01](../corpus/briefs/todo/01-research-firecrawl-and-ollama.md) stays in todo (numbered 11 until the 2026-11-02 reset).
 
 The question, from the owner on 2026-10-27: should the app self-host Firecrawl with Ollama, or
 Ollama alone, "so that it's easier to scrape and search online for housing offers"? It splits into

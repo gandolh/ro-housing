@@ -95,7 +95,7 @@ their outcomes. Open question for the owner: DNS rebinding straight at port 3000
 ## [2026-10-27] todo | Brief 11 filed: research Firecrawl and Ollama
 
 The owner asked whether to self-host Firecrawl with Ollama, or only Ollama, to make scraping and
-searching for listings easier. [Brief 11](briefs/todo/11-research-firecrawl-and-ollama.md) is a
+searching for listings easier. Brief 11 is a
 research brief: it splits the question into finding listings, reading one listing and getting past
 blocking sites, scores small models on this laptop's CPU (no GPU is visible to WSL) against the
 layered extractor, and ends in a recommendation. The CAPTCHA decision bounds it; self-hosted
@@ -143,3 +143,16 @@ cleared `/tmp` midway, losing `llama3.2:3b`'s first answers. Still missing: `lla
 A README refresh pass with the readme-docs standard. The 2026-10-27 fixes changed the screens the desktop images show, so `hero.webp`, `saved.webp` and `sources.webp` were taken again from `docs/images/demo-seed.mjs` in a scratch clone. The two phone shots stay: one needs the staged scrape mock and the other a live bot check from imobiliare.ro, which the workspace cannot reach. The README now says a price quoted before VAT is marked "+ TVA". Checked: `npm install` and `npm run dev` in `api/` and `web/`; the API's install could not download Playwright's Chromium here (`cdn.playwright.dev` is blocked), which only scraping needs, and the API and the web app both started.
 
 The corpus also got the parts corpus-flow's bootstrap names that it lacked: `routing.md`, `lint.sh` (which also writes the wiki catalog into `index.md`) and `todos/`. Wiki pages beyond `status.md` were not added, since `docs/` keeps the knowledge here by the owner's choice; `CLAUDE.md` says so. `bash corpus/lint.sh` passes.
+
+## [2026-11-02] maintenance | Briefs reset
+
+Part of an estate-wide reset. The eleven done briefs are deleted; their knowledge was already in
+`docs/` (decisions, architecture, adapters, testing, the worklog). Brief numbering restarts at
+01, and the open research brief 11 is now
+[01](briefs/todo/01-research-firecrawl-and-ollama.md). The old briefs read like the grilling that
+fed the first corpus. The last commit that held them is `9bd7f41`: read one with
+`git show 9bd7f41:corpus/briefs/done/02-adapter-price-token.md`. Brief numbers in the entries above
+refer to that set. [wiki/status.md](wiki/status.md) is a per-area snapshot instead of one line per
+brief, and `docs/worklog.md` gained a session for 2026-10-28 to 2026-11-02 (the Host check, the
+research paused, this reset). Code comments no longer cite brief numbers.
+
