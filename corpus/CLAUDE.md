@@ -42,3 +42,8 @@ corpus/
 A routing table, a lint script and `todos/` were added on 2026-10-31. Wiki pages beyond `status.md` can be
 added if the project grows into them; until then `docs/` keeps the knowledge. Run `bash corpus/lint.sh`
 before committing corpus changes.
+
+## brief-board
+
+Brief progress goes on brief-board. Run `brief-board guide` before you
+start or resume a brief, and follow it.
