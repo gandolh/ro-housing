@@ -22,7 +22,8 @@ corpus/
 ## Rules
 
 - A brief is `briefs/todo/<NN>-<slug>.md`: Context, Files you OWN, What to do, Acceptance. NN is
-  the highest number across `todo/`, `done/` and `superseded/` plus one, two digits.
+  the highest number the repo has ever used plus one, two digits. That includes the numbers in
+  [log.md](log.md) from before the 2026-11-02 reset, which went up to 12.
 - Numbers never change. Finished work moves to `briefs/done/` with the same number and a short
   outcome note added at move time; after that the file is not edited. Work undone later moves to
   `briefs/superseded/` with a one-line note on top.
@@ -32,7 +33,8 @@ corpus/
   Briefs run in number order.
 - Numbering restarted at 01 on 2026-11-02. The eleven done briefs before that were deleted (their
   knowledge was already in `docs/`) and the open research brief became 01; the last commit holding
-  them is `9bd7f41` ([log.md](log.md), "Briefs reset").
+  them is `9bd7f41` ([log.md](log.md), "Briefs reset"). Since 2026-11-04 numbering never restarts:
+  the briefs filed that day start at 13, after the old 12, so no number means two briefs.
 - Code comments don't cite brief numbers ("brief 05", "(brief 12)"). Say what the code does and
   why; the history belongs in `log.md`.
 - The issues/ folder (see [docs/issues.md](../docs/issues.md)) stays the owner's feedback channel;

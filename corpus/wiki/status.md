@@ -1,9 +1,9 @@
 ---
-summary: Where ro-housing's work stands on 2026-11-02, per area. The 2026-10-20 sweep's fixes (API locked to the app, price reading, staleness, tabs kept mounted, API-down errors, draft re-fetch, Chromium recovery, +TVA prices) built 2026-10-27 and the Host check 2026-10-28; one open brief, 01, the Firecrawl and Ollama research, paused with a provisional recommendation.
-updated: 2026-11-02
+summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; the 2026-11-04 grill closed the Firecrawl and Ollama research (01) and filed briefs 13 to 18 (a hitchmosher note, two extractor rules, an empty-Refresh warning, imobiliare's RSS feed, getting ready for the VPS, and Wicket's "Fill the gaps", which waits).
+updated: 2026-11-04
 ---
 
-# Status: 2026-11-02
+# Status: 2026-11-04
 
 Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-11-02 (see
 [log.md](../log.md)); project knowledge is in [docs/](../../docs/README.md), the session record in
@@ -25,11 +25,23 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 
 ## Open
 
-- [01](../briefs/todo/01-research-firecrawl-and-ollama.md), research whether self-hosted Firecrawl
-  with Ollama, or Ollama alone, makes finding and reading listings easier (filed 2026-10-27, not
-  grilled). Paused twice on 2026-10-28;
-  [docs/research-firecrawl-ollama.md](../../docs/research-firecrawl-ollama.md) has the Firecrawl
-  run, the search check, scores for the extractor and `qwen2.5:3b`, and a provisional
-  recommendation: no Firecrawl, two extractor rules and an "OK, 0" warning first, a model only as
-  an opt-in button. `llama3.2:3b` and `qwen2.5:7b` are not scored yet.
+Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
+12, see [CLAUDE.md](../CLAUDE.md)):
+
+- [01](../briefs/todo/01-research-firecrawl-and-ollama.md), the Firecrawl and Ollama research: to be
+  closed as done. Firecrawl is not built (too heavy for this setup); the two model scores still
+  missing are dropped.
+- [13](../briefs/todo/13-hitchmosher-stale-search-url-note.md), note that hitchmosher.ro's default
+  search URL is stale; the source stays off.
+- [14](../briefs/todo/14-extractor-price-and-zone-rules.md), two extractor rules: a price outside a
+  "Preț" label (JSON-LD offers, a bare price line under the title) and a zone that stays on one line.
+- [15](../briefs/todo/15-empty-refresh-warning.md), a source whose Refresh returns 0 listings gets a
+  warning and doesn't dim its listings.
+- [16](../briefs/todo/16-imobiliare-rss-feed.md), new Timișoara flats from imobiliare.ro's RSS feed,
+  title and link only.
+- [17](../briefs/todo/17-ready-for-the-vps.md), ready for the VPS: Sign in with Ward and a seeded
+  account, `/ro-housing` and `/ro-housing-api`, port 8809, a capped container with Chromium. No
+  deploy.
+- [18](../briefs/todo/18-fill-the-gaps-with-wicket.md), "Fill the gaps" through Wicket on the Saved
+  draft. Written only: it waits for Wicket, which is being built.
 - imobiliare's own price element, once its bot check lifts.

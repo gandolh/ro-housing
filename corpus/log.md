@@ -156,3 +156,14 @@ refer to that set. [wiki/status.md](wiki/status.md) is a per-area snapshot inste
 brief, and `docs/worklog.md` gained a session for 2026-10-28 to 2026-11-02 (the Host check, the
 research paused, this reset). Code comments no longer cite brief numbers.
 
+
+## [2026-11-04] todo | Briefs 13-18 filed from the owner's grill
+
+The owner settled the open work in a grill on 2026-11-04 (and said yes to imobiliare's RSS feed
+on 2026-10-28). Research brief 01 closes: Firecrawl is not built, the two missing model scores are
+dropped. Six briefs, numbered in build order and after the old 12, since numbering never restarts
+now ([CLAUDE.md](CLAUDE.md)): 13 a note that hitchmosher.ro's search URL is stale (the source stays
+off), 14 two extractor rules (proposal A), 15 a warning for a Refresh that returns 0 (proposal B),
+16 imobiliare's RSS feed, title and link only (proposal C), 17 ready for the VPS (sign-in like
+brief-board, `/ro-housing` and `/ro-housing-api`, port 8809, a capped container; no deploy), and 18
+"Fill the gaps" through Wicket (proposal D), written but not to be built until Wicket exists.
