@@ -17,6 +17,9 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 - **Prices** (2026-10-27). Every adapter reads the price with `extractPriceEur()`, skipping the
   floor number, "Preț vechi" and discounts; the Saved form reads decimals; "+ TVA" prices carry a
   flag and a "+TVA" mark ([docs/adapters.md](../../docs/adapters.md)).
+- **Single listing pages** (2026-11-04). The extractor reads a price from JSON-LD offers and from a
+  bare line under the title, and keeps a zone on its line
+  ([14](../briefs/done/14-extractor-price-and-zone-rules.md)).
 - **Listings and staleness** (2026-10-27). Stale rows come from each source's last run; a failed
   Refresh says so; a second Refresh during a run gets 409.
 - **Web app resilience** (2026-10-27). Tab pages stay mounted; with the API down each page shows
@@ -33,8 +36,6 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [14](../briefs/todo/14-extractor-price-and-zone-rules.md), two extractor rules: a price outside a
-  "Preț" label (JSON-LD offers, a bare price line under the title) and a zone that stays on one line.
 - [15](../briefs/todo/15-empty-refresh-warning.md), a source whose Refresh returns 0 listings gets a
   warning and doesn't dim its listings.
 - [16](../briefs/todo/16-imobiliare-rss-feed.md), new Timișoara flats from imobiliare.ro's RSS feed,

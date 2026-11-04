@@ -31,7 +31,7 @@ The screens show made-up listings and apartments from [demo-seed.mjs](docs/image
 
 ## How it works
 
-Two npm packages. `api/` is a Fastify server on SQLite. For Refresh it runs one scraper per site in turn: cheerio on plain HTML, or a headless Chromium driven by Playwright when a site needs a real browser. For a single link it fetches the page, tries the browser if the plain request is refused, and reads the fields with one site-independent extractor: storia's embedded JSON, then Romanian label/value pairs such as "Nr. camere: 3", then the page's Open Graph tags, then phrases like "etajul 3 din 4". `web/` is a React app built with Vite, Tailwind and Base UI. It proxies `/api` to the server.
+Two npm packages. `api/` is a Fastify server on SQLite. For Refresh it runs one scraper per site in turn: cheerio on plain HTML, or a headless Chromium driven by Playwright when a site needs a real browser. For a single link it fetches the page, tries the browser if the plain request is refused, and reads the fields with one site-independent extractor: storia's embedded JSON, then a price in the page's JSON-LD, then Romanian label/value pairs such as "Nr. camere: 3", then the page's Open Graph tags, then phrases like "etajul 3 din 4". `web/` is a React app built with Vite, Tailwind and Base UI. It proxies `/api` to the server.
 
 ```mermaid
 flowchart LR

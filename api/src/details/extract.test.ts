@@ -121,6 +121,94 @@ describe('extractDetails on real page shapes', () => {
     expect(extractDetails(page('Etaj: 2'), 'https://agentie.ro/oferta/1').fields.pricePlusVat).toBeNull();
   });
 
+  it('hitchmosher: the price from JSON-LD offers, the zone without the next line', () => {
+    const r = extractDetails(
+      fixture('hitchmosher.html'),
+      'https://www.hitchmosher.ro/ro/proprietate/EXAMPLE',
+    );
+    expect(r.fields).toEqual({
+      title: 'Apartament 3 camere, zona Lidia',
+      priceEur: 145000,
+      pricePlusVat: false,
+      rooms: 3,
+      sqm: 76,
+      floor: 2,
+      // "imobil cu 4 niveluri" has no rule: what "niveluri" counts is the user's call.
+      floorsTotal: null,
+      yearBuilt: 2008,
+      location: 'Lidia',
+      partitioning: 'decomandat',
+      imageUrl: 'https://www.hitchmosher.ro/uploads/EXAMPLE.jpg',
+    });
+    expect(r.sources.priceEur).toBe('jsonld');
+  });
+
+  it('JSON-LD: reads offers in an array or an @graph, EUR only, never the agency', () => {
+    const page = (ld: unknown) =>
+      `<html><head><script type="application/ld+json">${JSON.stringify(ld)}</script></head><body><h1>Apartament</h1></body></html>`;
+    const read = (ld: unknown) => extractDetails(page(ld), 'https://agentie.ro/oferta/1').fields.priceEur;
+
+    expect(read({ '@type': 'Residence', offers: [{ price: 98000, priceCurrency: 'EUR' }] })).toBe(98000);
+    expect(read({ '@graph': [{ '@type': 'Organization', name: 'x' }, { '@type': ['Product'], offers: { price: '98.000', priceCurrency: 'eur' } }] })).toBe(98000);
+    expect(read([{ '@type': 'Offer', price: '98000', priceCurrency: 'EUR' }])).toBe(98000);
+    expect(read({ '@type': 'Product', offers: { price: 450000, priceCurrency: 'RON' } })).toBeNull();
+    expect(read({ '@type': 'Organization', offers: { price: 98000, priceCurrency: 'EUR' } })).toBeNull();
+    expect(read({ '@type': 'Product', offers: { price: 1, priceCurrency: 'EUR' } })).toBeNull();
+    expect(extractDetails('<html><head><script type="application/ld+json">{not json</script></head><body></body></html>', 'https://agentie.ro/oferta/1').fields.priceEur).toBeNull();
+  });
+
+  it('the labels still beat the price under the title, and keep their VAT mark next to JSON-LD', () => {
+    const r = extractDetails(fixture('foxfort.html'), 'https://foxfort.ro/oferta-p7577');
+    expect(r.sources.priceEur).toBe('labels');
+    const vat = extractDetails(
+      '<html><head><script type="application/ld+json">{"@type":"Product","offers":{"price":92033,"priceCurrency":"EUR"}}</script></head><body><p>Pret: 92.033 € + TVA</p></body></html>',
+      'https://agentie.ro/oferta/1',
+    );
+    expect(vat.fields).toMatchObject({ priceEur: 92033, pricePlusVat: true });
+    expect(vat.sources.priceEur).toBe('jsonld');
+  });
+
+  it('takes a bare price line just under the title when nothing else gave a price', () => {
+    const page = (between: string, price: string) =>
+      `<html><body><h1>Apartament 2 camere</h1>${between}<div>${price}</div><p>Descriere</p></body></html>`;
+    const read = (between: string, price: string) =>
+      extractDetails(page(between, price), 'https://agentie.ro/oferta/1').fields;
+
+    expect(read('', '145.000 Eur')).toMatchObject({ priceEur: 145000, pricePlusVat: false });
+    expect(read('', '€ 98 500')).toMatchObject({ priceEur: 98500 });
+    expect(read('', '92.033 € + TVA')).toMatchObject({ priceEur: 92033, pricePlusVat: true });
+    expect(read('<p>Timisoara</p><p>Lipovei</p>', '120000 euro').priceEur).toBe(120000);
+    // Not a bare price: a sentence, a €/m² figure, no currency, out of range.
+    expect(read('', 'Avans minim 45.000 Eur').priceEur).toBeNull();
+    expect(read('', '1.800 €/mp').priceEur).toBeNull();
+    expect(read('', '145.000').priceEur).toBeNull();
+    expect(read('', '2.000 €').priceEur).toBeNull();
+  });
+
+  it('ignores a bare price far below the title, or on a page with no <h1>', () => {
+    const filler = Array.from({ length: 6 }, (_, i) => `<p>Linia ${i}</p>`).join('');
+    const far = extractDetails(
+      `<html><body><h1>Apartament</h1>${filler}<span>98.000 Eur</span></body></html>`,
+      'https://agentie.ro/oferta/1',
+    );
+    expect(far.fields.priceEur).toBeNull();
+    const noTitle = extractDetails('<html><body><div>98.000 Eur</div></body></html>', 'https://agentie.ro/oferta/1');
+    expect(noTitle.fields.priceEur).toBeNull();
+  });
+
+  it('keeps a zone named at the end of a line on that line', () => {
+    const r = extractDetails(
+      '<html><head><meta property="og:title" content="Garsoniera de vanzare, zona Soarelui"></head><body><p>Bloc nou in zona Complexul Studentesc</p><p>Apartament luminos</p></body></html>',
+      'https://agentie.ro/oferta/1',
+    );
+    expect(r.fields.location).toBe('Soarelui');
+    const prose = extractDetails(
+      '<html><head><title>Garsoniera</title></head><body><p>Situata in zona Iosefin</p><p>Apartament renovat</p></body></html>',
+      'https://agentie.ro/oferta/1',
+    );
+    expect(prose.fields.location).toBe('Iosefin');
+  });
+
   it('drops values outside sane ranges', () => {
     const html =
       '<html><body><p>Pret: 50 €</p><p>An constructie: 2999</p><p>Etaj: 9/4</p></body></html>';

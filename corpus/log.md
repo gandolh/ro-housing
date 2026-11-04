@@ -182,3 +182,12 @@ Check: `bash corpus/lint.sh`.
 `docs/adapters.md` says the hitchmosher.ro source is off by the owner's choice and its default
 URL (`/en/apartments/for-sale`) has had no listing links in its HTML since 2026-10-28, and what
 reviving it would take. Docs only. Check: `bash corpus/lint.sh`.
+
+## [2026-11-04] done | Brief 14: two extractor rules, a price outside a "Preț" label and a zone on one line
+
+The single-listing reader gains a JSON-LD layer for the price (`offers.price` in euro, below
+storia, above the labels) and a bare price line within five lines under the `<h1>`, and its zone
+match no longer crosses a line break. The hitchmosher fixture is hand-built from the research's
+description: no listing page could be reached without a browser (three requests, then stopped).
+Also keeps a label's "+ TVA" mark when JSON-LD gives the same amount. Checks: api tsc clean,
+vitest 139/139.

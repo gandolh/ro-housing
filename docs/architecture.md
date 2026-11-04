@@ -50,9 +50,10 @@ POST /api/saved/scrape { url }
 fetchListingPage: plain fetch → on 401/403/429/503 or a bot-check page, headless Chromium
         │  still a bot check → problem { kind: 'blocked' }, empty draft
         ▼
-extractDetails(html, url): four layers, first value per field wins
-   1. storia's __NEXT_DATA__ JSON   2. label/value lines ("Nr. camere:" + "3")
-   3. Open Graph (title, image)     4. phrases in title and prose ("etajul 3 din 3")
+extractDetails(html, url): five layers, first value per field wins
+   1. storia's __NEXT_DATA__ JSON   2. JSON-LD offers (the price only)
+   3. label/value lines ("Nr. camere:" + "3")   4. Open Graph (title, image)
+   5. phrases in title and prose ("etajul 3 din 3"), a bare price under the <h1>
         │
         ▼
 Respond { draft, found, via, problem }   (nothing written to the DB)
@@ -97,7 +98,7 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 - `api/src/server.ts` — Fastify bootstrap, the guards that refuse a `Host` other than this machine (`lib/host.ts`, against DNS rebinding) and other websites' origins (`lib/origin.ts`; there is no CORS), route registration.
 - `api/src/db/` — schema, connection, typed query helpers, `migrate.ts` (columns added after the first release). No ORM.
 - `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`.
-- `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain fetch, Chromium fallback, bot-check detection), `extract.ts` (the four layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
+- `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain fetch, Chromium fallback, bot-check detection), `extract.ts` (the five layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
 - `api/src/lib/` — shared infrastructure: `fetch.ts` (cookie-aware HTTP), `playwright.ts` (browser singleton), `normalize.ts` (Romanian price/rooms/m² parsers).
 - `api/src/routes/` — route handlers. Thin; business logic lives in adapters and db.
 - `web/src/pages/` — `ListingsPage` (the unified table), `SavedPage` (add by link, the draft, the saved table, the edit dialog) and `SourcesPage` (per-source URL + enable toggle).

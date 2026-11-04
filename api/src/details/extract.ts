@@ -49,7 +49,7 @@ export const DETAIL_FIELDS: DetailField[] = [
 ];
 
 /** Where a field came from, kept in raw_json so a wrong value can be traced. */
-export type Layer = 'storia' | 'labels' | 'meta' | 'text';
+export type Layer = 'storia' | 'jsonld' | 'labels' | 'meta' | 'text';
 
 export interface Extraction {
   fields: DetailFields;
@@ -240,6 +240,71 @@ function fromNextData(
 }
 
 // ---------------------------------------------------------------------------
+// Layer 1b: the price from JSON-LD offers. Most agency sites' JSON-LD only
+// describes the agency, which gives nothing here; some put the listing in it
+// as a Product or a Residence with `offers.price`. Only the price is read.
+
+/** The schema.org types a listing's own JSON-LD uses. `Organization`,
+ *  `RealEstateAgent` and `WebSite` are the agency, not the flat. */
+const LISTING_TYPES = new Set([
+  'product',
+  'offer',
+  'residence',
+  'apartment',
+  'singlefamilyresidence',
+  'house',
+  'accommodation',
+  'realestatelisting',
+]);
+
+/** An asking price a flat for sale can have: the card readers' range. */
+function plausiblePrice(n: number | undefined): number | undefined {
+  return n !== undefined && n >= 5_000 && n <= 5_000_000 ? Math.round(n) : undefined;
+}
+
+function hasListingType(item: Record<string, unknown>): boolean {
+  const types = Array.isArray(item['@type']) ? item['@type'] : [item['@type']];
+  return types.some((t) => typeof t === 'string' && LISTING_TYPES.has(t.toLowerCase()));
+}
+
+function offerPriceEur(offer: Record<string, unknown> | undefined): number | undefined {
+  if (!offer) return undefined;
+  const currency = str(offer.priceCurrency);
+  if (!currency || currency.toUpperCase() !== 'EUR') return undefined;
+  // A string goes through the Romanian reader, so "98.000" is 98000, not 98.
+  const price = offer.price;
+  const n = typeof price === 'string' ? parsePriceEur(`${price} EUR`) : num(price);
+  return plausiblePrice(n);
+}
+
+function jsonLdItems(data: unknown): Record<string, unknown>[] {
+  if (Array.isArray(data)) return data.flatMap(jsonLdItems);
+  const item = record(data);
+  if (!item) return [];
+  const graph = Array.isArray(item['@graph']) ? jsonLdItems(item['@graph']) : [];
+  return [item, ...graph];
+}
+
+function fromJsonLd($: cheerio.CheerioAPI): Found {
+  for (const el of $('script[type="application/ld+json"]').toArray()) {
+    let data: unknown;
+    try {
+      data = JSON.parse($(el).text());
+    } catch {
+      continue;
+    }
+    for (const item of jsonLdItems(data)) {
+      if (!hasListingType(item)) continue;
+      const priceEur =
+        offerPriceEur(record(first(item.offers))) ??
+        (String(item['@type']).toLowerCase() === 'offer' ? offerPriceEur(item) : undefined);
+      if (priceEur !== undefined) return { priceEur };
+    }
+  }
+  return {};
+}
+
+// ---------------------------------------------------------------------------
 // Layer 2: label/value pairs in the page text. Agency sites render a details
 // block as "Nr. camere:" + "<span>3</span>", "Pret" + "102,000 EUR", or
 // "Etaj: Etaj 1". Each text node becomes one line; a label line takes its
@@ -290,14 +355,18 @@ const LABEL_RULES: LabelRule[] = [
 
 const MAX_LABEL_LINE = 60;
 
-function textLines($: cheerio.CheerioAPI): string[] {
+/** The page's visible text, one text node per line, and the index of the
+ *  first line after the first `<h1>` (undefined when the page has none). */
+function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?: number } {
   $('script, style, noscript, svg, template, iframe, select, nav, footer').remove();
   const lines: string[] = [];
+  let afterTitle: number | undefined;
   interface WalkNode {
     type: string;
     data?: string;
     children?: WalkNode[];
   }
+  const h1 = $('h1').get(0) as unknown as WalkNode | undefined;
   const walk = (node: WalkNode): void => {
     if (node.type === 'text') {
       const t = cleanText(node.data);
@@ -305,10 +374,11 @@ function textLines($: cheerio.CheerioAPI): string[] {
       return;
     }
     for (const child of node.children ?? []) walk(child);
+    if (node === h1 && afterTitle === undefined) afterTitle = lines.length;
   };
   const body = $('body').get(0) ?? $.root().get(0);
   if (body) walk(body as unknown as WalkNode);
-  return lines;
+  return { lines, afterTitle };
 }
 
 function fromLabels(lines: string[]): Found {
@@ -391,6 +461,31 @@ function metaDescription($: cheerio.CheerioAPI): string | undefined {
 // Layer 4: phrases in the title and the prose. "2 camere" in a title, "zona
 // Freidorf", "situat la etajul 3 din 3", "bloc din 1980", "imobil cu 10 etaje".
 
+/** How many lines under the page's `<h1>` a bare price may stand. */
+const TITLE_PRICE_WINDOW = 5;
+
+// A line that is nothing but a euro price: "145.000 Eur", "145 000 €",
+// "€ 145.000", "92.033 € + TVA". Matched on the folded line.
+const BARE_PRICE_LINE =
+  /^(?:(?:€|eur|euro)\s*)?(?:\d{1,3}(?:[., ]\d{3})+|\d{4,7})(?:,\d{2})?(?:\s*(?:€|eur|euro))?(?:\s*\(?\+\s*tva\)?|\s+fara\s+tva)?$/;
+
+/** A price standing alone on a line just under the title, as some agency
+ *  sites show it with no "Preț" label. Only that window: a "similar listings"
+ *  block lower down is full of bare prices of other flats. */
+export function priceUnderTitle(
+  lines: string[],
+  afterTitle: number | undefined,
+): Found {
+  if (afterTitle === undefined) return {};
+  for (const line of lines.slice(afterTitle, afterTitle + TITLE_PRICE_WINDOW)) {
+    const folded = fold(line).trim();
+    if (!BARE_PRICE_LINE.test(folded) || !/€|eur/.test(folded)) continue;
+    const priceEur = plausiblePrice(parsePriceEur(line));
+    if (priceEur !== undefined) return { priceEur, pricePlusVat: isPlusVat(line) };
+  }
+  return {};
+}
+
 function fromText(title: string | undefined, prose: string): Found {
   const t = fold(title ?? '');
   const p = fold(prose);
@@ -399,8 +494,10 @@ function fromText(title: string | undefined, prose: string): Found {
   out.rooms = parseRooms(t) ?? (/garsonier/.test(t) ? 1 : undefined);
   out.partitioning = parsePartitioning(t) ?? parsePartitioning(p);
 
+  // Spaces and tabs only, never a line break: "zona Lidia" at the end of one
+  // line must not take the next line's first word as part of the name.
   const zone = `${title ?? ''}\n${prose}`.match(
-    /\bzon[aă]\s+([\p{Lu}][\p{L}-]+(?:\s+[\p{Lu}][\p{L}-]+)?)/u,
+    /\bzon[aă][ \t]+([\p{Lu}][\p{L}-]+(?:[ \t]+[\p{Lu}][\p{L}-]+)?)/u,
   );
   out.location = zone?.[1];
 
@@ -470,15 +567,18 @@ export function extractDetails(html: string, pageUrl: string): Extraction {
   const storia = fromNextData($);
   const metaFields = fromMeta($, pageUrl);
   const description = storia?.description ?? metaDescription($);
-  const lines = textLines($);
+  // Before textLines, which removes the scripts.
+  const jsonLd = fromJsonLd($);
+  const { lines, afterTitle } = textLines($);
   const title = storia?.fields.title ?? metaFields.title ?? undefined;
   const prose = [description ?? '', ...lines].join('\n');
 
   const layers: [Layer, Found][] = [
     ...(storia ? ([['storia', storia.fields]] as [Layer, Found][]) : []),
+    ['jsonld', jsonLd],
     ['labels', fromLabels(lines)],
     ['meta', metaFields],
-    ['text', fromText(title, prose)],
+    ['text', { ...priceUnderTitle(lines, afterTitle), ...fromText(title, prose) }],
   ];
 
   const merged = Object.fromEntries(DETAIL_FIELDS.map((k) => [k, null])) as unknown as DetailFields;
@@ -492,9 +592,15 @@ export function extractDetails(html: string, pageUrl: string): Extraction {
       }
     }
   }
-  // The VAT mark goes with the price: from the layer that gave it.
-  merged.pricePlusVat =
-    layers.find(([layer]) => layer === sources.priceEur)?.[1].pricePlusVat ?? null;
+  // The VAT mark goes with the price: from the layer that gave it, or from
+  // any other layer that read the same amount and saw "+ TVA" beside it
+  // (JSON-LD carries no VAT mark; the label next to the same price may).
+  const samePrice = layers.filter(
+    ([, found]) => merged.priceEur != null && found.priceEur === merged.priceEur,
+  );
+  merged.pricePlusVat = samePrice.some(([, found]) => found.pricePlusVat === true)
+    ? true
+    : (layers.find(([layer]) => layer === sources.priceEur)?.[1].pricePlusVat ?? null);
 
   const fields = sane(merged);
   const found = DETAIL_FIELDS.filter((k) => fields[k] !== null);

@@ -68,3 +68,24 @@ counts and stays with the user, as the draft already does.
 - The hitchmosher fixture reads price 145000 (or the fixture's own price) and a zone with no line
   break in it.
 - `docs/adapters.md` names the JSON-LD layer and the bare-price rule.
+
+## Outcome (2026-11-04)
+
+Built in `api/src/details/extract.ts`:
+
+- A `jsonld` layer between storia and the labels reads `offers.price` in euro from a listing-typed
+  item (also in arrays and `@graph`), 5,000 to 5,000,000 €, a string read the Romanian way. The
+  agency's JSON-LD gives nothing.
+- The phrase layer takes a bare price line from the five lines after the `<h1>` when no layer
+  above gave a price.
+- The zone regex's two gaps are `[ \t]+`.
+- One change beyond the list: the "+ TVA" mark is kept when JSON-LD gives the price and a label
+  read the same amount with "+ TVA" (JSON-LD has no VAT mark of its own).
+
+The fixture is **hand-built**, not a fetched page: no hitchmosher.ro listing link could be found
+without a browser on 2026-11-04 (robots.txt names no sitemap, `/sitemap.xml` is 404, the home
+page has no listing links in its HTML; three requests, then stopped). It reproduces the research's
+two misses on the old code (no price; "Lidia\nApartament") and reads 145000 from JSON-LD and
+"Lidia" on the new one. Six new tests; the five old fixtures keep their answers. Docs:
+adapters.md (the layers), architecture.md, testing.md, the README's extractor sentence. Checks:
+api `tsc --noEmit` clean, `vitest run` 139/139 (133 before).
