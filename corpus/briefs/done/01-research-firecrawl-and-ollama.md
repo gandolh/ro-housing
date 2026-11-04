@@ -111,3 +111,13 @@ be pulled again). Timings on a quiet machine are missing too. `qwen2.5:3b` and `
 still pulled (3.9 GB). The scratch scripts in `/tmp/ro-run/scripts/` will not survive a restart;
 the findings page describes the input, prompt, schema and scoring well enough to rebuild them.
 Resume with "To finish" at the end of the findings page.
+
+## Outcome (2026-11-04)
+
+Closed as done after the owner's grill of 2026-11-04. Firecrawl is not built: too expensive to run
+on this setup (five containers, 3.3 GB of images, 2.0 to 2.9 GiB of RAM before a model). The
+findings page is final, with a short "Firecrawl on a bigger machine" section that the README links
+to. `llama3.2:3b` and `qwen2.5:7b` were never scored; the owner dropped them. The proposals became
+briefs: A is 14, B is 15, C is 16, D is 18 (through Wicket, not a local Ollama), and the hitchmosher
+note is 13. A decision, "No Firecrawl; a model only on request", is in docs/decisions.md. The two
+models pulled for the runs are still on the laptop (3.9 GB); removing them is the owner's call.

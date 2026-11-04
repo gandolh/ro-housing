@@ -149,7 +149,7 @@ The corpus also got the parts corpus-flow's bootstrap names that it lacked: `rou
 Part of an estate-wide reset. The eleven done briefs are deleted; their knowledge was already in
 `docs/` (decisions, architecture, adapters, testing, the worklog). Brief numbering restarts at
 01, and the open research brief 11 is now
-[01](briefs/todo/01-research-firecrawl-and-ollama.md). The old briefs read like the grilling that
+[01](briefs/done/01-research-firecrawl-and-ollama.md). The old briefs read like the grilling that
 fed the first corpus. The last commit that held them is `9bd7f41`: read one with
 `git show 9bd7f41:corpus/briefs/done/02-adapter-price-token.md`. Brief numbers in the entries above
 refer to that set. [wiki/status.md](wiki/status.md) is a per-area snapshot instead of one line per
@@ -167,3 +167,12 @@ off), 14 two extractor rules (proposal A), 15 a warning for a Refresh that retur
 16 imobiliare's RSS feed, title and link only (proposal C), 17 ready for the VPS (sign-in like
 brief-board, `/ro-housing` and `/ro-housing-api`, port 8809, a capped container; no deploy), and 18
 "Fill the gaps" through Wicket (proposal D), written but not to be built until Wicket exists.
+
+## [2026-11-04] done | Brief 01: research Firecrawl and Ollama, closed
+
+Closed with the owner's 2026-11-04 decisions. Firecrawl is not built: too expensive to run here.
+`docs/research-firecrawl-ollama.md` is final: "provisional" is gone, the two unscored models are
+marked dropped, the "To finish" list became an Outcome section mapping proposals A to D onto briefs
+14, 15, 16 and 18, and a short "Firecrawl on a bigger machine" section gives the measured costs; the
+README links to it. Decision "No Firecrawl; a model only on request" in docs/decisions.md. No code.
+Check: `bash corpus/lint.sh`.

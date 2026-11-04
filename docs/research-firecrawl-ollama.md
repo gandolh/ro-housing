@@ -1,11 +1,10 @@
 # Research: Firecrawl and Ollama for finding listings
 
-**In progress. Paused for the second time on 2026-10-28**, when the owner cut the parallel run to
-three agents because five overloaded the laptop. Done: the Firecrawl run, the imobiliare.ro try,
-the search check, and the scores of the extractor, of `qwen2.5:3b` and of Firecrawl with
-`qwen2.5:3b`. Missing: the scores of `llama3.2:3b` (stopped on its first page) and `qwen2.5:7b` (not
-started), and timings on a quiet machine. The recommendation below is provisional until those are
-in; [brief 01](../corpus/briefs/todo/01-research-firecrawl-and-ollama.md) stays in todo (numbered 11 until the 2026-11-02 reset).
+**Done on 2026-11-04.** The runs were made on 2026-10-28; the owner settled the outcome in a grill
+on 2026-11-04 ([Outcome](#outcome-2026-11-04)): Firecrawl is not built, because it costs too much
+to run on this setup, and the two model scores still missing then (`llama3.2:3b` and `qwen2.5:7b`)
+were dropped. [Brief 01](../corpus/briefs/done/01-research-firecrawl-and-ollama.md) (numbered 11
+until the 2026-11-02 reset) is in done.
 
 The question, from the owner on 2026-10-27: should the app self-host Firecrawl with Ollama, or
 Ollama alone, "so that it's easier to scrape and search online for housing offers"? It splits into
@@ -21,7 +20,7 @@ three jobs:
 Everything below was run on this laptop on 2026-10-28, CPU only, while other builds shared the
 machine; each timing has the `uptime` load average beside it.
 
-## Where it points so far
+## Where it points
 
 Don't add Firecrawl. It needs Docker, five containers and 2 to 3 GiB of RAM before a model is
 loaded, and imobiliare.ro refused it just as it refuses the app. Through Firecrawl, `qwen2.5:3b`
@@ -31,10 +30,9 @@ the extractor it filled the price and floor count the rules missed on a site the
 It is also slow on this CPU: 10 seconds to over 5 minutes a page, depending on what else was
 running, where the extractor takes milliseconds. Two of the extractor's three misses on that site
 are plain rules (a price outside a "Preț" label, a zone regex that ran across a line break), and
-two small deterministic fixes cover them for free. So the provisional order is: the rules and a
-warning for empty sources first (proposals A and B). The owner decides on imobiliare's RSS feed
-(C). A model only comes in as an opt-in button (D), and only if the missing scores don't change
-the picture.
+two small deterministic fixes cover them for free. So the order is: the rules and a
+warning for empty sources first (proposals A and B), imobiliare's RSS feed (C), and a model only as
+an opt-in button (D). The owner took all four on 2026-11-04 ([Outcome](#outcome-2026-11-04)).
 
 | Job | What helps | What doesn't |
 |---|---|---|
@@ -98,8 +96,8 @@ Right / wrong / missed / invented:
 | `qwen2.5:3b` alone | 49 / 1 / 0 / 0 | 9 / 1 / 0 / 0 | 9 / 1 / 0 / 0 | 67 / 3 / 0 / 0 | 10 s to 5.2 min |
 | The extractor, then `qwen2.5:3b` for the fields it left empty | 50 / 0 / 0 / 0 | 10 / 0 / 0 / 0 | 9 / 1 / 0 / 0 | **69 / 1 / 0 / 0** | the model's time, on pages with a gap |
 | Firecrawl + `qwen2.5:3b` (below) | 31 / 2 / 10 / 7 | 1 / 6 / 3 / 0 | 8 / 2 / 0 / 0 | 40 / 10 / 13 / 7 | 57 s to 4.5 min |
-| `llama3.2:3b` | not scored yet | | | | |
-| `qwen2.5:7b` | not scored yet | | | | |
+| `llama3.2:3b` | not scored; dropped on 2026-11-04 | | | | |
+| `qwen2.5:7b` | not scored; dropped on 2026-11-04 | | | | |
 
 `qwen2.5:3b`'s three wrong answers were all areas or storeys: foxfort's "D+P+2" read as 4 floors
 (the rule reads 2), and on both full pages the total area including balconies (153.2 and 84 m²)
@@ -305,7 +303,7 @@ disallows search URLs with filter parameters (`price=`, `rooms=`, `pagina=`, and
 | **Ollama as an extra layer behind the existing ones** | Fields the rules leave empty on unseen sites, sometimes | About 2 GB on disk for `qwen2.5:3b` and 2.6 to 2.8 GiB of RAM while it is loaded | The Ollama service, a pulled model, and a wait of 10 s to 5 min on Fetch details | Nothing for search; for a listing page, a layout change can push the details past the model's context, and it then answers from whatever text is left |
 | **Firecrawl + Ollama** | Pages that need a browser, which the app already handles with Playwright | 3.3 GB of images, 2.0 to 2.9 GiB of RAM before a model is loaded, plus the model | Docker (ruled out in [decisions.md](decisions.md), "Two terminals, no concurrently/turbo/Docker"), five containers, a compose override, and Ollama reachable from Docker | Search: the same as the adapters, since Firecrawl reads the same pages. Extraction: its Markdown drops the page's `<head>` and scripts, so the title, photo and storia's JSON go missing, and long pages are cut to the model's context |
 
-## Recommendation (provisional)
+## Recommendation
 
 Stay as is and fix the two rules, with a warning for empty sources. A model in the automatic path
 costs minutes a page on this laptop, and through Firecrawl it showed two new ways to be wrong
@@ -316,7 +314,8 @@ question hoped for: the self-hosted build has no anti-bot engine, its search is 
 scraper that returns search pages, and its LLM extraction needs a workaround to reach Ollama at
 all.
 
-The proposals, for the owner to pick from at the grill. None of them is a brief yet.
+The proposals, as they went to the owner's grill. What became of each is under
+[Outcome](#outcome-2026-11-04).
 
 **A. Two more rules in the extractor** (small, `api/src/details/` only)
 - Read `offers.price` and `priceCurrency` (EUR only) from JSON-LD of type `Product`, `Offer` or
@@ -367,9 +366,44 @@ filled the two fields the rules missed on hitchmosher); the missing scores may c
   owner's `llama3.2:1b` was there before) and the scratch folder (under 1 MB). `qwen2.5:7b` was
   deleted and has to be pulled again to score it.
 
-## To finish
+## Firecrawl on a bigger machine
 
-- Score `llama3.2:3b` on the seven pages, and `qwen2.5:7b` if the laptop has about 6 GB free (it
-  needs 4.7 GB on disk and more in RAM). Run them when no other build is running, so the timings
-  show the laptop at its best as well as busy.
-- Then settle proposal D and the recommendation, drop "provisional", and move the brief to done.
+A nice-to-have, not a plan. Self-hosted Firecrawl with a local model is too heavy for the computers
+ro-housing runs on: the owner's laptop (8 cores, 15 GiB of RAM in WSL, no GPU visible to it) and
+the VPS (2 vCPUs, 3.7 GiB of RAM shared with mail, Ward and other apps). What it cost here, from
+the runs above:
+
+- **Disk:** 3.3 GB of images (API 1.09 GB, Playwright service 1.37 GB, the rest under 0.5 GB each),
+  16 minutes to pull and build.
+- **Memory before any model:** five containers, 2.9 GiB idle as shipped and 2.0 GiB with one queue
+  worker. Firecrawl's own compose file caps the API at 8 GB and 4 CPUs and the Playwright service
+  at 4 GB and 2 CPUs. During a scrape the API peaked at 1.46 GiB and Playwright at 385 MiB.
+- **The model on top:** `qwen2.5:3b` took 2.6 to 2.8 GiB of RAM and 10 seconds to 5.2 minutes a page
+  on the laptop's CPU; a 7B model needs about 4.7 GB more.
+- **Busy machine:** the queue workers stall whenever CPU use goes over 80%.
+
+On a machine with a GPU and 8 GB or more of free memory, it would be worth a second look for one
+job only: reading listing pages from sites the extractor has never seen. It would not fix the rest.
+Its search returns portals' search pages, not listings; it got the same 403 from imobiliare.ro as
+the app; and its Markdown drops the page's `<head>` and scripts, so through it the model scored 40
+of 70 and invented a flat on a CAPTCHA page. Called directly, the same model scored 67 of 70, which
+is why the owner chose a model on request instead (proposal D, through Wicket).
+
+## Outcome (2026-11-04)
+
+The owner settled each proposal in a grill on 2026-11-04 (C was already a yes on 2026-10-28). The
+briefs named here are in [corpus/briefs/](../corpus/briefs/):
+
+- **Firecrawl: not built.** Too expensive to run here; written up above as a nice-to-have for a
+  bigger machine.
+- **The two missing scores: dropped.** `llama3.2:3b` and `qwen2.5:7b` were not run again; D no
+  longer depends on a local model.
+- **A, the two extractor rules:** brief 14.
+- **B, a warning for a Refresh that returns 0:** brief 15.
+- **C, imobiliare's RSS feed, title and link only:** brief 16.
+- **D, a model only on request:** brief 18, through Wicket, the estate's LLM queue, instead of a
+  local Ollama; it waits until Wicket exists.
+- **hitchmosher.ro stays off;** its stale search URL is noted in [adapters.md](adapters.md)
+  (brief 13).
+- **Left on the laptop:** `qwen2.5:3b` and `llama3.2:3b` (3.9 GB), pulled for these runs and no
+  longer needed. Removing them is the owner's call: `ollama rm qwen2.5:3b llama3.2:3b`.

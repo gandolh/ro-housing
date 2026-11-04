@@ -41,7 +41,7 @@ flowchart LR
   api -- "Fetch details: one listing page" --> sites
 ```
 
-More in [docs/architecture.md](docs/architecture.md), and how each scraper reads its site in [docs/adapters.md](docs/adapters.md).
+More in [docs/architecture.md](docs/architecture.md), and how each scraper reads its site in [docs/adapters.md](docs/adapters.md). Self-hosted Firecrawl with a local model was tried on 2026-10-28 and left out: it needs five containers and 2 to 3 GiB of RAM before a model is loaded. What it would take on a bigger machine: [docs/research-firecrawl-ollama.md](docs/research-firecrawl-ollama.md#firecrawl-on-a-bigger-machine).
 
 ## Run it locally
 

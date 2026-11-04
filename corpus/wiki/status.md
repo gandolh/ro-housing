@@ -22,15 +22,15 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 - **Web app resilience** (2026-10-27). Tab pages stay mounted; with the API down each page shows
   "Can't reach the API" with Retry; a second Fetch details over an edited draft asks first.
 - **Scraping** (2026-10-27). A failed or disconnected Chromium is relaunched on the next call.
+- **Research** (2026-11-04). [01](../briefs/done/01-research-firecrawl-and-ollama.md) closed: no
+  Firecrawl (too heavy here; [docs/research-firecrawl-ollama.md](../../docs/research-firecrawl-ollama.md)
+  says what it would take on a bigger machine), a model only on request (brief 18).
 
 ## Open
 
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [01](../briefs/todo/01-research-firecrawl-and-ollama.md), the Firecrawl and Ollama research: to be
-  closed as done. Firecrawl is not built (too heavy for this setup); the two model scores still
-  missing are dropped.
 - [13](../briefs/todo/13-hitchmosher-stale-search-url-note.md), note that hitchmosher.ro's default
   search URL is stale; the source stays off.
 - [14](../briefs/todo/14-extractor-price-and-zone-rules.md), two extractor rules: a price outside a

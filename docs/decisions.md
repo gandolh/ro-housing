@@ -92,6 +92,11 @@ Developers list new builds as "92.033 € + TVA", next to resale flats whose pri
 
 The new column is the first one added since the tables were created. `schema.sql` has it for new databases, and `db/migrate.ts` adds it to existing ones when `PRAGMA table_info` shows it missing, which is safe on every boot. `user_version` stays for one-off data changes.
 
+## The 2026-11-04 grill
+
+### No Firecrawl; a model only on request
+The Firecrawl and Ollama research ([research-firecrawl-ollama.md](research-firecrawl-ollama.md)) ran self-hosted Firecrawl v2.11.0 and small models on the laptop's CPU. Firecrawl needs five containers, 3.3 GB of images and 2 to 3 GiB of RAM before a model is loaded, got the same 403 from imobiliare.ro as the app, and through it a model invented a flat on a CAPTCHA page. The owner decided on 2026-11-04 not to build it: too expensive to run on this setup, and a nice-to-have only on a bigger machine. A model may help read fields the rules miss, but only when the owner asks for it on a draft, never in Refresh or Fetch details, and every value it gives is marked for the owner to check. The two model scores still missing were dropped.
+
 ## What we'd revisit if usage proves us wrong
 
 - **Dedup**: if the same apartment appears 3+ times across sources every refresh, that noise might outweigh the false-positive risk. Add a "group by (rooms, m², ±5% price, fuzzy-neighborhood)" view as a toggle.
