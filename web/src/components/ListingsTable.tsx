@@ -28,7 +28,11 @@ export function staleCutoffs(sources: Source[], listings: Listing[]): Map<string
     cutoffs.set(l.sourceId, Math.max(cutoffs.get(l.sourceId) ?? 0, l.lastSeen));
   }
   for (const s of sources) {
-    if (s.lastRunOk && s.lastRunAt !== null) cutoffs.set(s.id, s.lastRunAt);
+    // A run that found nothing doesn't count: the site more likely changed than
+    // took every listing down at once.
+    if (s.lastRunOk && s.lastRunAt !== null && s.lastRunCount !== 0) {
+      cutoffs.set(s.id, s.lastRunAt);
+    }
   }
   return cutoffs;
 }

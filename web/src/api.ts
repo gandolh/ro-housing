@@ -5,6 +5,10 @@ export interface Source {
   enabled: boolean;
   lastRunAt: number | null;
   lastRunOk: boolean | null;
+  /** Listings the last successful run returned: 0 means it found none, which
+   *  usually means the site changed. Null after a failed run or before the
+   *  API kept count. */
+  lastRunCount: number | null;
 }
 
 export interface Listing {
@@ -30,6 +34,8 @@ export interface RefreshResult {
     ok: boolean;
     count: number;
     errorMsg?: string;
+    /** Set when the run worked but found no listings. */
+    warning?: string;
   }[];
 }
 

@@ -8,6 +8,9 @@ export interface SourceRow {
   enabled: number;
   last_run_at: number | null;
   last_run_ok: number | null;
+  /** Listings the last successful run returned; null after a failed run, and
+   *  on rows from before the column. */
+  last_run_count: number | null;
 }
 
 export interface ListingRow {
@@ -57,10 +60,12 @@ export function updateSource(
   );
 }
 
-export function markSourceRun(id: string, ok: boolean): void {
+/** Records a run: when, whether it worked and, for one that worked, how many
+ *  listings it returned. */
+export function markSourceRun(id: string, ok: boolean, count: number | null = null): void {
   db.prepare(
-    `UPDATE sources SET last_run_at = ?, last_run_ok = ? WHERE id = ?`,
-  ).run(Date.now(), ok ? 1 : 0, id);
+    `UPDATE sources SET last_run_at = ?, last_run_ok = ?, last_run_count = ? WHERE id = ?`,
+  ).run(Date.now(), ok ? 1 : 0, ok ? count : null, id);
 }
 
 const upsertListingStmt = db.prepare(`

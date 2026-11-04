@@ -55,6 +55,10 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
     [sources],
   );
 
+  const emptySources = (lastResult?.perSource ?? [])
+    .filter((p) => p.ok && p.count === 0)
+    .map((p) => sourceLabels[p.id] ?? p.id);
+
   const reload = async () => {
     setLoading(true);
     try {
@@ -156,14 +160,28 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
       )}
 
       {lastResult && (
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border border-ink bg-panel px-3 py-2 text-xs">
-          {lastResult.perSource.map((p) => (
-            <span key={p.id} className="inline-flex items-center gap-1.5">
-              <Badge tone={p.ok ? 'ok' : 'bad'}>{p.ok ? 'OK' : 'FAIL'}</Badge>
-              <span className="text-ink-dim">{p.id}:</span>
-              <span>{p.ok ? p.count : (p.errorMsg ?? 'failed')}</span>
-            </span>
-          ))}
+        <div className="mt-3 border border-ink bg-panel px-3 py-2 text-xs">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {lastResult.perSource.map((p) => {
+              const empty = p.ok && p.count === 0;
+              return (
+                <span key={p.id} className="inline-flex items-center gap-1.5">
+                  <Badge tone={!p.ok ? 'bad' : empty ? 'warn' : 'ok'}>
+                    {!p.ok ? 'FAIL' : empty ? 'EMPTY' : 'OK'}
+                  </Badge>
+                  <span className="text-ink-dim">{p.id}:</span>
+                  <span>{p.ok ? p.count : (p.errorMsg ?? 'failed')}</span>
+                </span>
+              );
+            })}
+          </div>
+          {emptySources.length > 0 && (
+            <p role="status" className="mt-2 text-warn">
+              {emptySources.join(', ')} found no listings. The search URL or the
+              site&apos;s page may have changed; check it on Sources. Their earlier
+              listings are not dimmed.
+            </p>
+          )}
         </div>
       )}
 

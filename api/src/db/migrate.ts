@@ -7,6 +7,8 @@ const ADDED_COLUMNS: { table: string; column: string; type: string }[] = [
   // 2026-10-27: the price is before VAT ("+ TVA").
   { table: 'listings', column: 'price_plus_vat', type: 'INTEGER' },
   { table: 'saved', column: 'price_plus_vat', type: 'INTEGER' },
+  // 2026-11-04: how many listings a source's last successful run returned.
+  { table: 'sources', column: 'last_run_count', type: 'INTEGER' },
 ];
 
 export function addMissingColumns(db: Database.Database): void {

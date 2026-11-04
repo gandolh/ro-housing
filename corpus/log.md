@@ -191,3 +191,11 @@ match no longer crosses a line break. The hitchmosher fixture is hand-built from
 description: no listing page could be reached without a browser (three requests, then stopped).
 Also keeps a label's "+ TVA" mark when JSON-LD gives the same amount. Checks: api tsc clean,
 vitest 139/139.
+
+## [2026-11-04] done | Brief 15: a Refresh that returns 0 listings is a warning
+
+`sources.last_run_count` records each working run's count; a 0 answers
+`warning: 'no listings found'`, shows as EMPTY in the Refresh summary with a line naming the
+sources, says "found no listings" on Sources, and no longer becomes the staleness cutoff, so a
+broken adapter doesn't dim its site's listings. Any 0 is flagged. Decision recorded. Checks: api
+tsc clean, vitest 141/141; web tsc -b clean, vitest 68/68.

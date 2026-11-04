@@ -11,6 +11,7 @@ const STORIA: Source = {
   enabled: true,
   lastRunAt: null,
   lastRunOk: null,
+  lastRunCount: null,
 };
 
 const down = () => new Response('', { status: 502, headers: { 'Content-Type': 'text/plain' } });
@@ -74,5 +75,17 @@ describe('<SourcesPage> when the API is down', () => {
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
     expect(puts).toEqual([{ searchUrl: 'https://www.storia.ro/ro/rezultate', enabled: true }]);
+  });
+});
+
+describe('<SourcesPage> last runs', () => {
+  it('says when a source’s last run found no listings', async () => {
+    const empty: Source = { ...STORIA, lastRunAt: Date.now() - 60_000, lastRunOk: true, lastRunCount: 0 };
+    const found: Source = { ...STORIA, id: 'foxfort', displayName: 'foxfort.ro', lastRunAt: Date.now() - 60_000, lastRunOk: true, lastRunCount: 12 };
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify([empty, found]), { status: 200 })));
+    render(<SourcesPage active />);
+
+    expect(await screen.findByText('— found no listings')).toBeInTheDocument();
+    expect(screen.getAllByText(/— found no listings/)).toHaveLength(1);
   });
 });

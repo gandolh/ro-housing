@@ -176,8 +176,9 @@ export function SourcesPage({ active = true }: Props) {
           const draft = drafts[s.id];
           if (!draft) return null;
           const dirty = isDirty(s, draft);
+          const empty = s.lastRunOk === true && s.lastRunCount === 0;
           const dot =
-            s.lastRunOk === null ? 'unknown' : s.lastRunOk ? 'ok' : 'bad';
+            s.lastRunOk === null ? 'unknown' : !s.lastRunOk ? 'bad' : empty ? 'warn' : 'ok';
           return (
             <div
               key={s.id}
@@ -208,6 +209,9 @@ export function SourcesPage({ active = true }: Props) {
                   <span>last run: {fmtWhen(s.lastRunAt)}</span>
                   {s.lastRunOk === false && (
                     <span className="text-bad">— failed</span>
+                  )}
+                  {empty && (
+                    <span className="text-warn">— found no listings</span>
                   )}
                   {dirty && (
                     <span className="ml-2 text-accent">▸ modified</span>

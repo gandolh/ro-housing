@@ -25,6 +25,19 @@ const columns = (db: Database.Database, table: string) =>
   (db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name);
 
 describe('addMissingColumns', () => {
+  it('adds last_run_count to the sources of an old database', () => {
+    const db = new Database(':memory:');
+    db.exec(SCHEMA.split('\n').filter((line) => !line.includes('last_run_count')).join('\n'));
+    db.exec(`INSERT INTO sources (id, display_name, last_run_at, last_run_ok) VALUES ('storia', 'storia.ro', 5, 1)`);
+    expect(columns(db, 'sources')).not.toContain('last_run_count');
+    db.exec(SCHEMA);
+    addMissingColumns(db);
+    expect(db.prepare('SELECT last_run_ok, last_run_count FROM sources').get()).toEqual({
+      last_run_ok: 1,
+      last_run_count: null,
+    });
+  });
+
   it('adds price_plus_vat to an old database and keeps its rows', () => {
     const db = new Database(':memory:');
     db.exec(OLD_TABLES);

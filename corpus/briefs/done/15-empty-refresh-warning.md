@@ -54,3 +54,16 @@ The owner settled on 2026-11-04: a visible warning when a source's Refresh retur
   `web/`.
 - A source whose adapter returns `[]` shows a warning in the Refresh summary, and its old listings
   are not dimmed afterwards.
+
+## Outcome (2026-11-04)
+
+Built as written. `sources.last_run_count` (schema, and `db/migrate.ts` for old databases) holds
+how many listings a run that worked returned, null after a failed one; `/api/sources` returns it
+as `lastRunCount`. A run that returns `[]` still counts as worked but answers
+`warning: 'no listings found'`. Any 0 is flagged, not only for a source that had listings before:
+the owner's decision said "returns 0 listings", and an empty Timișoara search is as likely a bad
+URL. `staleCutoffs` ignores such a run, so nothing is dimmed by it. The Refresh summary shows an
+EMPTY badge in the existing `warn` colour (a new Badge tone and StatusDot status, no new colour)
+and a line naming the sources; Sources says "found no listings" with a warn dot. Docs: decisions
+("An empty Refresh is a warning, not a success"), architecture, design, testing. Checks: api tsc
+clean and vitest 141/141 (139 before); web tsc -b clean and vitest 68/68 (65 before).

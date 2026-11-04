@@ -36,6 +36,7 @@ function storia(over: Partial<Source> = {}): Source {
     enabled: true,
     lastRunAt: null,
     lastRunOk: null,
+    lastRunCount: null,
     ...over,
   };
 }

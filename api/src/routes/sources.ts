@@ -10,6 +10,7 @@ export async function sourcesRoutes(app: FastifyInstance): Promise<void> {
       enabled: s.enabled === 1,
       lastRunAt: s.last_run_at,
       lastRunOk: s.last_run_ok === null ? null : s.last_run_ok === 1,
+      lastRunCount: s.last_run_count,
     }));
   });
 

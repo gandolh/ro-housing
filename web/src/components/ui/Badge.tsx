@@ -1,7 +1,7 @@
 import { type HTMLAttributes } from 'react';
 import { cn } from '../../lib/cn.ts';
 
-type Tone = 'default' | 'ok' | 'bad' | 'accent';
+type Tone = 'default' | 'ok' | 'bad' | 'warn' | 'accent';
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: Tone;
@@ -11,6 +11,7 @@ const toneClass: Record<Tone, string> = {
   default: 'border-ink text-ink bg-panel',
   ok: 'border-ok text-ok bg-ok-soft',
   bad: 'border-bad text-bad bg-bad-soft',
+  warn: 'border-warn text-warn bg-panel',
   accent: 'border-accent text-accent bg-accent-soft',
 };
 

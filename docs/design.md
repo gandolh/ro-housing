@@ -30,7 +30,7 @@ Defined in `web/src/styles.css` under `@theme`. Use these Tailwind color tokens 
 | `accent-soft`     | `#f5e6d3` | Accent badge background.                              |
 | `ok` / `ok-soft`  | `#1f6b2a` / `#e3efd8` | Success badge, ok status dot.                  |
 | `bad` / `bad-soft`| `#a51a1a` / `#f7dcdc` | Error banner, failed status, "full" cap state. |
-| `warn`            | `#8a5a00` | Dirty-changes counter.                                |
+| `warn`            | `#8a5a00` | Dirty-changes counter; a Refresh that found no listings (EMPTY badge, Sources line). |
 
 **Rules**
 - Body text is `ink` on `paper` or `panel`. Anything else needs justification.
@@ -97,8 +97,8 @@ All interactive elements come from `web/src/components/ui/`, which wrap **Base U
 | `Dialog`, `DialogTrigger`, `DialogContent`, `DialogTitle`, `DialogDescription`, `DialogClose` | `ui/Dialog.tsx` | `@base-ui/react/dialog` |
 | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | `ui/Tabs.tsx` | `@base-ui/react/tabs` |
 | `Panel` (1px ink-bordered surface) | `ui/Panel.tsx` | none — semantic div |
-| `Badge` (tones: default / ok / bad / accent) | `ui/Badge.tsx` | none |
-| `StatusDot` (ok / bad / unknown) | `ui/StatusDot.tsx` | none |
+| `Badge` (tones: default / ok / bad / warn / accent) | `ui/Badge.tsx` | none |
+| `StatusDot` (ok / bad / warn / unknown) | `ui/StatusDot.tsx` | none |
 
 ### Button variants
 

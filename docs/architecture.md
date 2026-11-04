@@ -28,10 +28,11 @@ For each source where enabled=1 AND search_url IS NOT NULL (sequential, not para
      for each scraped row:
        upsert into listings (on conflict bumps last_seen + updates fields)
        append a price_history row
-   write last_run_at + last_run_ok on the source
+   write last_run_at + last_run_ok (+ last_run_count when it worked) on the source
         │
         ▼
-Respond with { perSource: [{ id, ok, count, errorMsg? }] }
+Respond with { perSource: [{ id, ok, count, errorMsg?, warning? }] }
+   (warning: 'no listings found' when a run worked but returned nothing)
 ```
 
 Sequential on purpose — running 8 scrapers in parallel would amplify our visible request pattern and tank our chances against anti-bot heuristics. Refresh takes a few seconds longer; nobody cares.
@@ -71,14 +72,14 @@ A second Fetch details rebuilds the whole draft, so when the open draft has edit
 
 Four tables. See `api/src/db/schema.sql` for the canonical version.
 
-- **sources** — one row per adapter we've implemented. Seeded at boot from the adapter registry. Carries the user-pasted `search_url`, an `enabled` flag, and the last-run audit fields.
+- **sources** — one row per adapter we've implemented. Seeded at boot from the adapter registry. Carries the user-pasted `search_url`, an `enabled` flag, and the last-run audit fields: when, whether it worked, and (since 2026-11-04) `last_run_count`, how many listings a run that worked returned.
 - **listings** — one row per (source_id, source_uid) pair. `source_uid` is whatever stable identifier we can extract from the source URL (numeric id, slug). `first_seen` and `last_seen` are unix-ms timestamps; `last_seen` only updates on a successful re-scrape.
 - **saved** — apartments the user saved from a link (session 5). One row per normalized URL (`UNIQUE`). The columns hold what the user confirmed; `raw_json` holds what the page said at fetch time (the draft, which layer filled each field, the description) and `fetched_at` when. Never touched by Refresh, never linked to `listings`.
 - **price_history** — append-only. One row per (listing, observation). Primary key is the composite, so re-running refresh in the same millisecond is a no-op.
 
 `listings` and `saved` both have `price_plus_vat` (2026-10-27): 1 when the page gave the price before VAT ("+ TVA"), and the tables then show "+TVA" beside the price and the €/m². It is NULL on rows from before the column. Columns added after the first release are listed in `db/migrate.ts`, which adds each one to an existing database at boot when it is missing.
 
-Listings whose `last_seen` is older than the most recent refresh of their source are "stale" — likely delisted. UI dims them rather than deleting; the user might want to see the last known price. Since 2026-10-27 the table works this out from `/api/sources` on every load (`staleCutoffs` in `ListingsTable.tsx`): the source's `last_run_at` when its last run succeeded, else the newest `last_seen` among its listings, minus 5 seconds. A failed Refresh changes neither, so it dims nothing. The Age cell's title gives the last-seen time.
+Listings whose `last_seen` is older than the most recent refresh of their source are "stale" — likely delisted. UI dims them rather than deleting; the user might want to see the last known price. Since 2026-10-27 the table works this out from `/api/sources` on every load (`staleCutoffs` in `ListingsTable.tsx`): the source's `last_run_at` when its last run succeeded and found at least one listing, else the newest `last_seen` among its listings, minus 5 seconds. A failed Refresh changes neither, so it dims nothing, and since 2026-11-04 neither does a run that found no listings: a site that changed its markup makes its adapter return an empty list, and every one of its listings looked delisted. The Refresh summary marks such a source EMPTY and says so; Sources says "found no listings" beside its last run. The Age cell's title gives the last-seen time.
 
 ## Adapter strategy split
 

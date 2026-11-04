@@ -4,7 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // The route runs on stand-ins: one source whose scraper waits until the test
 // lets it finish, and queries that touch no database. The real connection
 // module throws if anything loads it.
-const gate = vi.hoisted(() => ({ release: () => {}, started: 0, failNext: false }));
+const gate = vi.hoisted(() => ({
+  release: (_rows: unknown[] = []) => {},
+  started: 0,
+  failNext: false,
+  runs: [] as { id: string; ok: boolean; count: number | null | undefined }[],
+}));
 
 vi.mock('../db/index.ts', () => {
   throw new Error('the real database must not open in tests');
@@ -17,7 +22,9 @@ vi.mock('../db/queries.ts', () => ({
     }
     return [{ id: 'storia', enabled: 1, search_url: 'https://www.storia.ro/ro/rezultate' }];
   },
-  markSourceRun: () => {},
+  markSourceRun: (id: string, ok: boolean, count?: number | null) => {
+    gate.runs.push({ id, ok, count });
+  },
   upsertListingWithSnapshot: () => {},
 }));
 vi.mock('../adapters/index.ts', () => ({
@@ -28,7 +35,7 @@ vi.mock('../adapters/index.ts', () => ({
       scrape: () => {
         gate.started++;
         return new Promise((resolve) => {
-          gate.release = () => resolve([]);
+          gate.release = (rows: unknown[] = []) => resolve(rows);
         });
       },
     },
@@ -42,6 +49,7 @@ describe('POST /api/refresh', () => {
 
   beforeEach(async () => {
     gate.started = 0;
+    gate.runs = [];
     app = Fastify();
     await app.register(refreshRoutes);
     await app.ready();
@@ -63,7 +71,29 @@ describe('POST /api/refresh', () => {
     gate.release();
     const done = await first;
     expect(done.statusCode).toBe(200);
-    expect(done.json()).toEqual({ perSource: [{ id: 'storia', ok: true, count: 0 }] });
+    expect(done.json()).toEqual({
+      perSource: [{ id: 'storia', ok: true, count: 0, warning: 'no listings found' }],
+    });
+  });
+
+  it('records how many listings a run found, and warns only when it found none', async () => {
+    const empty = app.inject({ method: 'POST', url: '/api/refresh' });
+    await vi.waitFor(() => expect(gate.started).toBe(1));
+    gate.release([]);
+    expect((await empty).json().perSource[0]).toMatchObject({ ok: true, count: 0, warning: 'no listings found' });
+
+    const two = app.inject({ method: 'POST', url: '/api/refresh' });
+    await vi.waitFor(() => expect(gate.started).toBe(2));
+    gate.release([
+      { sourceUid: 'a', url: 'https://www.storia.ro/ro/oferta/a', raw: {} },
+      { sourceUid: 'b', url: 'https://www.storia.ro/ro/oferta/b', raw: {} },
+    ]);
+    const found = (await two).json().perSource[0];
+    expect(found).toEqual({ id: 'storia', ok: true, count: 2 });
+    expect(gate.runs).toEqual([
+      { id: 'storia', ok: true, count: 0 },
+      { id: 'storia', ok: true, count: 2 },
+    ]);
   });
 
   it('takes a new refresh once the last one has finished, or failed', async () => {

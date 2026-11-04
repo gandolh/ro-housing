@@ -16,6 +16,7 @@ function source(over: Partial<Source>): Source {
     enabled: true,
     lastRunAt: RUN,
     lastRunOk: true,
+    lastRunCount: null,
     ...over,
   };
 }
@@ -137,6 +138,62 @@ describe('<ListingsPage> staleness', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Another Refresh is already running. Try again when it has finished.',
     );
+  });
+});
+
+describe('<ListingsPage> a Refresh that finds nothing', () => {
+  it('warns about the source, and its listings are not dimmed by that run', async () => {
+    let refreshed = false;
+    // After the Refresh, storia's last run is newer than every row but found nothing.
+    const after = [
+      source({ lastRunAt: RUN + DAY, lastRunCount: 0 }),
+      source({ id: 'imobiliare', displayName: 'imobiliare.ro', lastRunOk: false }),
+    ];
+    mockApi({
+      'GET /api/listings': () => [200, LISTINGS],
+      'GET /api/sources': () => [200, refreshed ? after : SOURCES],
+      'POST /api/refresh': () => {
+        refreshed = true;
+        return [
+          200,
+          {
+            perSource: [
+              { id: 'storia', ok: true, count: 0, warning: 'no listings found' },
+              { id: 'imobiliare', ok: false, count: 0, errorMsg: 'HTTP 403' },
+            ],
+          },
+        ];
+      },
+    });
+    const user = userEvent.setup();
+    render(<ListingsPage onSaveLink={() => {}} />);
+    await screen.findByText('Seen in the last run');
+
+    await user.click(screen.getByRole('button', { name: 'Refresh' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'storia.ro found no listings. The search URL or the site\'s page may have changed',
+    );
+    expect(screen.getByText('EMPTY')).toBeInTheDocument();
+    expect(screen.getByText('FAIL')).toBeInTheDocument();
+    await vi.waitFor(() => expect(row(/Seen in the last run/)).not.toHaveAttribute('data-stale'));
+    expect(row(/Gone since three days/)).toHaveAttribute('data-stale');
+  });
+
+  it('no warning when every source found listings', async () => {
+    mockApi({
+      'GET /api/listings': () => [200, LISTINGS],
+      'GET /api/sources': () => [200, SOURCES],
+      'POST /api/refresh': () => [200, { perSource: [{ id: 'storia', ok: true, count: 4 }] }],
+    });
+    const user = userEvent.setup();
+    render(<ListingsPage onSaveLink={() => {}} />);
+    await screen.findByText('Seen in the last run');
+
+    await user.click(screen.getByRole('button', { name: 'Refresh' }));
+
+    expect(await screen.findByText('OK')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
 

@@ -10,6 +10,10 @@ import {
 // which the sequential design exists to avoid (docs/decisions.md).
 let running = false;
 
+/** A run that found no listings worked, but says so: a site that changed its
+ *  markup usually makes its adapter return an empty list, not throw. */
+export const EMPTY_RUN_WARNING = 'no listings found';
+
 export async function refreshRoutes(app: FastifyInstance): Promise<void> {
   app.post('/api/refresh', async (_req, reply) => {
     if (running) {
@@ -32,6 +36,7 @@ async function refreshAll(app: FastifyInstance) {
     ok: boolean;
     count: number;
     errorMsg?: string;
+    warning?: string;
   }[] = [];
 
   for (const src of sources) {
@@ -53,8 +58,13 @@ async function refreshAll(app: FastifyInstance) {
       for (const row of scraped) {
         upsertListingWithSnapshot(src.id, row, now);
       }
-      markSourceRun(src.id, true);
-      results.push({ id: src.id, ok: true, count: scraped.length });
+      markSourceRun(src.id, true, scraped.length);
+      results.push({
+        id: src.id,
+        ok: true,
+        count: scraped.length,
+        ...(scraped.length === 0 ? { warning: EMPTY_RUN_WARNING } : {}),
+      });
     } catch (err) {
       app.log.error({ err, sourceId: src.id }, 'adapter failed');
       markSourceRun(src.id, false);

@@ -1,10 +1,11 @@
 import { cn } from '../../lib/cn.ts';
 
-type Status = 'ok' | 'bad' | 'unknown';
+type Status = 'ok' | 'bad' | 'warn' | 'unknown';
 
 const classByStatus: Record<Status, string> = {
   ok: 'bg-ok',
   bad: 'bg-bad',
+  warn: 'bg-warn',
   unknown: 'bg-ink-faint',
 };
 

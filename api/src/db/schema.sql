@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS sources (
   search_url   TEXT,
   enabled      INTEGER NOT NULL DEFAULT 0,
   last_run_at  INTEGER,
+  -- last_run_count: listings the last successful run returned, NULL after a failed one; added 2026-11-04, see db/migrate.ts.
+  last_run_count INTEGER,
   last_run_ok  INTEGER
 );
 

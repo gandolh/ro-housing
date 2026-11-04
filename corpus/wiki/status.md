@@ -20,8 +20,9 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 - **Single listing pages** (2026-11-04). The extractor reads a price from JSON-LD offers and from a
   bare line under the title, and keeps a zone on its line
   ([14](../briefs/done/14-extractor-price-and-zone-rules.md)).
-- **Listings and staleness** (2026-10-27). Stale rows come from each source's last run; a failed
-  Refresh says so; a second Refresh during a run gets 409.
+- **Listings and staleness** (2026-10-27, 2026-11-04). Stale rows come from each source's last run; a
+  failed Refresh says so; a second Refresh during a run gets 409; a run that finds no listings
+  shows as EMPTY and dims nothing ([15](../briefs/done/15-empty-refresh-warning.md)).
 - **Web app resilience** (2026-10-27). Tab pages stay mounted; with the API down each page shows
   "Can't reach the API" with Retry; a second Fetch details over an edited draft asks first.
 - **Scraping** (2026-10-27). A failed or disconnected Chromium is relaunched on the next call.
@@ -36,8 +37,6 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [15](../briefs/todo/15-empty-refresh-warning.md), a source whose Refresh returns 0 listings gets a
-  warning and doesn't dim its listings.
 - [16](../briefs/todo/16-imobiliare-rss-feed.md), new Timișoara flats from imobiliare.ro's RSS feed,
   title and link only.
 - [17](../briefs/todo/17-ready-for-the-vps.md), ready for the VPS: Sign in with Ward and a seeded
