@@ -26,6 +26,9 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 - **Web app resilience** (2026-10-27). Tab pages stay mounted; with the API down each page shows
   "Can't reach the API" with Retry; a second Fetch details over an edited draft asks first.
 - **Scraping** (2026-10-27). A failed or disconnected Chromium is relaunched on the next call.
+- **imobiliare.ro's RSS feed** (2026-11-04). A source that lists new Timișoara flats for sale,
+  title and link only, once per Refresh; no listing page fetched
+  ([16](../briefs/done/16-imobiliare-rss-feed.md)).
 - **hitchmosher.ro** (2026-11-04). Off by the owner's choice; its default search URL is stale
   ([13](../briefs/done/13-hitchmosher-stale-search-url-note.md), [docs/adapters.md](../../docs/adapters.md)).
 - **Research** (2026-11-04). [01](../briefs/done/01-research-firecrawl-and-ollama.md) closed: no
@@ -37,8 +40,6 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [16](../briefs/todo/16-imobiliare-rss-feed.md), new Timișoara flats from imobiliare.ro's RSS feed,
-  title and link only.
 - [17](../briefs/todo/17-ready-for-the-vps.md), ready for the VPS: Sign in with Ward and a seeded
   account, `/ro-housing` and `/ro-housing-api`, port 8809, a capped container with Chromium. No
   deploy.

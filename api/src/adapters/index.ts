@@ -5,12 +5,14 @@ import { districtAdapter } from './district.ts';
 import { foxfortAdapter } from './foxfort.ts';
 import { hitchmosherAdapter } from './hitchmosher.ts';
 import { imobiliareAdapter } from './imobiliare.ts';
+import { imobiliareFeedAdapter } from './imobiliare-feed.ts';
 import { primumAdapter } from './primum.ts';
 import { storiaAdapter } from './storia.ts';
 import type { Adapter } from './types.ts';
 
 export const ADAPTER_REGISTRY: Record<string, Adapter> = {
   [imobiliareAdapter.id]: imobiliareAdapter,
+  [imobiliareFeedAdapter.id]: imobiliareFeedAdapter,
   [storiaAdapter.id]: storiaAdapter,
   [foxfortAdapter.id]: foxfortAdapter,
   [blitzAdapter.id]: blitzAdapter,

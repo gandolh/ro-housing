@@ -14,5 +14,8 @@ export interface ScrapedListing {
 export interface Adapter {
   id: string;
   displayName: string;
+  /** The search URL a new database starts with, for a source whose URL is
+   *  fixed (a feed). Most sources start empty and the user pastes one. */
+  defaultSearchUrl?: string;
   scrape(searchUrl: string): Promise<ScrapedListing[]>;
 }

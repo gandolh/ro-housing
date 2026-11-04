@@ -15,6 +15,7 @@ Replace the manual ritual of opening 6–8 tabs and comparing listings across si
 ## In scope (v1)
 
 - 9 site adapters: imobiliare.ro, storia.ro, foxfort.ro, blitz.ro, hitchmosher.ro, agentie-imobiliare-timisoara.ro, apostuestate.ro, primum.ro, districtestate.ro. All implemented; only imobiliare + storia enabled by default. The rest are toggled on from the UI when the user adds a search URL for them.
+- imobiliare.ro's RSS feed (2026-11-04): new Timișoara flats for sale, title and link only, read once per Refresh. Enabled by default with its URL filled in. No listing page is fetched for it.
 - Core fields: price, rooms, m², location, source link.
 - Per-listing price history that accumulates one data point per manual refresh.
 - On-demand refresh from the UI. No scheduler, no background jobs.

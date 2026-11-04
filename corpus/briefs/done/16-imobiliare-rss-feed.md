@@ -72,3 +72,20 @@ the kind of property, "de-vanzare" or "de-inchiriat", the city, then the zone an
 - A fresh database seeds `imobiliare-feed` enabled with the feed URL.
 - The adapter, run once against the live feed, returns only Timișoara flats for sale, with title
   and link.
+
+## Outcome (2026-11-04)
+
+Built as written. `api/src/adapters/imobiliare-feed.ts` is a tenth source, `imobiliare-feed`
+("imobiliare.ro (RSS)"), seeded enabled with the feed URL through a new optional
+`defaultSearchUrl` on the adapter. One plain `fetch` per Refresh with a User-Agent that names the
+app, no cookies, browser or retry; a non-200 or a non-RSS answer fails the run. It refuses any URL
+but the feed. Kept: `/oferta/apartament|garsoniera|penthouse-de-vanzare-timisoara-…-<id>`, the ID as
+`sourceUid`, title and link only. No web change was needed: blank prices already show "—" and the
+title link already opens a new tab.
+
+Live check, one request on 2026-11-04: 200, 66 Timișoara flats for sale kept, every row with a title
+and a link and no other field. An earlier look at the feed's shape that day (one `curl`, into a
+scratch folder, deleted) counted 2,446 items, 127 with "timisoara" in the link, 61 of them flats
+for sale. Docs: adapters.md (a per-site note), decisions.md ("imobiliare's RSS feed, title and link
+only", and the enabled-by-default line), architecture.md, overview.md, getting-started.md, testing.md,
+the README. Checks: api tsc clean, vitest 147/147 (141 before).

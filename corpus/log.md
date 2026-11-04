@@ -199,3 +199,11 @@ vitest 139/139.
 sources, says "found no listings" on Sources, and no longer becomes the staleness cutoff, so a
 broken adapter doesn't dim its site's listings. Any 0 is flagged. Decision recorded. Checks: api
 tsc clean, vitest 141/141; web tsc -b clean, vitest 68/68.
+
+## [2026-11-04] done | Brief 16: new Timișoara flats from imobiliare.ro's RSS feed
+
+A tenth source, `imobiliare-feed`, reads `https://www.imobiliare.ro/rss-listings.xml` once per
+Refresh (a plain request naming the app, no cookies, browser or retry) and keeps Timișoara flats
+for sale, title and link only; it starts enabled with its URL filled in and refuses any other
+URL. One live run kept 66. Decision "imobiliare's RSS feed, title and link only" recorded next to
+"Blocked means blocked". Checks: api tsc clean, vitest 147/147.

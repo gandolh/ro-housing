@@ -85,7 +85,8 @@ Listings whose `last_seen` is older than the most recent refresh of their source
 
 Two strategies live in `api/src/adapters/`:
 
-- **cheerio path** — plain `fetch` with a browser UA + cookie persistence (`lib/fetch.ts`), then parse with cheerio. Used by 8 of 9 adapters.
+- **cheerio path** — plain `fetch` with a browser UA + cookie persistence (`lib/fetch.ts`), then parse with cheerio. Used by 8 of the 9 search adapters.
+- **Feed path** — `imobiliare-feed` reads imobiliare.ro's RSS feed with one plain `fetch` that names the app, parsed by cheerio in XML mode; title and link only.
 - **Playwright path** — shared chromium launcher (`lib/playwright.ts`), navigate, wait for the listing grid, dump `page.content()` into cheerio. Used by storia.ro only.
 
 Both end up passing rendered HTML to cheerio, so listing-parsing code looks similar across the two paths. The only structural difference is *how the HTML got here*.

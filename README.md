@@ -1,6 +1,6 @@
 # ro-housing
 
-A house-hunting tool for one person looking to buy a flat in Timișoara. It pulls apartments for sale from imobiliare.ro, storia.ro and seven local agency sites into one table, and keeps a shortlist of the flats you want to compare.
+A house-hunting tool for one person looking to buy a flat in Timișoara. It pulls apartments for sale from imobiliare.ro, storia.ro and seven local agency sites into one table, lists new Timișoara flats from imobiliare.ro's RSS feed, and keeps a shortlist of the flats you want to compare.
 
 <p align="center">
   <img src="docs/images/hero.webp" width="100%" alt="The Listings tab: eleven made-up apartments from storia, imobiliare, foxfort and three other sources in one table, with rooms, m², price, €/m², area, how many days ago each was first seen, a small line of its price over time, and a save action on every row">
@@ -11,6 +11,8 @@ A house-hunting tool for one person looking to buy a flat in Timișoara. It pull
 ## What it does
 
 - Collects listings from up to nine sites into one table you can sort by price, m² or date and filter by site, with €/m² worked out for every row. A price quoted before VAT ("+ TVA") is marked as such, so €/m² compares like with like.
+- Lists new Timișoara flats for sale from imobiliare.ro's public RSS feed, with the title and the link only, since imobiliare.ro answers the app's own requests with a bot check. Each link opens in your browser.
+- Says so when a site's Refresh finds no listings at all, which usually means its page changed, instead of dimming all its listings as gone.
 - Keeps each listing's price history, one point per Refresh, drawn as a small line beside it.
 - Saves one listing from its link. The app reads price, rooms, m², floor, year built, area, partitioning and photo from the page into a form. Each field says "from page", "edited" or "not on page", and nothing is stored until you press Save. When a site shows a bot check instead of the ad, the form opens empty with the link kept.
 - Lines up the saved flats with your notes, sorted by price, €/m², m² or year built. You can edit any of them later. Deleting one takes two clicks.
@@ -58,7 +60,7 @@ Open <http://127.0.0.1:5173>. In **Sources**, tick a site, paste a search-result
 
 | Path | What lives there |
 |---|---|
-| `api/` | Fastify server: the database, the nine search scrapers, the single-listing reader, the routes |
+| `api/` | Fastify server: the database, the nine search scrapers and the RSS feed reader, the single-listing reader, the routes |
 | `web/` | React app: the Listings, Saved and Sources tabs, and the shared UI components |
 | `data/` | The SQLite file, created on first start, not in git |
 | `docs/` | Setup, architecture, the scrapers, decisions, the worklog and the images here |

@@ -16,13 +16,15 @@ db.pragma('foreign_keys = ON');
 db.exec(readFileSync(SCHEMA_PATH, 'utf8'));
 addMissingColumns(db);
 
-const DEFAULT_ENABLED = new Set(['imobiliare', 'storia']);
+const DEFAULT_ENABLED = new Set(['imobiliare', 'storia', 'imobiliare-feed']);
 
+// INSERT OR IGNORE: a source already in the database keeps the user's URL and
+// tick box; only a source new to it gets the defaults.
 const seed = db.prepare(
-  `INSERT OR IGNORE INTO sources (id, display_name, search_url, enabled) VALUES (?, ?, NULL, ?)`,
+  `INSERT OR IGNORE INTO sources (id, display_name, search_url, enabled) VALUES (?, ?, ?, ?)`,
 );
 for (const a of Object.values(ADAPTER_REGISTRY)) {
-  seed.run(a.id, a.displayName, DEFAULT_ENABLED.has(a.id) ? 1 : 0);
+  seed.run(a.id, a.displayName, a.defaultSearchUrl ?? null, DEFAULT_ENABLED.has(a.id) ? 1 : 0);
 }
 
 // One-shot migration: DBs from before the per-source `enabled` flag existed

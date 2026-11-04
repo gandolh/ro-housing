@@ -47,6 +47,13 @@ These get filled in as adapters are built. Includes things worth remembering: th
   - **Fractional room descriptions** ("1,5 camere") — `parseRooms()` uses a negative lookbehind `(?<![\d.,])` so the "5 camere" in "1,5 camere" doesn't match.
   - **Listing cards don't carry a stable location class** — adapter parses the neighborhood from the URL slug via `locationFromImobiliareUrl()`.
 
+### imobiliare.ro's RSS feed (`imobiliare-feed`)
+- **2026-11-04: added.** imobiliare.ro's `robots.txt` lists `/rss-listings.xml` among its sitemaps, and the feed answers a plain request with no bot check, while the listing pages show one. About a day of new listings nationwide, roughly 2,400 items, each with a link, a date and a title, nothing else: no price, area or rooms. On 2026-11-04 the adapter kept 66 Timișoara flats for sale from it.
+- Strategy: one plain `fetch` per Refresh, with a User-Agent that names the app (not a browser's), no cookies, no Playwright, no retry; cheerio in XML mode. A non-200 answer, or an answer that isn't RSS (a bot-check page), fails the run.
+- The source starts enabled with the feed URL filled in (`defaultSearchUrl` on the adapter). It refuses any other URL, so an edited search URL can't point it at a listing page.
+- Kept: items whose link is `/oferta/apartament-de-vanzare-timisoara-…`, `garsoniera-…` or `penthouse-…`, ending in the listing's numeric ID (the `sourceUid`). Rentals, houses, land, offices, other cities and the towns around Timișoara (`…-de-vanzare-dumbravita-…`) are dropped.
+- Rows carry the title and the link only: price, m², €/m² and the history line stay blank. The title opens the listing in a new tab, in the owner's own browser. A row dims once it drops out of the feed, about a day later; for this source that means "no longer new", not "delisted". Its save action works as for any imobiliare link: the Saved form opens empty with the link kept when the site shows its bot check.
+
 ### storia.ro
 - **2026-10-16:** plain fetch answered 200 with the full page, search and listing alike. The adapter still uses Playwright; switching it to cheerio would be faster but is untested against the search page's markup.
 - Strategy: Playwright (confirmed 403 on plain fetch + React SPA shell).
