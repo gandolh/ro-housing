@@ -1,9 +1,9 @@
 # Owner setup
 
 Everything it takes to put ro-housing on the VPS. Nothing in this repo deploys or writes a
-secret, and the vps-deploy stack for ro-housing doesn't exist yet: whoever writes it starts from
-[What the vps-deploy stack needs](#what-the-vps-deploy-stack-needs). The numbered steps after it are
-the owner's, in order. Running it on your own computer is under [Local development](#local-development)
+secret. vps-deploy's ro-housing stack was written from [What the vps-deploy stack
+needs](#what-the-vps-deploy-stack-needs); keep the two in step. The numbered steps after it are the
+owner's, in order. Running it on your own computer is under [Local development](#local-development)
 and in [getting-started.md](getting-started.md).
 
 `<production origin>` below means `https://` plus the main domain's host, with no path.
@@ -15,7 +15,7 @@ prefix to one container on loopback.
 
 | What | Value |
 |---|---|
-| Container | Built from `infrastructure/Dockerfile` (build context: the repo root, target `prod`), service `ro-housing-api` in `infrastructure/docker-compose.yml`, image `ro-housing-api:1.0` |
+| Container | Built from `infrastructure/Dockerfile` (build context: the repo root, target `prod`), service `ro-housing-api` in `infrastructure/docker-compose.yml`, image `ro-housing-api:1.0`. The image compiles the API itself (a build stage runs `npm run build`), so no `api/dist/` needs to be shipped; it starts `node dist/server.js` |
 | Port | **8809**, published on `127.0.0.1` only. The server listens on `0.0.0.0:8809` inside the container |
 | Web app | `cd web && npm ci && npm run build` gives `web/dist/`, built for `/ro-housing/` (`RO_HOUSING_BASE` moves it; leave it unset) |
 | Route: the app | `/ro-housing/*` serves `web/dist/`; any path under it that isn't a file answers `/ro-housing/index.html` (the login and account pages are addresses: `/ro-housing/login`, `/ro-housing/account`); `/ro-housing` redirects to `/ro-housing/` |
@@ -54,9 +54,13 @@ unset: `PUBLIC_ORIGIN` is always allowed.
 ### Caps
 
 The box has 3.7 GiB of RAM (about 2.1 GiB free) and 2 vCPUs, shared with mail, Ward, monitoring
-and the other apps. Measured on 2026-11-04 on the owner's laptop, no site fetched:
+and the other apps. Measured on 2026-11-04 on the owner's laptop, no listing site fetched but the
+RSS feed:
 
-- the API idle under `tsx`: about 200 MiB resident, 11 threads;
+- the API idle, as built JavaScript (`node dist/server.js`): about 112 MiB in `docker stats`
+  (160 MiB resident), 12 tasks; about 119 MiB after a Refresh of the RSS feed. Under `tsx`, the
+  same container idled at about 160 MiB in `docker stats` (198 MiB resident for Node plus 15 MiB
+  for esbuild's helper process), 24 tasks;
 - headless Chromium just launched: about 100 MiB (proportional share, five processes);
 - Chromium with one heavy local page open (storia's fixture repeated 200 times): about 190 MiB,
   and the API plus Chromium ran about 90 threads.
@@ -120,8 +124,8 @@ link on Saved and press Fetch details. Stop it with:
 docker compose -f infrastructure/docker-compose.yml down
 ```
 
-The image has not been built yet: Docker wasn't reachable from WSL when it was written
-(2026-11-04), so the first build is this step.
+First built and run on 2026-11-04 under scratch names (health, a seeded sign-in, a Refresh of the
+RSS feed, the Saved routes); Chromium wasn't started in it.
 
 ## 4. Deploy
 
@@ -141,7 +145,7 @@ There is no sign-up page. Run the seed inside the container on the VPS. It asks 
 and password and shows neither on screen. The password needs at least 8 characters:
 
 ```
-docker compose -f infrastructure/docker-compose.yml exec -it ro-housing-api node --import tsx src/seed.ts
+docker compose -f infrastructure/docker-compose.yml exec -it ro-housing-api node dist/seed.js
 ```
 
 To pass them instead, add `-e SEED_USERNAME=<name> -e SEED_PASSWORD=<password>` after `exec`, and

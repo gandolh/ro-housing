@@ -7,7 +7,9 @@
 #
 #   docker compose -f infrastructure/docker-compose.yml up --build -d ro-housing-api
 #
-# Debian, not Alpine: Playwright's Chromium needs glibc.
+# Debian, not Alpine: Playwright's Chromium needs glibc. The API runs as built
+# JavaScript (`node dist/server.js`), compiled in the build stage: no TypeScript
+# and no tsx at run time, which keeps the idle process smaller.
 #
 # ── Why this container runs as root ──────────────────────────────────────────
 # On the VPS it runs under a ROOTLESS Docker daemon owned by an unprivileged
@@ -29,16 +31,30 @@ RUN apt-get update \
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 WORKDIR /app/api
 COPY api/package.json api/package-lock.json api/.npmrc ./
-# --omit=dev keeps tsx, which is a dependency: the API runs its TypeScript
-# through it, as `npm start` does. The postinstall downloads Chromium into
-# /ms-playwright. A headless launch only uses the headless shell, so the full
-# browser (about 390 MB) goes.
+# --omit=dev leaves out TypeScript, tsx and the test runner. The postinstall
+# downloads Chromium into /ms-playwright. A headless launch only uses the
+# headless shell, so the full browser (about 390 MB) goes.
 RUN npm ci --omit=dev \
  && npm cache clean --force \
  && rm -rf /ms-playwright/chromium-[0-9]*
 
 # ---------------------------------------------------------------------------
-# prod: Node, Chromium's system libraries, the API's source
+# build: the API's TypeScript compiled to dist/ (npm run build)
+# ---------------------------------------------------------------------------
+FROM node:24-bookworm-slim AS build
+WORKDIR /app/api
+COPY api/package.json api/package-lock.json api/.npmrc ./
+# --ignore-scripts: tsc needs only the type packages, so no Chromium download
+# and no native build here.
+RUN npm ci --ignore-scripts
+COPY api/tsconfig.json api/tsconfig.build.json ./
+# The vendored ward-auth library's types: src/ imports it by relative path.
+COPY api/vendor ./vendor
+COPY api/src ./src
+RUN npm run build
+
+# ---------------------------------------------------------------------------
+# prod: Node, Chromium's system libraries, the built API
 # ---------------------------------------------------------------------------
 FROM node:24-bookworm-slim AS prod
 LABEL org.opencontainers.image.title="ro-housing" \
@@ -47,15 +63,17 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 WORKDIR /app/api
 COPY --from=deps /ms-playwright /ms-playwright
 COPY --from=deps /app/api/node_modules ./node_modules
-COPY api/package.json api/.npmrc api/tsconfig.json ./
+# package.json's "type": "module" makes dist/*.js load as ES modules.
+COPY api/package.json ./
 # Chromium's libraries and fonts, from Playwright's own list for this version.
 RUN npx playwright install-deps chromium \
  && rm -rf /var/lib/apt/lists/*
-# The vendored ward-auth library: src/ imports it by relative path.
+# The vendored ward-auth library: dist/ imports it by relative path, as
+# ../vendor/ward/ward-auth.js.
 COPY api/vendor ./vendor
-COPY api/src ./src
-# Tests and their saved pages are dead weight at run time.
-RUN find src -name '*.test.ts' -delete && rm -rf src/details/fixtures
+# The compiled API, with db/schema.sql beside db/index.js (the build copies it).
+# No TypeScript source and no tests.
+COPY --from=build /app/api/dist ./dist
 # CHROMIUM_DISABLE_DEV_SHM: Docker's /dev/shm is 64 MB; Chromium uses /tmp
 # instead (lib/playwright.ts).
 ENV NODE_ENV=production \
@@ -72,4 +90,6 @@ EXPOSE 8809
 # follows the runtime PORT.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
   CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
-CMD ["node", "--import", "tsx", "src/server.ts"]
+# node itself, not `npm start`: npm would stay running above it as one more
+# process with its own memory.
+CMD ["node", "dist/server.js"]

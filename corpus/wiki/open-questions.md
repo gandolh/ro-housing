@@ -1,11 +1,11 @@
 ---
-summary: Calls the 2026-11-04 build run made without asking, each with the conservative option it took, for the owner to confirm or change. Report-button files on the VPS, sessions that write on a shared origin, the scrape endpoint's redirects from a server, imobiliare's search ticked on a fresh database.
+summary: Calls the 2026-11-04 build run made without asking, each with the conservative option it took, for the owner to confirm or change. Report-button files on the VPS, sessions that write on a shared origin, the scrape endpoint's redirects from a server, imobiliare's search ticked on a fresh database, and the container checks brief 19 left out.
 updated: 2026-11-04
 ---
 
 # Open questions
 
-Each came up while building briefs 13 to 17 on 2026-11-04. The run took the conservative option
+Each came up while building briefs 13 to 17 and 19 on 2026-11-04. The run took the conservative option
 and went on; nothing here blocks anything.
 
 ## The Report button on the VPS
@@ -48,3 +48,16 @@ is what works for imobiliare now.
 
 - **Taken:** left as it was; the owner can untick it on Sources.
 - **To decide:** whether a fresh database should start with it unticked.
+
+## What the built container was not asked to do
+
+Brief 19 checked the built image with one outbound request, a Refresh of the RSS feed (cheerio in
+XML mode). It didn't run a search adapter for an agency site, didn't read a live listing page on
+Saved (the scrape route was checked on a saved link, a name that doesn't resolve and a local
+address), and didn't start Chromium.
+
+- **Taken:** those code paths are the same TypeScript the 162 tests run, compiled by tsc; the
+  server loads its modules at start (there are no dynamic imports) and the seed ran, so a missing
+  file would have stopped one of them.
+- **To decide:** nothing, unless the first deploy shows otherwise; owner-setup step 3 (Fetch details
+  on a storia link) covers a live page and Chromium.

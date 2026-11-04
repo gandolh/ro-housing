@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp src/db/schema.sql dist/db/schema.sql",
+    "start": "node dist/server.js",
     "seed": "tsx src/seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -15,12 +16,12 @@
     "better-sqlite3": "12.10.0",
     "cheerio": "1.2.0",
     "fastify": "5.12.7",
-    "playwright": "1.60.0",
-    "tsx": "4.22.3"
+    "playwright": "1.60.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "25.9.1",
+    "tsx": "4.22.3",
     "typescript": "6.0.3",
     "vitest": "4.1.12"
   }

@@ -1,0 +1,13 @@
+// The build: src/ to dist/ as plain JavaScript, which the container runs with
+// `node dist/server.js`. `npm run dev` and the tests read the TypeScript
+// directly, through tsconfig.json.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    // The source imports `./app.ts`; the output must import `./app.js`.
+    "rewriteRelativeImportExtensions": true
+  },
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/details/fixtures"]
+}

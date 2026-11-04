@@ -1,5 +1,5 @@
 ---
-summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, not deployed); 18, Fill the gaps through Wicket, waits.
+summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript; not deployed); 18, Fill the gaps through Wicket, waits.
 updated: 2026-11-04
 ---
 
@@ -14,7 +14,9 @@ Pushed through `bfce142` (2026-11-01); the 2026-11-04 commits are on local main,
 - **On the VPS: ready, not deployed** (2026-11-04). Sign-in (a seeded local account or Sign in
   with Ward, no sign-up), the app at `/ro-housing/`, the API at `/ro-housing-api`, a container on
   `127.0.0.1:8809` capped at 1 CPU and 1 GiB ([17](../briefs/done/17-ready-for-the-vps.md),
-  [docs/owner-setup.md](../../docs/owner-setup.md)). Local development signs in too.
+  [docs/owner-setup.md](../../docs/owner-setup.md)). Local development signs in too. The image
+  compiles the API with tsc and runs `node dist/server.js`, no tsx: idle about 112 MiB in
+  `docker stats`, down from about 160 ([19](../briefs/done/19-the-api-runs-built-javascript.md)).
 - **API safety** (2026-10-27, 2026-10-28). No CORS; another site's `Origin` gets 403, and so does
   any `Host` but the local names, which closes DNS rebinding at port 3000
   ([docs/decisions.md](../../docs/decisions.md)).
@@ -46,8 +48,6 @@ Filed 2026-11-04 from the owner's grill, numbered in build order (numbering cont
 
 - [18](../briefs/todo/18-fill-the-gaps-with-wicket.md), "Fill the gaps" through Wicket on the Saved
   draft. Written only: it waits for Wicket, which is being built.
-- [19](../briefs/todo/19-the-api-runs-built-javascript.md), the API runs built JavaScript instead of
-  tsx (the owner's memory review of the VPS, 2026-11-04). Build it before the first deploy.
 - imobiliare's own price element, once its bot check lifts.
 
 ## Owner steps (2026-11-04)
@@ -56,10 +56,12 @@ Filed 2026-11-04 from the owner's grill, numbered in build order (numbering cont
   `WARD_OIDC_CLIENT_KEY` into vps-deploy's `secrets/ro-housing.env` (step 2).
 - Ward's local seed: add the `ro-housing` entry to `APPS` in wzd_auth's
   `infrastructure/local/seed.mjs` (the line is in owner-setup, "Local development").
-- With Docker Desktop up: build and check the container (step 3), and walk a local Ward sign-in
-  and "Link Ward" once (Local development, step 5).
-- Have the vps-deploy stack written from owner-setup's first section, then deploy (step 4), make the
-  account in the container (step 5), grant and link Ward (step 6).
+- With Docker Desktop up: walk a local Ward sign-in and "Link Ward" once (Local development,
+  step 5). Building and checking the container (step 3) is optional now: brief 19 did it, but not
+  Fetch details on a live page or Chromium.
+- vps-deploy's ro-housing stack exists; its printed seed command must become `node dist/seed.js`
+  (it still says `node --import tsx src/seed.ts`; brief 19's outcome). Then deploy (step 4), make
+  the account in the container (step 5), grant and link Ward (step 6).
 - `brief-board sync` to give briefs 13 to 18 their tickets.
 - The README's Sources screenshot shows nine sites and no sign-in; retake it with
   `docs/images/shots.md` when convenient.

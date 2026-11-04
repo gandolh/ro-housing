@@ -32,9 +32,10 @@ services:
       # so they survive deploys; a local dir by default, for a dev `up`.
       - ${RO_HOUSING_DATA_DIR:-../data}:/data
     # Caps, so a Refresh can't starve the box's other services. Measured on
-    # 2026-11-04: the API idles at about 200 MiB; headless Chromium takes about
-    # 100 MiB launched and about 190 MiB with one heavy page open; a real
-    # site's page will take more. docs/owner-setup.md has the numbers.
+    # 2026-11-04: the API idles at about 112 MiB as built JavaScript (160 MiB
+    # under tsx); headless Chromium takes about 100 MiB launched and about
+    # 190 MiB with one heavy page open; a real site's page will take more.
+    # docs/owner-setup.md has the numbers.
     cpus: 1.0
     mem_limit: 1g
     # Equal to mem_limit: no swap on top.

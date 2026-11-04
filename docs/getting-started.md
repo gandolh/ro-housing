@@ -74,11 +74,14 @@ npm run test:watch  # Vitest, watching
 npx tsc --noEmit    # typecheck
 ```
 
-`npm run build` in `web/` typechecks and builds into `web/dist/`. What each test file covers: [testing.md](testing.md).
+`npm run build` in `web/` typechecks and builds into `web/dist/`. In `api/` it compiles the API to
+JavaScript in `api/dist/` (tsc, then the schema copied beside it); that is what the container runs,
+with `node dist/server.js`, and what `npm start` runs. `npm run dev` and `npm run seed` stay on tsx
+and need no build. What each test file covers: [testing.md](testing.md).
 
 ## Common problems
 
-- **`ENOSPC: System limit for number of file watchers reached`** when starting Vite or `tsx watch`. On Linux every watched folder uses an inotify watch, shared by every program you run, and an editor that has a large folder open can use them all. Make the editor watch less, or raise `fs.inotify.max_user_watches`. In VS Code, add `node_modules`, `dist` and similar folders to `files.watcherExclude`. Without watchers, `npm start` runs the API and `npm run build && npx vite preview --port 5173` serves the web app.
+- **`ENOSPC: System limit for number of file watchers reached`** when starting Vite or `tsx watch`. On Linux every watched folder uses an inotify watch, shared by every program you run, and an editor that has a large folder open can use them all. Make the editor watch less, or raise `fs.inotify.max_user_watches`. In VS Code, add `node_modules`, `dist` and similar folders to `files.watcherExclude`. Without watchers, `npm run build && npm start` runs the API and `npm run build && npx vite preview --port 5173` serves the web app.
 - **The login page says "Open ro-housing from its own address to sign in."** The sign-in request reached the API with an `Origin` other than `PUBLIC_ORIGIN`, which Vite's proxy only lets happen for a page from another address. Open <http://127.0.0.1:5173/ro-housing/>, or set `PUBLIC_ORIGIN` to the origin you serve the app from.
 - **A blank page or 404 at <http://127.0.0.1:5173/>.** The app lives under `/ro-housing/` now.
 - **"Can't reach the API: is it running?"** in place of a list. The web app is up but the API is not, or it stopped. Start it in its terminal (`cd api && npm run dev`) and press Retry.

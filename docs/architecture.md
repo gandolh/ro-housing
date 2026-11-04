@@ -123,7 +123,7 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 
 ## What lives where
 
-- `api/src/server.ts` — the entry point: loads `.env` (`env.ts`), reads the settings (`config.ts`, which names any bad variable), builds the app and listens.
+- `api/src/server.ts` — the entry point: loads `.env` (`env.ts`), reads the settings (`config.ts`, which names any bad variable), builds the app and listens. In development tsx runs it as TypeScript; `npm run build` compiles `src/` to `api/dist/` with `tsc -p tsconfig.build.json` (tests and fixtures left out, `db/schema.sql` copied), and the container runs `node dist/server.js`.
 - `api/src/app.ts` — the Fastify app: the prefix strip, the guards that refuse a `Host` other than this machine (`lib/host.ts`, against DNS rebinding) and other websites' origins (`lib/origin.ts`; there is no CORS), the ward-auth plugin, the health check, route registration.
 - `api/src/accounts.ts`, `api/src/seed.ts` — the accounts on the app's database, and the script that makes one. `api/src/paths.ts` — where the database and the issues folder are (`RO_HOUSING_DB`, `RO_HOUSING_ISSUES_DIR`).
 - `api/vendor/ward/`, `web/vendor/ward/` — the vendored ward-auth library (a generated copy; upgrade it with the wzd_auth repo's vendoring script, never by hand).

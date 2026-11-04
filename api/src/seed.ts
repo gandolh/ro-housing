@@ -12,7 +12,7 @@ import { DB_PATH, db } from './db/index.ts';
  * grants them ro-housing there, or by running this again with their name.
  *
  *     cd api && npm run seed                                     (development)
- *     docker compose -f infrastructure/docker-compose.yml exec -it ro-housing-api node --import tsx src/seed.ts
+ *     docker compose -f infrastructure/docker-compose.yml exec -it ro-housing-api node dist/seed.js
  *
  * The name and password come from `SEED_USERNAME` and `SEED_PASSWORD` or, for
  * what is missing, a prompt on the terminal (the password is not echoed). An

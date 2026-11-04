@@ -239,3 +239,15 @@ context and its steps. Still write-only.
 From the owner's memory review of the VPS (vps-deploy's `memory-on-the-box` research): the apps on
 the box run built JavaScript, not tsx, and start with `node` directly. ro-housing idled at about 200
 MiB under tsx on the laptop, so this lands before its first deploy.
+
+## [2026-11-04] done | Brief 19: the API runs built JavaScript, started by `node`
+
+`npm run build` compiles `api/src/` to `api/dist/` with plain tsc (`tsconfig.build.json`,
+`rewriteRelativeImportExtensions`, tests left out, `db/schema.sql` copied); no bundler was needed.
+The image gains a build stage and runs `CMD ["node", "dist/server.js"]`; tsx is a dev dependency
+again and not in the runtime image; `dev` and `seed` stay on tsx, `start` runs the build. The seed
+in the container is `node dist/seed.js`, which vps-deploy's ro-housing stack still prints the old
+way. Idle, the same container: about 160 MiB and 24 tasks under tsx, about 112 MiB and 12 tasks
+built. Checks: api tsc clean, vitest 162/162; both images built once; in the new one, health,
+seed, sign-in, a Refresh of the RSS feed (93 listings), the Saved routes without a page fetch,
+a clean SIGTERM stop. Decision "The API runs built JavaScript" recorded.
