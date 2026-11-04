@@ -50,6 +50,14 @@ interface Call {
 }
 
 /** Routes fetch calls to canned responses and records what was sent. */
+/** The path of an API call without its prefix; throws when the prefix is
+ *  missing, so a call that skips base.ts's API_BASE fails the test. */
+function apiPath(input: string): string {
+  const path = input.split('?')[0]!;
+  if (!path.startsWith('/ro-housing-api/')) throw new Error(`no /ro-housing-api prefix: ${input}`);
+  return path.slice('/ro-housing-api'.length);
+}
+
 function mockApi(routes: Record<string, (body: unknown) => [number, unknown]>) {
   const calls: Call[] = [];
   vi.stubGlobal(
@@ -57,9 +65,10 @@ function mockApi(routes: Record<string, (body: unknown) => [number, unknown]>) {
     vi.fn(async (input: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET';
       const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-      calls.push({ url: input, method, body });
-      const handler = routes[`${method} ${input}`];
-      if (!handler) throw new Error(`unexpected ${method} ${input}`);
+      const url = apiPath(input);
+      calls.push({ url, method, body });
+      const handler = routes[`${method} ${url}`];
+      if (!handler) throw new Error(`unexpected ${method} ${url}`);
       const [status, payload] = handler(body);
       return new Response(payload === undefined ? null : JSON.stringify(payload), { status });
     }),

@@ -4,11 +4,37 @@
 
 ```
 ro-housing/
-  api/             Fastify backend. Exposes /api/sources, /api/listings, /api/refresh, /api/saved.
-  web/             React + Vite frontend. Talks to api over fetch.
+  api/             Fastify backend. /api/sources, /api/listings, /api/refresh, /api/saved, /api/issues,
+                   /api/health, and sign-in under /auth. vendor/ward/ holds the ward-auth library.
+  web/             React + Vite frontend at /ro-housing/. Talks to the API at /ro-housing-api.
+  infrastructure/  The container for the VPS: Dockerfile and docker-compose.yml.
   data/            SQLite file (ro-housing.db) lives here. Gitignored.
   docs/            This folder.
 ```
+
+## Addresses and sign-in
+
+The browser sees one origin. The web app is at `/ro-housing/` (Vite's `base`); every API call goes
+to `/ro-housing-api/...`, which Vite's dev proxy (locally) or Caddy (on the VPS) forwards to the API
+with the prefix stripped; the API strips it too when reached directly (`stripApiPrefix` in
+`app.ts`). Locally the API is on `127.0.0.1:3000`; in the container it is `0.0.0.0:8809`, published
+on the box's loopback only ([owner-setup.md](owner-setup.md)).
+
+Every request passes three guards before a route runs, in this order (`api/src/app.ts`):
+
+1. **Host** (`lib/host.ts`): this machine's names, `HOST`, and `PUBLIC_ORIGIN`'s host, which Caddy
+   passes through. Anything else is a rebound name: 403.
+2. **Origin** (`lib/origin.ts`): no `Origin`, the Vite dev origins (or `WEB_ORIGINS`) and
+   `PUBLIC_ORIGIN`. Another website: 403.
+3. **Session** (the vendored ward-auth plugin): every `/api` route but `GET /api/health` needs the
+   `ro_housing_session` cookie (HttpOnly, path `/ro-housing-api`); without it, 401. Sign-in is
+   `POST /auth/login` with a local account made by `npm run seed`, or "Sign in with Ward" when the
+   `WARD_OIDC_*` settings are set. No sign-up route, no rename. A session may write.
+
+The accounts and sessions are ward-auth's own `auth_*` tables in the app's SQLite file. In the
+browser, `AuthGate.tsx` shows the login page until the session hook says signed in; any API call
+answered 401 makes it ask again. `/ro-housing/login` and `/ro-housing/account` are addresses (the
+account one opens a dialog over the app, so an open draft survives); the tabs are not.
 
 Two independent npm packages. No monorepo tooling — `npm install` and `npm run dev` happen separately in each. Intentional: keeps the moving parts minimal for a personal project.
 
@@ -91,13 +117,16 @@ Two strategies live in `api/src/adapters/`:
 
 Both end up passing rendered HTML to cheerio, so listing-parsing code looks similar across the two paths. The only structural difference is *how the HTML got here*.
 
-## Why no dedup, no scheduler, no auth
+## Why no dedup, no scheduler
 
-Each of these is a category of complexity the user explicitly opted out of in scoping. Revisit only if a clear pain point appears in actual use. See `decisions.md` for the reasoning at the time.
+Each of these is a category of complexity the user explicitly opted out of in scoping. Revisit only if a clear pain point appears in actual use. See `decisions.md` for the reasoning at the time. Auth was on that list too until 2026-11-04, when the app was readied for the VPS (decisions.md, "On the VPS at /ro-housing, behind sign-in").
 
 ## What lives where
 
-- `api/src/server.ts` — Fastify bootstrap, the guards that refuse a `Host` other than this machine (`lib/host.ts`, against DNS rebinding) and other websites' origins (`lib/origin.ts`; there is no CORS), route registration.
+- `api/src/server.ts` — the entry point: loads `.env` (`env.ts`), reads the settings (`config.ts`, which names any bad variable), builds the app and listens.
+- `api/src/app.ts` — the Fastify app: the prefix strip, the guards that refuse a `Host` other than this machine (`lib/host.ts`, against DNS rebinding) and other websites' origins (`lib/origin.ts`; there is no CORS), the ward-auth plugin, the health check, route registration.
+- `api/src/accounts.ts`, `api/src/seed.ts` — the accounts on the app's database, and the script that makes one. `api/src/paths.ts` — where the database and the issues folder are (`RO_HOUSING_DB`, `RO_HOUSING_ISSUES_DIR`).
+- `api/vendor/ward/`, `web/vendor/ward/` — the vendored ward-auth library (a generated copy; upgrade it with the wzd_auth repo's vendoring script, never by hand).
 - `api/src/db/` — schema, connection, typed query helpers, `migrate.ts` (columns added after the first release). No ORM.
 - `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`.
 - `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain fetch, Chromium fallback, bot-check detection), `extract.ts` (the five layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
@@ -105,4 +134,5 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 - `api/src/routes/` — route handlers. Thin; business logic lives in adapters and db.
 - `web/src/pages/` — `ListingsPage` (the unified table), `SavedPage` (add by link, the draft, the saved table, the edit dialog) and `SourcesPage` (per-source URL + enable toggle).
 - `web/src/lib/` — `format.ts` (price, m², €/m², floor formatting shared by both tables), `apartment.ts` (form strings ↔ saved record, floor input "P"/"D").
-- `web/src/components/` — `ListingsTable`, `PriceHistory` (inline-SVG sparkline), `ApartmentForm` (the draft and edit form), `SavedTable`, `ReportIssueButton`, `ApiErrorNotice` (the alert with Retry that a page shows in place of its list when the API fails, worded by `apiErrorMessage` in `api.ts`).
+- `web/src/components/` — `ListingsTable`, `PriceHistory` (inline-SVG sparkline), `ApartmentForm` (the draft and edit form), `SavedTable`, `ReportIssueButton`, `ApiErrorNotice` (the alert with Retry that a page shows in place of its list when the API fails, worded by `apiErrorMessage` in `api.ts`), `AccountButton` (the user's name in the header and the account dialog).
+- `web/src/` sign-in — `base.ts` (`API_BASE`, the app's base path), `auth.ts` (sets up the vendored hooks; a 401 asks again), `route.ts` (the three addresses), `AuthGate.tsx`, `LoginPage.tsx`, `messages.ts` (the hooks' error codes in words).

@@ -1,0 +1,13 @@
+# The image only needs api/ (infrastructure/Dockerfile); keep the context small
+# and keep local data and secrets out of it.
+**/node_modules
+**/dist
+data
+issues
+web
+corpus
+docs
+.git
+.env
+.env.*
+infrastructure/.env

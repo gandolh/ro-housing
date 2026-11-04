@@ -1,0 +1,51 @@
+# ro-housing's API. Build context is the repo root (..).
+#
+#   docker compose -f infrastructure/docker-compose.yml up --build -d ro-housing-api
+#
+# `.env` in THIS directory is written by the deploy (0600) and read twice:
+# compose interpolates ${...} below from it, and the service declares it as
+# env_file so the same values reach the process. For a local run,
+# `touch infrastructure/.env` is enough. It is git-ignored because it carries
+# the Ward client key. docs/owner-setup.md lists every value.
+services:
+  ro-housing-api:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+      target: prod
+    image: ro-housing-api:1.0
+    ports:
+      # LOOPBACK ONLY. Without the 127.0.0.1 prefix this would be published on
+      # every interface, reachable over plain HTTP past Caddy and its TLS.
+      - "127.0.0.1:${RO_HOUSING_PORT:-8809}:${RO_HOUSING_PORT:-8809}"
+    env_file:
+      - .env
+    # These beat env_file, so a dev .env copied here can't move the database
+    # out of /data or the server off the published port.
+    environment:
+      HOST: 0.0.0.0
+      PORT: "${RO_HOUSING_PORT:-8809}"
+      RO_HOUSING_DB: /data/ro-housing.db
+      RO_HOUSING_ISSUES_DIR: /data/issues
+    volumes:
+      # The database and the Report button's files. Bind-mounted from the host
+      # so they survive deploys; a local dir by default, for a dev `up`.
+      - ${RO_HOUSING_DATA_DIR:-../data}:/data
+    # Caps, so a Refresh can't starve the box's other services. Measured on
+    # 2026-11-04: the API idles at about 200 MiB; headless Chromium takes about
+    # 100 MiB launched and about 190 MiB with one heavy page open; a real
+    # site's page will take more. docs/owner-setup.md has the numbers.
+    cpus: 1.0
+    mem_limit: 1g
+    # Equal to mem_limit: no swap on top.
+    memswap_limit: 1g
+    # The API and Chromium with one page open ran about 90 threads.
+    pids_limit: 256
+    # Reaps Chromium's child processes when a page or the browser dies.
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:'+process.env.PORT+'/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s

@@ -6,13 +6,20 @@ import type { FastifyInstance } from 'fastify';
 export const DEFAULT_WEB_ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173'];
 
 /** The allowed origins: `WEB_ORIGINS` (comma-separated) when set, else the
- *  defaults. A trailing slash is dropped, since browsers never send one. */
-export function webOrigins(env: string | undefined = process.env.WEB_ORIGINS): Set<string> {
+ *  defaults, plus the app's public origin (`PUBLIC_ORIGIN`), where the built
+ *  app is served on the VPS. A trailing slash is dropped, since browsers never
+ *  send one. */
+export function webOrigins(
+  env: string | undefined = process.env.WEB_ORIGINS,
+  publicOrigin?: string,
+): Set<string> {
   const list = env
     ?.split(',')
     .map((o) => o.trim().replace(/\/+$/, ''))
     .filter((o) => o.length > 0);
-  return new Set(list && list.length > 0 ? list : DEFAULT_WEB_ORIGINS);
+  const origins = new Set(list && list.length > 0 ? list : DEFAULT_WEB_ORIGINS);
+  if (publicOrigin) origins.add(publicOrigin.replace(/\/+$/, ''));
+  return origins;
 }
 
 /** A request without an Origin header (curl, a same-origin GET through the

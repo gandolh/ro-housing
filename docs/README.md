@@ -4,6 +4,7 @@ Start with the [main README](../README.md). This folder holds what it links to, 
 
 | File | What it covers |
 |---|---|
+| [owner-setup.md](owner-setup.md) | Putting it on the VPS: what the vps-deploy stack needs (port 8809, settings and the one secret, Caddy routes, the `/data` volume, the caps), registering it in Ward, making the account |
 | [getting-started.md](getting-started.md) | Local setup: prerequisites, the two dev servers, settings, first use, tests, common problems |
 | [overview.md](overview.md) | What the app does, who it's for, what is in and out of scope, the known risks |
 | [worklog.md](worklog.md) | What each session built, what broke and what's next. Read it after a pause |

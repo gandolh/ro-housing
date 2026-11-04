@@ -52,12 +52,20 @@ const LISTINGS = [
   listing(4, 'Gone before the last good run', 'imobiliare', RUN - 5 * DAY),
 ];
 
+/** The path of an API call without its prefix; throws when the prefix is
+ *  missing, so a call that skips base.ts's API_BASE fails the test. */
+function apiPath(input: string): string {
+  const path = input.split('?')[0]!;
+  if (!path.startsWith('/ro-housing-api/')) throw new Error(`no /ro-housing-api prefix: ${input}`);
+  return path.slice('/ro-housing-api'.length);
+}
+
 function mockApi(routes: Record<string, () => [number, unknown]>) {
   const calls: string[] = [];
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: string, init?: RequestInit) => {
-      const key = `${init?.method ?? 'GET'} ${input.split('?')[0]}`;
+      const key = `${init?.method ?? 'GET'} ${apiPath(input)}`;
       calls.push(key);
       const handler = routes[key];
       if (!handler) throw new Error(`unexpected ${key}`);
@@ -221,7 +229,7 @@ describe('<ListingsPage> when the API is down', () => {
       vi.fn(async (input: string) => {
         // Vite's proxy answers 502 with a plain-text body when the API is not running.
         if (!up) return new Response('', { status: 502, headers: { 'Content-Type': 'text/plain' } });
-        const body = input.startsWith('/api/sources') ? SOURCES : LISTINGS;
+        const body = apiPath(input) === '/api/sources' ? SOURCES : LISTINGS;
         return new Response(JSON.stringify(body), { status: 200 });
       }),
     );

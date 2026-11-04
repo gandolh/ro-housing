@@ -207,3 +207,20 @@ Refresh (a plain request naming the app, no cookies, browser or retry) and keeps
 for sale, title and link only; it starts enabled with its URL filled in and refuses any other
 URL. One live run kept 66. Decision "imobiliare's RSS feed, title and link only" recorded next to
 "Blocked means blocked". Checks: api tsc clean, vitest 147/147.
+
+## [2026-11-04] done | Brief 17: ready for the VPS (sign-in, sub-path, container); not deployed
+
+Sign-in like brief-board (ward-auth 0.7.0 vendored with wzd_auth's script, a seeded local account,
+Sign in with Ward, no sign-up, no rename; sessions write), the app at `/ro-housing/` and the API at
+`/ro-housing-api` with the Host and Origin checks also allowing `PUBLIC_ORIGIN`, a Debian container
+with Chromium's headless shell on `127.0.0.1:8809`, the database and the Report files on `/data`,
+caps of 1 CPU, 1 GiB, no swap, 256 tasks. `docs/owner-setup.md` has everything the vps-deploy stack
+needs. The image wasn't built (Docker not reachable from WSL). Checks: api tsc clean, vitest
+162/162; web tsc -b clean, vitest 73/73, vite build; a curl walk through Vite's proxy on a throwaway
+database. Open questions in [wiki/open-questions.md](wiki/open-questions.md).
+
+## [2026-11-04] maintenance | Briefs 01 and 13-17 built; 18 waits for Wicket
+
+The run's briefs are done except 18 (Fill the gaps through Wicket), which stays in todo until Wicket
+exists. All commits on main, not pushed, nothing deployed. Board: ro-housing-01 was moved to Done;
+13 to 18 have no tickets (creating them was refused), so the owner's next sync files them.

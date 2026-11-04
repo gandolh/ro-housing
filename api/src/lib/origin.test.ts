@@ -13,6 +13,15 @@ describe('webOrigins', () => {
       new Set(['http://localhost:5174', 'http://127.0.0.1:5174']),
     );
   });
+
+  it('always adds the public origin, beside the defaults or the override', () => {
+    expect(webOrigins(undefined, 'https://example.com')).toEqual(
+      new Set([...DEFAULT_WEB_ORIGINS, 'https://example.com']),
+    );
+    expect(webOrigins('http://localhost:5174', 'https://example.com/')).toEqual(
+      new Set(['http://localhost:5174', 'https://example.com']),
+    );
+  });
 });
 
 describe('originAllowed', () => {

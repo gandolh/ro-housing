@@ -1,32 +1,38 @@
-import Fastify from 'fastify';
-import './db/index.ts';
-import { issuesRoutes } from './routes/issues.ts';
-import { listingsRoutes } from './routes/listings.ts';
-import { refreshRoutes } from './routes/refresh.ts';
-import { savedRoutes } from './routes/saved.ts';
-import { sourcesRoutes } from './routes/sources.ts';
-import { refuseOtherHosts } from './lib/host.ts';
-import { refuseOtherOrigins } from './lib/origin.ts';
+// First: fills the environment from the repo root's .env before the database
+// module reads RO_HOUSING_DB.
+import './env.ts';
+import { buildApp } from './app.ts';
+import { ConfigError, loadConfig, type Config } from './config.ts';
+import { DB_PATH } from './db/index.ts';
 import { closeBrowser } from './lib/playwright.ts';
+import { issuesDir } from './paths.ts';
 
-const app = Fastify({ logger: true });
+let config: Config;
+try {
+  config = loadConfig(process.env);
+} catch (err) {
+  if (!(err instanceof ConfigError)) throw err;
+  console.error(`ro-housing cannot start:\n${err.message}`);
+  process.exit(1);
+}
 
-// No CORS: the web app reaches the API through Vite's proxy, on its own
-// origin. Requests whose Host is not this machine (DNS rebinding) and requests
-// that name another website's origin are refused, before any route runs.
-refuseOtherHosts(app);
-refuseOtherOrigins(app);
-await app.register(sourcesRoutes);
-await app.register(listingsRoutes);
-await app.register(refreshRoutes);
-await app.register(issuesRoutes);
-await app.register(savedRoutes);
-
-const PORT = Number(process.env.PORT ?? 3000);
-const HOST = process.env.HOST ?? '127.0.0.1';
+const app = await buildApp({
+  publicOrigin: config.publicOrigin,
+  ward: config.ward,
+  trustedProxies: config.trustedProxies,
+  bindHost: process.env.HOST,
+  webOriginsEnv: process.env.WEB_ORIGINS,
+  logger: true,
+});
+app.log.info(`database: ${DB_PATH}; issues: ${issuesDir()}; public origin: ${config.publicOrigin}`);
+app.log.info(
+  config.ward
+    ? 'Sign in with Ward is on'
+    : 'WARD_OIDC_ISSUER is not set: local accounts only, no Sign in with Ward',
+);
 
 try {
-  await app.listen({ port: PORT, host: HOST });
+  await app.listen({ port: config.port, host: config.host });
 } catch (err) {
   app.log.error(err);
   process.exit(1);

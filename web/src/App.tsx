@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ReportIssueButton } from './components/ReportIssueButton.tsx';
 import { Tabs, TabsList, TabsPanel, TabsTab } from './components/ui/Tabs.tsx';
 import { ListingsPage } from './pages/ListingsPage.tsx';
 import { SavedPage } from './pages/SavedPage.tsx';
 import { SourcesPage } from './pages/SourcesPage.tsx';
 
-export function App() {
+/** `account`: the signed-in user's button in the header, from main.tsx; tests
+ *  render the app without the sign-in gate and leave it out. */
+export function App({ account }: { account?: ReactNode } = {}) {
   const [tab, setTab] = useState<string>('listings');
   // A listing's link handed from the Listings tab to the Saved tab's fetch.
   const [incomingLink, setIncomingLink] = useState<string | null>(null);
@@ -21,7 +23,10 @@ export function App() {
         <span className="text-xl font-bold uppercase tracking-tight">
           ro-housing
         </span>
-        <ReportIssueButton />
+        <div className="flex items-center gap-3">
+          <ReportIssueButton />
+          {account}
+        </div>
       </header>
 
       <main className="mx-auto w-full max-w-[960px] flex-1 px-6 py-5">

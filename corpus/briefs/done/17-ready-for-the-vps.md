@@ -93,3 +93,41 @@ the VPS:
   after the seed, the login page signs in and the three tabs work under `/ro-housing/`.
 - `docs/owner-setup.md` lists the port, env and secret names, routes, volume and cap numbers.
 - wzd_auth's `git status` is clean after vendoring.
+
+## Outcome (2026-11-04)
+
+Built; not deployed, and the image not built (Docker wasn't reachable from WSL).
+
+- **Sign-in.** ward-auth 0.7.0 vendored into `api/vendor/ward` and `web/vendor/ward` with wzd_auth's
+  `vendor.mjs` (wzd_auth's `git status` stayed clean; the copy is byte-identical to brief-board's).
+  `api/src/app.ts` builds the app: prefix strip, Host check, Origin check, then the plugin (cookie
+  `ro_housing_session` on `/ro-housing-api`, `/auth`, `GET /api/health` public, `allowRename:
+  false`, no registration, Ward when `WARD_OIDC_ISSUER` is set). Sessions write. `config.ts` reads
+  and checks the settings; `env.ts` loads the repo root's `.env`; `paths.ts` reads `RO_HOUSING_DB`
+  and `RO_HOUSING_ISSUES_DIR`; `seed.ts` (`npm run seed`) makes an account.
+- **Web.** Base `/ro-housing/`, every call under `/ro-housing-api` (`base.ts`), a dev proxy that
+  strips the prefix and rewrites a same-host `Origin` to `PUBLIC_ORIGIN`; `AuthGate`, `LoginPage`,
+  and the account as a dialog from the user's name in the header (`AccountButton`) at
+  `/ro-housing/account`, so the tabs behind it keep an open draft. That is a change from the
+  brief's "account page": a page would unmount the app. The page tests' `fetch` stubs now refuse
+  any call without the prefix.
+- **Container.** `infrastructure/Dockerfile` (Debian `node:24-bookworm-slim`, Chromium's headless
+  shell only, `tsx` at run time, `/data` volume, Node-`fetch` health check),
+  `infrastructure/docker-compose.yml` (`127.0.0.1:8809`, caps), `.dockerignore`, `.env.example`.
+  `tsx` moved to `dependencies`; Node's own type stripping was tried and refuses the code's
+  parameter properties. Chromium gets `--disable-dev-shm-usage` under `CHROMIUM_DISABLE_DEV_SHM=1`.
+- **Caps** from light measurements (no site fetched): API idle about 200 MiB under `tsx`; headless
+  Chromium about 100 MiB launched, about 190 MiB with one heavy local page, about 90 threads with
+  the API. Proposed and written into the compose file: `cpus: 1.0`, `mem_limit: 1g`,
+  `memswap_limit: 1g`, `pids_limit: 256`, `init: true`.
+- **Docs.** `docs/owner-setup.md` (the stack's needs, the owner's steps, local development), the
+  README (status line, sign-in, run steps, layout), getting-started, architecture ("Addresses and
+  sign-in"), decisions ("On the VPS at /ro-housing, behind sign-in"), overview, issues, testing,
+  docs/README. Open questions in `corpus/wiki/open-questions.md`.
+
+Checks: api `tsc --noEmit` clean, `vitest run` 162/162 (147 before); web `tsc -b` clean, `vitest run`
+73/73 (68 before), `vite build` clean with assets under `/ro-housing/`. A local walk with curl on a
+throwaway database through Vite's proxy: the page at `/ro-housing/`, 401 without a session, the
+seeded account signing in from `http://localhost:5173` (rewritten to `PUBLIC_ORIGIN`), the cookie on
+`/ro-housing-api`, reads and writes with it, another site's `Origin` refused, the feed source seeded
+with its URL. Not done: a browser walk and a Ward sign-in (owner steps).

@@ -6,6 +6,21 @@ Format: date + 2–6 lines per session. What got built, what's next, anything we
 
 ---
 
+## Session 8 (2026-11-04): the grill's briefs, ready for the VPS
+
+**Closed:** the Firecrawl and Ollama research. No Firecrawl (too heavy for this setup); a short section in [research-firecrawl-ollama.md](research-firecrawl-ollama.md) says what it would take on a bigger machine.
+
+**Built** (briefs 13 to 17, numbered after the old 12):
+- hitchmosher.ro's default search URL noted as stale; the source stays off.
+- The single-listing reader takes a price from JSON-LD offers or a bare line under the `<h1>`, and keeps a zone on its line.
+- A Refresh that finds no listings shows EMPTY and dims nothing (`sources.last_run_count`).
+- A tenth source reads imobiliare.ro's RSS feed once per Refresh: Timișoara flats for sale, title and link only.
+- Ready for the VPS: sign-in (seeded account or Sign in with Ward), `/ro-housing` and `/ro-housing-api`, a capped container on port 8809. Not deployed; the image wasn't built (no Docker here). [owner-setup.md](owner-setup.md).
+
+**Waiting:** brief 18, "Fill the gaps" through Wicket, until Wicket exists.
+
+**Notes for next time:** local development signs in now: `cd api && npm run seed` once, then <http://127.0.0.1:5173/ro-housing/>. Open questions in `corpus/wiki/open-questions.md`.
+
 ## Session 7 (2026-10-28 – 2026-11-02) — Host check, research paused, briefs reset
 
 **Built:**

@@ -6,7 +6,7 @@ A house-hunting tool for one person looking to buy a flat in Timișoara. It pull
   <img src="docs/images/hero.webp" width="100%" alt="The Listings tab: eleven made-up apartments from storia, imobiliare, foxfort and three other sources in one table, with rooms, m², price, €/m², area, how many days ago each was first seen, a small line of its price over time, and a save action on every row">
 </p>
 
-**Status:** Personal project that runs on your own computer. There is no hosted version. Of the nine search scrapers, only imobiliare.ro's has been checked against the live site, and since 2026-10-16 imobiliare.ro has answered the app with a bot check. Reading single listings works on storia.ro and the three agency sites tried.
+**Status:** Personal project, being moved to the owner's VPS, behind sign-in; until then it runs on your own computer. The repo has the container and the setup notes, and it is not deployed yet. Of the nine search scrapers, only imobiliare.ro's has been checked against the live site, and since 2026-10-16 imobiliare.ro has answered the app with a bot check. Reading single listings works on storia.ro and the three agency sites tried.
 
 ## What it does
 
@@ -16,6 +16,7 @@ A house-hunting tool for one person looking to buy a flat in Timișoara. It pull
 - Keeps each listing's price history, one point per Refresh, drawn as a small line beside it.
 - Saves one listing from its link. The app reads price, rooms, m², floor, year built, area, partitioning and photo from the page into a form. Each field says "from page", "edited" or "not on page", and nothing is stored until you press Save. When a site shows a bot check instead of the ad, the form opens empty with the link kept.
 - Lines up the saved flats with your notes, sorted by price, €/m², m² or year built. You can edit any of them later. Deleting one takes two clicks.
+- Asks you to sign in: with a local account the owner makes with a script, or with "Sign in with Ward", the account service the owner's other apps share. There is no sign-up page.
 
 Each listing site shows only its own ads, and a spreadsheet means copying every field by hand. This tool covers one city, one buyer and flats for sale only. It does not merge a flat listed on two sites, refresh on a schedule, or store photos, only links to them.
 
@@ -33,11 +34,11 @@ The screens show made-up listings and apartments from [demo-seed.mjs](docs/image
 
 ## How it works
 
-Two npm packages. `api/` is a Fastify server on SQLite. For Refresh it runs one scraper per site in turn: cheerio on plain HTML, or a headless Chromium driven by Playwright when a site needs a real browser. For a single link it fetches the page, tries the browser if the plain request is refused, and reads the fields with one site-independent extractor: storia's embedded JSON, then a price in the page's JSON-LD, then Romanian label/value pairs such as "Nr. camere: 3", then the page's Open Graph tags, then phrases like "etajul 3 din 4". `web/` is a React app built with Vite, Tailwind and Base UI. It proxies `/api` to the server.
+Two npm packages. `api/` is a Fastify server on SQLite. For Refresh it runs one scraper per site in turn: cheerio on plain HTML, or a headless Chromium driven by Playwright when a site needs a real browser. For a single link it fetches the page, tries the browser if the plain request is refused, and reads the fields with one site-independent extractor: storia's embedded JSON, then a price in the page's JSON-LD, then Romanian label/value pairs such as "Nr. camere: 3", then the page's Open Graph tags, then phrases like "etajul 3 din 4". `web/` is a React app built with Vite, Tailwind and Base UI, served at `/ro-housing/`; it reaches the API at `/ro-housing-api`, through Vite's proxy in development and Caddy on the VPS. Sign-in comes from ward-auth, a small library vendored into `api/vendor/ward` and `web/vendor/ward`. On the VPS the API runs in one container with Playwright's Chromium, capped at one CPU and 1 GiB of memory.
 
 ```mermaid
 flowchart LR
-  web["web/<br/>React + Vite"] -- "/api/*" --> api["api/<br/>Fastify"]
+  web["web/<br/>React + Vite"] -- "/ro-housing-api/*" --> api["api/<br/>Fastify + sign-in"]
   api --> db[("SQLite<br/>data/ro-housing.db")]
   api -- "Refresh: one scraper per site" --> sites["listing sites"]
   api -- "Fetch details: one listing page" --> sites
@@ -47,27 +48,30 @@ More in [docs/architecture.md](docs/architecture.md), and how each scraper reads
 
 ## Run it locally
 
-Requires Node 24 and npm. Use two terminals:
+Requires Node 24 and npm. Make your account once, then use two terminals:
 
 ```bash
-cd api && npm install && npm run dev    # API on http://127.0.0.1:3000. The install also downloads Chromium
-cd web && npm install && npm run dev    # web app on http://127.0.0.1:5173
+cd api && npm install && npm run seed   # asks for a username and password. The install also downloads Chromium
+cd api && npm run dev                   # API on http://127.0.0.1:3000
+cd web && npm install && npm run dev    # web app on http://127.0.0.1:5173/ro-housing/
 ```
 
-Open <http://127.0.0.1:5173>. In **Sources**, tick a site, paste a search-results URL from it and press Save, then press Refresh on **Listings**. In **Saved**, paste one listing's link and press Fetch details. The API creates its database, `data/ro-housing.db`, on the first start. Settings, tests and known problems: [docs/getting-started.md](docs/getting-started.md).
+Open <http://127.0.0.1:5173/ro-housing/> and sign in. In **Sources**, tick a site, paste a search-results URL from it and press Save, then press Refresh on **Listings**. In **Saved**, paste one listing's link and press Fetch details. The API creates its database, `data/ro-housing.db`, on the first start. Settings, tests and known problems: [docs/getting-started.md](docs/getting-started.md).
 
 ## Project layout
 
 | Path | What lives there |
 |---|---|
-| `api/` | Fastify server: the database, the nine search scrapers and the RSS feed reader, the single-listing reader, the routes |
+| `api/` | Fastify server: the database, sign-in, the nine search scrapers and the RSS feed reader, the single-listing reader, the routes, the seed script |
 | `web/` | React app: the Listings, Saved and Sources tabs, and the shared UI components |
 | `data/` | The SQLite file, created on first start, not in git |
+| `infrastructure/` | The container: `Dockerfile` and `docker-compose.yml` for the VPS |
 | `docs/` | Setup, architecture, the scrapers, decisions, the worklog and the images here |
 
 ## Docs
 
 - [docs/](docs/README.md): setup, what the app is and isn't, how it's built, the scrapers, the design system, tests, decisions and the session-by-session worklog
+- [docs/owner-setup.md](docs/owner-setup.md): putting it on the VPS (port, settings, routes, volume, caps) and the owner's steps
 
 ## License
 

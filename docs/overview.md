@@ -2,11 +2,11 @@
 
 ## What this is
 
-A personal-use, local-only tool that aggregates apartment-for-sale listings from several Romanian real-estate sites into a single UI, scoped to **Timișoara** and **buy-only**. The user pastes a search-results URL from each site they want to monitor, clicks Refresh, and sees a unified, sortable list with price / rooms / m² / location / a link back to the original.
+A personal-use tool that aggregates apartment-for-sale listings from several Romanian real-estate sites into a single UI, scoped to **Timișoara** and **buy-only**. The user pastes a search-results URL from each site they want to monitor, clicks Refresh, and sees a unified, sortable list with price / rooms / m² / location / a link back to the original.
 
 ## Who it's for
 
-One user: the author. Single-user, no auth, runs on `localhost`. No deployment story.
+One user: the author. Single-user, behind sign-in (a local account or "Sign in with Ward"). Runs on `localhost`, and from 2026-11-04 the repo is ready for the owner's VPS at `/ro-housing` ([owner-setup.md](owner-setup.md)); not deployed yet.
 
 ## Job-to-be-done
 
@@ -23,7 +23,7 @@ Replace the manual ritual of opening 6–8 tabs and comparing listings across si
 
 ## Out of scope
 
-- Rent listings, cities other than Timișoara, multi-user, auth, hosting.
+- Rent listings, cities other than Timișoara, multi-user. (Sign-in and hosting were out until 2026-11-04.)
 - Deduplication across sites. Same apartment on imobiliare + on the agency's own site shows up twice with different source badges — that's a feature, not a bug (lets the user compare).
 - Image storage. Source links carry the photos; we don't pull them. A saved apartment keeps the link to the page's main photo and shows it as a thumbnail, so the thumbnail breaks if the listing is taken down.
 - Map view / geocoding. Location is a free-form neighborhood string.

@@ -23,6 +23,15 @@ describe('allowedHostnames', () => {
     expect(allowedHostnames('FE80::1').has('[fe80::1]')).toBe(true);
     expect(allowedHostnames('[fe80::1]').has('[fe80::1]')).toBe(true);
   });
+
+  it('adds the public origin’s host, which Caddy passes through on the VPS', () => {
+    expect(allowedHostnames('0.0.0.0', 'https://Example.COM')).toEqual(
+      new Set([...DEFAULT_HOSTNAMES, '0.0.0.0', 'example.com']),
+    );
+    expect(allowedHostnames(undefined, 'http://127.0.0.1:5173')).toEqual(new Set(DEFAULT_HOSTNAMES));
+    expect(hostAllowed('example.com', allowedHostnames('0.0.0.0', 'https://example.com'))).toBe(true);
+    expect(hostAllowed('evil.example', allowedHostnames('0.0.0.0', 'https://example.com'))).toBe(false);
+  });
 });
 
 describe('hostnameOf', () => {

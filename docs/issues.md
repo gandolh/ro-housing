@@ -1,6 +1,6 @@
 # User-reported issues
 
-There's a **Report an issue** button in the web UI. Clicking it opens a modal where the user writes feedback. On submit, the API writes a single Markdown file to `issues/` at the repo root.
+There's a **Report an issue** button in the web UI. Clicking it opens a modal where the user writes feedback. On submit, the API writes a single Markdown file to `issues/` at the repo root (or `RO_HOUSING_ISSUES_DIR`). On the VPS that is `/data/issues` in the container, on the data volume: reading them means fetching them from the box first.
 
 This is intentionally not a bug tracker. It's a one-way channel: user → Claude. Claude reads the files, builds a plan, implements the fix, then deletes the file directly with `rm`. There is no in-app "resolve" button.
 

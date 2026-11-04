@@ -1,3 +1,5 @@
+import { API_BASE } from './base.ts';
+
 export interface Source {
   id: string;
   displayName: string;
@@ -117,8 +119,25 @@ export function apiErrorMessage(err: unknown): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+const unauthorizedListeners = new Set<() => void>();
+
+/** Hear of every 401: the session ended (or never was). auth.ts asks the
+ *  server again, and the gate shows the login page. Returns an unsubscribe. */
+export function onUnauthorized(listener: () => void): () => void {
+  unauthorizedListeners.add(listener);
+  return () => {
+    unauthorizedListeners.delete(listener);
+  };
+}
+
+/** A call to the API, under its browser-visible prefix (base.ts). */
+function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  return fetch(`${API_BASE}${path}`, init);
+}
+
 async function jsonOrApiError<T>(res: Response): Promise<T> {
   if (res.ok) return (await res.json()) as T;
+  if (res.status === 401) for (const listener of unauthorizedListeners) listener();
   let payload: { error?: string } | null = null;
   try {
     payload = (await res.json()) as { error?: string };
@@ -129,12 +148,12 @@ async function jsonOrApiError<T>(res: Response): Promise<T> {
 }
 
 export const api = {
-  listSources: () => fetch('/api/sources').then(jsonOrApiError<Source[]>),
+  listSources: () => apiFetch('/api/sources').then(jsonOrApiError<Source[]>),
   updateSource: (
     id: string,
     patch: { searchUrl?: string | null; enabled?: boolean },
   ) =>
-    fetch(`/api/sources/${encodeURIComponent(id)}`, {
+    apiFetch(`/api/sources/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
@@ -148,37 +167,37 @@ export const api = {
     if (params.sort) q.set('sort', params.sort);
     if (params.order) q.set('order', params.order);
     if (params.source) q.set('source', params.source);
-    return fetch(`/api/listings?${q}`).then(jsonOrApiError<Listing[]>);
+    return apiFetch(`/api/listings?${q}`).then(jsonOrApiError<Listing[]>);
   },
   refresh: () =>
-    fetch('/api/refresh', { method: 'POST' }).then(jsonOrApiError<RefreshResult>),
+    apiFetch('/api/refresh', { method: 'POST' }).then(jsonOrApiError<RefreshResult>),
   scrapeLink: (url: string) =>
-    fetch('/api/saved/scrape', {
+    apiFetch('/api/saved/scrape', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     }).then(jsonOrApiError<ScrapeResult>),
-  listSaved: () => fetch('/api/saved').then(jsonOrApiError<SavedApartment[]>),
+  listSaved: () => apiFetch('/api/saved').then(jsonOrApiError<SavedApartment[]>),
   createSaved: (input: SavedInput) =>
-    fetch('/api/saved', {
+    apiFetch('/api/saved', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     }).then(jsonOrApiError<SavedApartment>),
   updateSaved: (id: number, input: SavedInput) =>
-    fetch(`/api/saved/${id}`, {
+    apiFetch(`/api/saved/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     }).then(jsonOrApiError<SavedApartment>),
   deleteSaved: async (id: number) => {
-    const res = await fetch(`/api/saved/${id}`, { method: 'DELETE' });
+    const res = await apiFetch(`/api/saved/${id}`, { method: 'DELETE' });
     if (!res.ok) await jsonOrApiError<never>(res);
   },
   getIssuesStatus: () =>
-    fetch('/api/issues').then(jsonOrApiError<{ count: number; max: number }>),
+    apiFetch('/api/issues').then(jsonOrApiError<{ count: number; max: number }>),
   submitIssue: (body: string) =>
-    fetch('/api/issues', {
+    apiFetch('/api/issues', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ body }),

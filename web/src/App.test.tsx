@@ -41,13 +41,21 @@ function storia(over: Partial<Source> = {}): Source {
   };
 }
 
+/** The path of an API call without its prefix; throws when the prefix is
+ *  missing, so a call that skips base.ts's API_BASE fails the test. */
+function apiPath(input: string): string {
+  const path = input.split('?')[0]!;
+  if (!path.startsWith('/ro-housing-api/')) throw new Error(`no /ro-housing-api prefix: ${input}`);
+  return path.slice('/ro-housing-api'.length);
+}
+
 /** Routes fetch calls by method and path (query ignored); counts each. */
 function mockApi(routes: Record<string, () => unknown>) {
   const calls: string[] = [];
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: string, init?: RequestInit) => {
-      const key = `${init?.method ?? 'GET'} ${input.split('?')[0]}`;
+      const key = `${init?.method ?? 'GET'} ${apiPath(input)}`;
       calls.push(key);
       const handler = routes[key];
       if (!handler) throw new Error(`unexpected ${key}`);

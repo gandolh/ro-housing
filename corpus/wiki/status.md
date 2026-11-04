@@ -1,16 +1,20 @@
 ---
-summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; the 2026-11-04 grill closed the Firecrawl and Ollama research (01) and filed briefs 13 to 18 (a hitchmosher note, two extractor rules, an empty-Refresh warning, imobiliare's RSS feed, getting ready for the VPS, and Wicket's "Fill the gaps", which waits).
+summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, not deployed); 18, Fill the gaps through Wicket, waits.
 updated: 2026-11-04
 ---
 
 # Status: 2026-11-04
 
-Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-11-02 (see
+Pushed through `bfce142` (2026-11-01); the 2026-11-04 commits are on local main, not pushed. Brief numbering restarted at 01 on 2026-11-02 (see
 [log.md](../log.md)); project knowledge is in [docs/](../../docs/README.md), the session record in
 [docs/worklog.md](../../docs/worklog.md).
 
 ## By area
 
+- **On the VPS: ready, not deployed** (2026-11-04). Sign-in (a seeded local account or Sign in
+  with Ward, no sign-up), the app at `/ro-housing/`, the API at `/ro-housing-api`, a container on
+  `127.0.0.1:8809` capped at 1 CPU and 1 GiB ([17](../briefs/done/17-ready-for-the-vps.md),
+  [docs/owner-setup.md](../../docs/owner-setup.md)). Local development signs in too.
 - **API safety** (2026-10-27, 2026-10-28). No CORS; another site's `Origin` gets 403, and so does
   any `Host` but the local names, which closes DNS rebinding at port 3000
   ([docs/decisions.md](../../docs/decisions.md)).
@@ -40,9 +44,22 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [17](../briefs/todo/17-ready-for-the-vps.md), ready for the VPS: Sign in with Ward and a seeded
-  account, `/ro-housing` and `/ro-housing-api`, port 8809, a capped container with Chromium. No
-  deploy.
 - [18](../briefs/todo/18-fill-the-gaps-with-wicket.md), "Fill the gaps" through Wicket on the Saved
   draft. Written only: it waits for Wicket, which is being built.
 - imobiliare's own price element, once its bot check lifts.
+
+## Owner steps (2026-11-04)
+
+- Production Ward: register the `ro-housing` app and client (owner-setup step 1), then write
+  `WARD_OIDC_CLIENT_KEY` into vps-deploy's `secrets/ro-housing.env` (step 2).
+- Ward's local seed: add the `ro-housing` entry to `APPS` in wzd_auth's
+  `infrastructure/local/seed.mjs` (the line is in owner-setup, "Local development").
+- With Docker Desktop up: build and check the container (step 3), and walk a local Ward sign-in
+  and "Link Ward" once (Local development, step 5).
+- Have the vps-deploy stack written from owner-setup's first section, then deploy (step 4), make the
+  account in the container (step 5), grant and link Ward (step 6).
+- `brief-board sync` to give briefs 13 to 18 their tickets.
+- The README's Sources screenshot shows nine sites and no sign-in; retake it with
+  `docs/images/shots.md` when convenient.
+- Optional: `ollama rm qwen2.5:3b llama3.2:3b` frees the 3.9 GB pulled for the research.
+- Answer [open-questions.md](open-questions.md).

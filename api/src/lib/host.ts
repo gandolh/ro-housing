@@ -12,12 +12,18 @@ function normalizeHostname(name: string): string {
 }
 
 /** The allowed hostnames: the defaults, plus `HOST` when it binds the API to
- *  another address (one on the LAN), so that address keeps working. */
+ *  another address (one on the LAN), so that address keeps working, plus the
+ *  host of the app's public origin. Behind Caddy the browser's own `Host`
+ *  comes through, so on the VPS that is the name every request carries. */
 export function allowedHostnames(
   bindHost: string | undefined = process.env.HOST,
+  publicOrigin?: string,
 ): Set<string> {
   const names = new Set(DEFAULT_HOSTNAMES);
   if (bindHost && bindHost.trim().length > 0) names.add(normalizeHostname(bindHost));
+  if (publicOrigin && URL.canParse(publicOrigin)) {
+    names.add(normalizeHostname(new URL(publicOrigin).hostname));
+  }
   return names;
 }
 

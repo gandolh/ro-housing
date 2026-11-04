@@ -1,11 +1,11 @@
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import type { FastifyInstance } from 'fastify';
+import { issuesDir } from '../paths.ts';
 
 const MAX_ISSUES = 10;
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ISSUES_DIR = join(__dirname, '..', '..', '..', 'issues');
+/** `RO_HOUSING_ISSUES_DIR`, else `issues/` at the repo root (paths.ts). */
+const ISSUES_DIR = issuesDir();
 
 mkdirSync(ISSUES_DIR, { recursive: true });
 
