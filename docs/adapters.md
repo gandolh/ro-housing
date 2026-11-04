@@ -62,7 +62,9 @@ These get filled in as adapters are built. Includes things worth remembering: th
 - Search URL pattern: `/timisoara/apartament-vanzare-...`.
 
 ### hitchmosher.ro
-- Strategy: cheerio. EN-language site, URL pattern `/en/apartments/for-sale`.
+- **Off, and its default search URL is stale.** On 2026-10-28 the page at `/en/apartments/for-sale` had no listing links in its HTML: the cards are filled in by a script, and even the page a browser rendered had only two listing links, under `/ro/proprietate/`, which the adapter's `/apartments/` pattern doesn't match. A source pointed there gets an empty list. The owner keeps the source off (2026-11-04). Detail in [research-firecrawl-ollama.md](research-firecrawl-ollama.md), job 1.
+- Reviving it takes a new search URL and a link pattern for `/ro/proprietate/`, checked against the live page first; since the cards come from a script, probably the Playwright strategy too.
+- Strategy: cheerio. EN-language site, URL pattern `/en/apartments/for-sale` (stale, see above).
 
 ### agentie-imobiliare-timisoara.ro
 - Strategy: cheerio (verified). PHP-based.

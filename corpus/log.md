@@ -176,3 +176,9 @@ marked dropped, the "To finish" list became an Outcome section mapping proposals
 14, 15, 16 and 18, and a short "Firecrawl on a bigger machine" section gives the measured costs; the
 README links to it. Decision "No Firecrawl; a model only on request" in docs/decisions.md. No code.
 Check: `bash corpus/lint.sh`.
+
+## [2026-11-04] done | Brief 13: hitchmosher.ro's default search URL is stale
+
+`docs/adapters.md` says the hitchmosher.ro source is off by the owner's choice and its default
+URL (`/en/apartments/for-sale`) has had no listing links in its HTML since 2026-10-28, and what
+reviving it would take. Docs only. Check: `bash corpus/lint.sh`.

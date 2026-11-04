@@ -34,3 +34,10 @@ empty list. `docs/adapters.md` still lists that URL pattern as if it worked.
 - `docs/adapters.md` says the hitchmosher.ro default URL is stale, since when, why, and that the
   source stays off by the owner's choice.
 - No code changes; `bash corpus/lint.sh` passes.
+
+## Outcome (2026-11-04)
+
+Done as written. `docs/adapters.md`'s hitchmosher.ro note now opens with the source being off and
+its default URL stale since 2026-10-28 (no listing links in the HTML, cards filled in by a script,
+the two rendered links under `/ro/proprietate/`), links the research, and says what reviving it
+would take. No code, nothing fetched. Check: `bash corpus/lint.sh`.

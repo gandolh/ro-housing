@@ -22,6 +22,8 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 - **Web app resilience** (2026-10-27). Tab pages stay mounted; with the API down each page shows
   "Can't reach the API" with Retry; a second Fetch details over an edited draft asks first.
 - **Scraping** (2026-10-27). A failed or disconnected Chromium is relaunched on the next call.
+- **hitchmosher.ro** (2026-11-04). Off by the owner's choice; its default search URL is stale
+  ([13](../briefs/done/13-hitchmosher-stale-search-url-note.md), [docs/adapters.md](../../docs/adapters.md)).
 - **Research** (2026-11-04). [01](../briefs/done/01-research-firecrawl-and-ollama.md) closed: no
   Firecrawl (too heavy here; [docs/research-firecrawl-ollama.md](../../docs/research-firecrawl-ollama.md)
   says what it would take on a bigger machine), a model only on request (brief 18).
@@ -31,8 +33,6 @@ Pushed through `bfce142` (2026-11-01). Brief numbering restarted at 01 on 2026-1
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [13](../briefs/todo/13-hitchmosher-stale-search-url-note.md), note that hitchmosher.ro's default
-  search URL is stale; the source stays off.
 - [14](../briefs/todo/14-extractor-price-and-zone-rules.md), two extractor rules: a price outside a
   "Preț" label (JSON-LD offers, a bare price line under the title) and a zone that stays on one line.
 - [15](../briefs/todo/15-empty-refresh-warning.md), a source whose Refresh returns 0 listings gets a
