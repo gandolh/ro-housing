@@ -224,3 +224,12 @@ database. Open questions in [wiki/open-questions.md](wiki/open-questions.md).
 The run's briefs are done except 18 (Fill the gaps through Wicket), which stays in todo until Wicket
 exists. All commits on main, not pushed, nothing deployed. Board: ro-housing-01 was moved to Done;
 13 to 18 have no tickets (creating them was refused), so the owner's next sync files them.
+
+## [2026-11-04] todo | Brief 18 updated with Wicket's API as built
+
+Wicket was built (not deployed) the same day; its API page in the wicket repo adds to the quoted
+contract: a strict body (only `messages` and `format`), `?wait` held to 25, 503 `queue_full` past 200
+waiting jobs, a 404 for a job read as cancelled (a restart forgets jobs), answers kept 10 minutes,
+a reason on cancelled jobs, and `WICKET_URL` on the VPS being the public `/wicket-api` address, not
+the box's loopback. [Brief 18](briefs/todo/18-fill-the-gaps-with-wicket.md) now says each, in its
+context and its steps. Still write-only.
