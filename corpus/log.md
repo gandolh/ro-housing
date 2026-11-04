@@ -251,3 +251,10 @@ way. Idle, the same container: about 160 MiB and 24 tasks under tsx, about 112 M
 built. Checks: api tsc clean, vitest 162/162; both images built once; in the new one, health,
 seed, sign-in, a Refresh of the RSS feed (93 listings), the Saved routes without a page fetch,
 a clean SIGTERM stop. Decision "The API runs built JavaScript" recorded.
+
+## [2026-11-04] decision | Wicket is cloud-only; brief 18 follows
+
+The owner dropped Wicket's backup model on the VPS (its Ollama image was
+6.55 GB against 7.1 GB free on the box) and every local-model idea with it:
+Wicket calls Ollama Cloud only, and a cloud failure fails the job. Brief 18's
+contract text loses `result.backup`, and the research write-up says so.

@@ -402,7 +402,8 @@ briefs named here are in [corpus/briefs/](../corpus/briefs/):
 - **B, a warning for a Refresh that returns 0:** brief 15.
 - **C, imobiliare's RSS feed, title and link only:** brief 16.
 - **D, a model only on request:** brief 18, through Wicket, the estate's LLM queue, instead of a
-  local Ollama; it waits until Wicket exists.
+  local Ollama; it waits until Wicket is deployed. Wicket calls Ollama Cloud only: on 2026-11-04
+  the owner dropped every local-model idea, the small backup on the VPS included.
 - **hitchmosher.ro stays off;** its stale search URL is noted in [adapters.md](adapters.md)
   (brief 13).
 - **Left on the laptop:** `qwen2.5:3b` and `llama3.2:3b` (3.9 GB), pulled for these runs and no

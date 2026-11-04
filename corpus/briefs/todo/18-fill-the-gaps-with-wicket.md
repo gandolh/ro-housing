@@ -26,10 +26,13 @@ Wicket's API contract, as given:
 > Callers set `WICKET_URL` (the API base) and `WICKET_TOKEN` (a per-app bearer token that names
 > the app). `POST {WICKET_URL}/v1/jobs` with `{ messages: [{role, content}], format?: "json" | <JSON schema> }`
 > → `202 { id, ticket, nowServing, position, status }`. `GET {WICKET_URL}/v1/jobs/:id` (optional
-> `?wait=25` long-polls) → `{ id, ticket, nowServing, position, status: "queued"|"running"|"done"|"failed"|"cancelled", result?: { text, model, backup }, error? }`.
-> `DELETE {WICKET_URL}/v1/jobs/:id` cancels the caller's own job. Wicket picks the model (Ollama
-> Cloud, falling back to gemma3:1b on the VPS) and runs one job at a time, first come first
-> served.
+> `?wait=25` long-polls) → `{ id, ticket, nowServing, position, status: "queued"|"running"|"done"|"failed"|"cancelled", result?: { text, model }, error? }`.
+> `DELETE {WICKET_URL}/v1/jobs/:id` cancels the caller's own job. Wicket picks the model and runs
+> one job at a time, first come first served.
+
+Wicket calls **Ollama Cloud only**: on 2026-11-04 the owner dropped the small backup model on the
+VPS it first planned (the contract above loses `result.backup`), so when the cloud fails the job
+ends `failed` with the reason in `error`.
 
 What Wicket's API page adds to that (the wicket repo, `corpus/wiki/api.md`, 2026-11-04):
 
@@ -43,8 +46,7 @@ What Wicket's API page adds to that (the wicket repo, `corpus/wiki/api.md`, 2026
 - **Answers are kept 10 minutes** after a job finishes, in memory only; after that `GET` is a 404.
   Fetch the result promptly.
 - **A cancelled job carries an `error` reason:** cancelled by the caller, force closed, cleared,
-  or the server restarted. A failed job's `error` never repeats the prompt. A cancelled job never
-  falls back to the backup model.
+  or the server restarted. A failed job's `error` never repeats the prompt.
 - Errors have the shape `{ code, message }`: 400 `invalid_request`, 401 `unauthorized`, 404
   `not_found`, 503 `queue_full`.
 - **On the VPS, `WICKET_URL` is the public address**, `<production origin>/wicket-api`, not
@@ -95,7 +97,7 @@ What Wicket's API page adds to that (the wicket repo, `corpus/wiki/api.md`, 2026
    and returns them. The form fills a field only if it is still empty at that moment (the owner
    may have typed meanwhile) and marks it "from AI"; editing it turns the mark to "edited", as
    for "from page". Nothing is saved until Save. `raw_json` records which fields came from the
-   model and its name (`result.model`, and `backup` when Wicket fell back).
+   model and its name (`result.model`).
 6. **Where the button is.** On the draft, beside the "N of 10 fields read" line, shown only when
    at least one field is empty and the draft was read from a page. Disabled on a blocked draft
    (a bot-check page has no listing on it, and the research saw a model invent a flat there).
