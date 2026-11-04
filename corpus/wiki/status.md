@@ -46,6 +46,8 @@ Filed 2026-11-04 from the owner's grill, numbered in build order (numbering cont
 
 - [18](../briefs/todo/18-fill-the-gaps-with-wicket.md), "Fill the gaps" through Wicket on the Saved
   draft. Written only: it waits for Wicket, which is being built.
+- [19](../briefs/todo/19-the-api-runs-built-javascript.md), the API runs built JavaScript instead of
+  tsx (the owner's memory review of the VPS, 2026-11-04). Build it before the first deploy.
 - imobiliare's own price element, once its bot check lifts.
 
 ## Owner steps (2026-11-04)

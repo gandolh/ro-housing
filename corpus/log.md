@@ -233,3 +233,9 @@ waiting jobs, a 404 for a job read as cancelled (a restart forgets jobs), answer
 a reason on cancelled jobs, and `WICKET_URL` on the VPS being the public `/wicket-api` address, not
 the box's loopback. [Brief 18](briefs/todo/18-fill-the-gaps-with-wicket.md) now says each, in its
 context and its steps. Still write-only.
+
+## [2026-11-04] todo | Brief 19: the API runs built JavaScript
+
+From the owner's memory review of the VPS (vps-deploy's `memory-on-the-box` research): the apps on
+the box run built JavaScript, not tsx, and start with `node` directly. ro-housing idled at about 200
+MiB under tsx on the laptop, so this lands before its first deploy.
