@@ -16,7 +16,16 @@ describe('loadConfig', () => {
       publicOrigin: 'http://127.0.0.1:5173',
       ward: undefined,
       trustedProxies: [],
+      wicket: undefined,
     });
+  });
+
+  it('turns Fill the gaps on only with both Wicket settings', () => {
+    const both = { WICKET_URL: 'https://example.com/wicket-api', WICKET_TOKEN: 'not-a-real-token' };
+    expect(loadConfig(both).wicket).toEqual({ url: both.WICKET_URL, token: both.WICKET_TOKEN });
+    expect(loadConfig({ WICKET_URL: both.WICKET_URL }).wicket).toBeUndefined();
+    expect(loadConfig({ WICKET_TOKEN: both.WICKET_TOKEN, WICKET_URL: ' ' }).wicket).toBeUndefined();
+    expect(() => loadConfig({ ...both, WICKET_URL: 'wicket-api' })).toThrow(/WICKET_URL/);
   });
 
   it('reads the container’s settings', () => {

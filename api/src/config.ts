@@ -35,6 +35,10 @@ export interface Config {
    *  `X-Forwarded-For` the login lockout believes. Empty locally; in the
    *  container, the range Caddy reaches it from. */
   trustedProxies: string[];
+  /** "Fill the gaps" through Wicket, the estate's LLM queue, or undefined when
+   *  `WICKET_URL` or `WICKET_TOKEN` is unset (the button is not shown). `token`
+   *  is a secret: never log it, never send it to the browser. */
+  wicket: { url: string; token: string } | undefined;
 }
 
 /** The environment can't run the server. The message names each variable at fault. */
@@ -82,6 +86,12 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
     );
   }
 
+  const wicketUrl = set(env.WICKET_URL);
+  const wicketToken = set(env.WICKET_TOKEN);
+  if (wicketUrl && !/^https?:$/.test(URL.canParse(wicketUrl) ? new URL(wicketUrl).protocol : '')) {
+    problems.push('WICKET_URL must be Wicket\'s API base, such as https://example.com/wicket-api.');
+  }
+
   if (problems.length > 0) throw new ConfigError(problems.join('\n'));
   return {
     host: set(env.HOST) ?? '127.0.0.1',
@@ -92,5 +102,6 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
       .split(',')
       .map((entry) => entry.trim())
       .filter((entry) => entry !== ''),
+    wicket: wicketUrl && wicketToken ? { url: wicketUrl, token: wicketToken } : undefined,
   };
 }

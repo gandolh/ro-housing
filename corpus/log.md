@@ -231,7 +231,7 @@ Wicket was built (not deployed) the same day; its API page in the wicket repo ad
 contract: a strict body (only `messages` and `format`), `?wait` held to 25, 503 `queue_full` past 200
 waiting jobs, a 404 for a job read as cancelled (a restart forgets jobs), answers kept 10 minutes,
 a reason on cancelled jobs, and `WICKET_URL` on the VPS being the public `/wicket-api` address, not
-the box's loopback. [Brief 18](briefs/todo/18-fill-the-gaps-with-wicket.md) now says each, in its
+the box's loopback. [Brief 18](briefs/done/18-fill-the-gaps-with-wicket.md) now says each, in its
 context and its steps. Still write-only.
 
 ## [2026-11-04] todo | Brief 19: the API runs built JavaScript
@@ -258,3 +258,21 @@ The owner dropped Wicket's backup model on the VPS (its Ollama image was
 6.55 GB against 7.1 GB free on the box) and every local-model idea with it:
 Wicket calls Ollama Cloud only, and a cloud failure fails the job. Brief 18's
 contract text loses `result.backup`, and the research write-up says so.
+
+## [2026-11-05] done | Brief 18: Fill the gaps through Wicket
+
+The Saved draft has a "Fill the gaps" button when the server has `WICKET_URL` and `WICKET_TOKEN`
+and the draft has an empty field (disabled on a bot-check draft). Fetch details keeps the page text
+(`details/pageText.ts`, the research's input, an hour in memory); `POST /api/saved/fill` asks
+Wicket with exactly `{ messages, format }` for the empty fields only, every one nullable,
+partitioning held to its four values; `GET /api/saved/fill/:id` passes Wicket's long poll through
+(never above 25 s) and on `done` merges the answer (`details/fill.ts`: other keys and wrong types
+dropped, the extractor's `sane()` ranges, now exported); `DELETE` cancels. Only ids this server
+started are answered, Wicket's 404 reads as cancelled, `queue_full` reaches the form as a 503. The
+form shows "You're number N, now serving M", then "Reading the page…", fills only the fields
+still empty when the answer comes, each marked "from AI" until edited, and raw_json of the Save
+gets `ai: { model, values }`. Leaving the draft cancels a job still going. Without the settings the
+routes aren't registered. Refresh, Fetch details and the adapters never call Wicket. Wicket's API
+page matched the brief. vps-deploy's ro-housing stack now passes `WICKET_URL` (the public
+`/wicket-api`) and an optional `WICKET_TOKEN` secret. Checks: api tsc (and the build config) clean,
+vitest 185/185; web tsc -b clean, vitest 79/79. Not run against a live Wicket; not deployed.

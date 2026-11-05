@@ -90,6 +90,31 @@ User checks each field ("from page" / "edited" / "not on page"), edits, clicks S
 POST /api/saved → validate → INSERT into saved (raw_json = what the page said)
 ```
 
+### Fill the gaps (only when `WICKET_URL` and `WICKET_TOKEN` are set)
+
+```
+Fetch details also keeps the page text (details/pageText.ts), for about an hour, in memory
+        │
+User clicks Fill the gaps on a draft with empty fields
+        ▼
+POST /api/saved/fill { url, missing }        page text gone? → 409 "press Fetch details first"
+        │  fillMessages + fillSchema (details/fill.ts): the empty fields only, every one nullable
+        ▼
+Wicket POST /v1/jobs { messages, format }    queue full → 503, shown on the form
+        │  → 202 { id, ticket, nowServing, position, status }; ro-housing remembers the id
+        ▼
+Form polls GET /api/saved/fill/:id           passes Wicket's ?wait=25 long-poll through
+        │  queued  → "You're number N, now serving M"     running → "Reading the page…"
+        │  failed / cancelled (or Wicket's 404: it forgot) → a one-line notice, form unchanged
+        ▼
+done → mergeFill: parse the JSON, drop other keys and wrong types, sane() ranges
+        │  raw_json of the coming Save gets { ai: { model, values } }
+        ▼
+Form fills each field still empty right now, marked "from AI" ("edited" once changed)
+```
+
+`DELETE /api/saved/fill/:id` cancels (the Cancel button, or leaving the draft while a job runs). Only ids this server started are answered; anything else is a 404. Refresh, Fetch details and the adapters never call Wicket. Without the two settings the routes aren't registered and the draft has no button.
+
 A second Fetch details rebuilds the whole draft, so when the open draft has edits (any field that differs from what the page gave, or notes), the page asks before replacing it; this also covers a "save" handed over from Listings.
 
 `PUT /api/saved/:id` replaces the whole record (the form always sends every field); `DELETE /api/saved/:id` removes it. Edits never re-fetch the page.

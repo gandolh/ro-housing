@@ -13,6 +13,7 @@ import {
   type DetailFields,
 } from '../details/extract.ts';
 import { fetchListingPage, PageProblem } from '../details/fetchPage.ts';
+import { pageText, pageTexts } from '../details/pageText.ts';
 import { assertPublicHost, normalizeListingUrl, siteOf } from '../details/url.ts';
 import { parseSavedInput } from './saved-input.ts';
 
@@ -60,6 +61,17 @@ function remember(url: string, raw: unknown, fetchedAt: number): void {
   }
 }
 
+/** What "Fill the gaps" gave for a draft, added to its scrape so raw_json
+ *  says which fields came from the model and which model it was. */
+export function recordAiFill(url: string, model: string, values: Record<string, unknown>): void {
+  const scrape = recentScrapes.get(url);
+  if (!scrape || Object.keys(values).length === 0) return;
+  const raw = JSON.parse(scrape.rawJson) as Record<string, unknown>;
+  const earlier = (raw.ai as { values?: Record<string, unknown> } | undefined)?.values ?? {};
+  raw.ai = { model, values: { ...earlier, ...values } };
+  scrape.rawJson = JSON.stringify(raw);
+}
+
 function isUniqueViolation(err: unknown): boolean {
   return (err as { code?: string } | null)?.code === 'SQLITE_CONSTRAINT_UNIQUE';
 }
@@ -71,7 +83,12 @@ function parseId(raw: string, reply: FastifyReply): number | undefined {
   return undefined;
 }
 
-export async function savedRoutes(app: FastifyInstance): Promise<void> {
+export async function savedRoutes(
+  app: FastifyInstance,
+  opts: { fillable?: boolean } = {},
+): Promise<void> {
+  // Whether "Fill the gaps" is on: the draft's button shows only then.
+  const fillable = opts.fillable === true;
   // Reads one listing page into a draft. Saves nothing: the user confirms or
   // edits the draft and POSTs it to /api/saved.
   app.post<{ Body: { url?: string } }>('/api/saved/scrape', async (req, reply) => {
@@ -83,7 +100,7 @@ export async function savedRoutes(app: FastifyInstance): Promise<void> {
     }
     const site = siteOf(url);
     const existing = getSavedByUrl(url);
-    const base = { url, site, existing: existing ? toApi(existing) : null };
+    const base = { url, site, existing: existing ? toApi(existing) : null, fillable };
     if (existing) {
       return { ...base, draft: null, found: [], via: null, problem: null };
     }
@@ -108,6 +125,8 @@ export async function savedRoutes(app: FastifyInstance): Promise<void> {
       const page = await fetchListingPage(url);
       const ex = extractDetails(page.html, url);
       const fetchedAt = Date.now();
+      // Kept for "Fill the gaps", which never fetches the page again.
+      if (fillable) pageTexts.set(url, pageText(page.html, url));
       remember(
         url,
         { via: page.via, fields: ex.fields, sources: ex.sources, description: ex.description },

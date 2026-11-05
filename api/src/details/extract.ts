@@ -357,7 +357,7 @@ const MAX_LABEL_LINE = 60;
 
 /** The page's visible text, one text node per line, and the index of the
  *  first line after the first `<h1>` (undefined when the page has none). */
-function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?: number } {
+export function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?: number } {
   $('script, style, noscript, svg, template, iframe, select, nav, footer').remove();
   const lines: string[] = [];
   let afterTitle: number | undefined;
@@ -535,7 +535,7 @@ function inRange(n: number | null | undefined, lo: number, hi: number): number |
   return n != null && Number.isFinite(n) && n >= lo && n <= hi ? n : null;
 }
 
-function sane(f: DetailFields): DetailFields {
+export function sane(f: DetailFields): DetailFields {
   const thisYear = new Date().getFullYear();
   const floor = inRange(f.floor, -2, 60);
   let floorsTotal = inRange(f.floorsTotal, 0, 60);

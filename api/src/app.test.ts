@@ -121,6 +121,22 @@ describe('the API behind sign-in', () => {
     expect(otherSite.statusCode).toBe(403);
   });
 
+  it('has no Fill the gaps without Wicket: its routes are 404s', async () => {
+    for (const [method, url] of [
+      ['POST', '/api/saved/fill'],
+      ['GET', '/api/saved/fill/abc'],
+      ['DELETE', '/api/saved/fill/abc'],
+    ] as const) {
+      const res = await app.inject({
+        method,
+        url,
+        headers: { cookie, origin: PUBLIC, host: 'example.com' },
+        ...(method === 'POST' ? { payload: { url: 'https://example.com/a', missing: ['rooms'] } } : {}),
+      });
+      expect(res.statusCode, `${method} ${url}`).toBe(404);
+    }
+  });
+
   it('offers a signed-in session no rename', async () => {
     const rename = await app.inject({
       method: 'POST',

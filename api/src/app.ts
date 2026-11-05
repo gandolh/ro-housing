@@ -9,6 +9,8 @@ import { issuesRoutes } from './routes/issues.ts';
 import { listingsRoutes } from './routes/listings.ts';
 import { refreshRoutes } from './routes/refresh.ts';
 import { savedRoutes } from './routes/saved.ts';
+import { fillRoutes } from './routes/fill.ts';
+import type { WicketClient } from './lib/wicket.ts';
 import { sourcesRoutes } from './routes/sources.ts';
 
 declare module 'fastify' {
@@ -43,6 +45,9 @@ export interface AppOptions
   bindHost?: string;
   /** `WEB_ORIGINS`, as given. */
   webOriginsEnv?: string;
+  /** Wicket, for "Fill the gaps"; without it those routes are 404s and the
+   *  draft has no button. server.ts builds it from `WICKET_URL` and `WICKET_TOKEN`. */
+  wicket?: WicketClient;
   logger?: boolean;
 }
 
@@ -109,6 +114,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   await app.register(listingsRoutes);
   await app.register(refreshRoutes);
   await app.register(issuesRoutes);
-  await app.register(savedRoutes);
+  await app.register(savedRoutes, { fillable: options.wicket !== undefined });
+  if (options.wicket) await app.register(fillRoutes, { wicket: options.wicket });
   return app;
 }

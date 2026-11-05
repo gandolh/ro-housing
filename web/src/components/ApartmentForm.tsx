@@ -27,8 +27,9 @@ interface Props {
   onChange: (field: FormField, value: string) => void;
   errors: FormErrors;
   /** Draft mode: the values the page gave, and which fields it filled. Each
-   *  field is then marked "from page", "edited" or "not on page". */
-  page?: { values: FormValues; found: FormField[] };
+   *  field is then marked "from page", "edited" or "not on page". `ai` holds
+   *  what "Fill the gaps" put in empty fields: marked "from AI" until edited. */
+  page?: { values: FormValues; found: FormField[]; ai?: Partial<FormValues> };
   /** The link is editable only when editing a saved apartment. */
   showUrl?: boolean;
   disabled?: boolean;
@@ -36,11 +37,17 @@ interface Props {
 
 function Marker({ field, values, page }: Pick<Props, 'values' | 'page'> & { field: FormField }) {
   if (!page) return null;
-  const label = page.found.includes(field)
-    ? values[field] === page.values[field]
-      ? 'from page'
-      : 'edited'
-    : 'not on page';
+  const ai = page.ai?.[field];
+  const label =
+    ai !== undefined
+      ? values[field] === ai
+        ? 'from AI'
+        : 'edited'
+      : page.found.includes(field)
+        ? values[field] === page.values[field]
+          ? 'from page'
+          : 'edited'
+        : 'not on page';
   return (
     <span
       className={cn(

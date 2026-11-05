@@ -5,6 +5,7 @@ import { buildApp } from './app.ts';
 import { ConfigError, loadConfig, type Config } from './config.ts';
 import { DB_PATH } from './db/index.ts';
 import { closeBrowser } from './lib/playwright.ts';
+import { wicketClient } from './lib/wicket.ts';
 import { issuesDir } from './paths.ts';
 
 let config: Config;
@@ -22,6 +23,7 @@ const app = await buildApp({
   trustedProxies: config.trustedProxies,
   bindHost: process.env.HOST,
   webOriginsEnv: process.env.WEB_ORIGINS,
+  wicket: config.wicket && wicketClient(config.wicket),
   logger: true,
 });
 app.log.info(`database: ${DB_PATH}; issues: ${issuesDir()}; public origin: ${config.publicOrigin}`);
@@ -29,6 +31,11 @@ app.log.info(
   config.ward
     ? 'Sign in with Ward is on'
     : 'WARD_OIDC_ISSUER is not set: local accounts only, no Sign in with Ward',
+);
+app.log.info(
+  config.wicket
+    ? `Fill the gaps is on, through Wicket at ${config.wicket.url}`
+    : 'WICKET_URL or WICKET_TOKEN is not set: no Fill the gaps',
 );
 
 try {

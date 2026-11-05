@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { ApiError, api, type SavedApartment, type ScrapeResult } from '../api.ts';
+import {
+  ApiError,
+  api,
+  type ApartmentFields,
+  type FillField,
+  type SavedApartment,
+  type ScrapeResult,
+} from '../api.ts';
 import { ApartmentForm } from '../components/ApartmentForm.tsx';
 import { ApiErrorNotice } from '../components/ApiErrorNotice.tsx';
+import { FillGaps } from '../components/FillGaps.tsx';
 import { SavedTable } from '../components/SavedTable.tsx';
 import { Button } from '../components/ui/Button.tsx';
 import {
@@ -61,6 +69,25 @@ function sortSaved(list: SavedApartment[], sort: Sort): SavedApartment[] {
 
 const TOTAL_FIELDS = 10;
 
+/** The ten fields a page can give, in the form's order: what "Fill the gaps" may ask for. */
+const FILL_FIELDS: FillField[] = [
+  'title',
+  'priceEur',
+  'rooms',
+  'sqm',
+  'floor',
+  'floorsTotal',
+  'yearBuilt',
+  'location',
+  'partitioning',
+  'imageUrl',
+];
+
+const NO_FIELDS = {
+  ...Object.fromEntries(FILL_FIELDS.map((f) => [f, null])),
+  pricePlusVat: null,
+} as unknown as ApartmentFields;
+
 type Stage =
   | { kind: 'idle' }
   | { kind: 'fetching' }
@@ -69,7 +96,7 @@ type Stage =
       kind: 'draft';
       result: ScrapeResult;
       values: FormValues;
-      page: { values: FormValues; found: FormField[] } | undefined;
+      page: { values: FormValues; found: FormField[]; ai?: Partial<FormValues> } | undefined;
     };
 
 const FIELD_NAMES: Record<FormField, string> = {
@@ -210,6 +237,29 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     requestFetch(link);
   };
 
+  // "Fill the gaps" reads the draft as it is when the model answers.
+  const stageRef = useRef(stage);
+  stageRef.current = stage;
+
+  /** The model's values, into the fields still empty at this moment (the user
+   *  may have typed meanwhile), each marked "from AI". Saves nothing. */
+  const fillFromAi = (values: Partial<ApartmentFields>): number => {
+    const s = stageRef.current;
+    if (s.kind !== 'draft' || !s.page) return 0;
+    const asForm = formFromFields(s.result.url, { ...NO_FIELDS, ...values });
+    const filled = FILL_FIELDS.filter((f) => values[f] != null && asForm[f] !== '' && s.values[f].trim() === '');
+    if (filled.length === 0) return 0;
+    const patch = Object.fromEntries(filled.map((f) => [f, asForm[f]])) as Partial<FormValues>;
+    const next: Stage = {
+      ...s,
+      values: { ...s.values, ...patch },
+      page: { ...s.page, ai: { ...s.page.ai, ...patch } },
+    };
+    stageRef.current = next;
+    setStage(next);
+    return filled.length;
+  };
+
   const setDraftField = (field: FormField, value: string) => {
     setStage((s) => (s.kind === 'draft' ? { ...s, values: { ...s.values, [field]: value } } : s));
   };
@@ -284,6 +334,21 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
   const sorted = useMemo(() => sortSaved(saved, sort), [saved, sort]);
   const hasDraft = stage.kind === 'draft';
   const edits = draftEdits(stage);
+  // The button: Wicket on, and a draft read from a page (or a bot check, where
+  // it shows disabled) with an empty field.
+  const fill =
+    stage.kind === 'draft' &&
+    stage.result.fillable === true &&
+    (!stage.result.problem || stage.result.problem.kind === 'blocked') ? (
+      <FillGaps
+        key={stage.result.url}
+        url={stage.result.url}
+        missing={FILL_FIELDS.filter((f) => stage.values[f].trim() === '')}
+        blocked={stage.result.problem?.kind === 'blocked'}
+        disabled={busy}
+        onFilled={fillFromAi}
+      />
+    ) : null;
 
   return (
     <div>
@@ -353,18 +418,21 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
 
         {stage.kind === 'draft' && (
           <div className="mt-3 border-t border-rule-soft pt-3">
-            {stage.result.problem ? (
-              <p role="alert" className="mb-3 border border-bad bg-bad-soft px-2 py-1.5 text-xs text-bad">
-                {stage.result.problem.message} Nothing was read from {stage.result.site}. Fill in what
-                you know; the link is saved with it.
-              </p>
-            ) : (
-              <p className="mb-3 text-xs text-ink-dim">
-                Read {stage.result.found.length} of {TOTAL_FIELDS} fields from {stage.result.site}
-                {stage.result.via === 'browser' ? ' (through a browser)' : ''}. Check them, fill the
-                gaps, then save.
-              </p>
-            )}
+            <div className="mb-3 flex flex-wrap items-start gap-2">
+              {stage.result.problem ? (
+                <p role="alert" className="flex-1 border border-bad bg-bad-soft px-2 py-1.5 text-xs text-bad">
+                  {stage.result.problem.message} Nothing was read from {stage.result.site}. Fill in what
+                  you know; the link is saved with it.
+                </p>
+              ) : (
+                <p className="flex-1 text-xs text-ink-dim">
+                  Read {stage.result.found.length} of {TOTAL_FIELDS} fields from {stage.result.site}
+                  {stage.result.via === 'browser' ? ' (through a browser)' : ''}. Check them, fill the
+                  gaps, then save.
+                </p>
+              )}
+              {fill}
+            </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               {stage.values.imageUrl && (
                 <img

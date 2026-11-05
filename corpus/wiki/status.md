@@ -1,6 +1,6 @@
 ---
-summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript; not deployed); 18, Fill the gaps through Wicket, waits.
-updated: 2026-11-04
+summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript). The owner deployed it on 2026-11-05 and linked Ward. 18, Fill the gaps through Wicket, built 2026-11-05, not deployed: it needs ro-housing's Wicket token in vps-deploy's secrets.
+updated: 2026-11-05
 ---
 
 # Status: 2026-11-04
@@ -40,29 +40,35 @@ Pushed through `bfce142` (2026-11-01); the 2026-11-04 commits are on local main,
 - **Research** (2026-11-04). [01](../briefs/done/01-research-firecrawl-and-ollama.md) closed: no
   Firecrawl (too heavy here; [docs/research-firecrawl-ollama.md](../../docs/research-firecrawl-ollama.md)
   says what it would take on a bigger machine), a model only on request (brief 18).
+- **Fill the gaps** (2026-11-05). [18](../briefs/done/18-fill-the-gaps-with-wicket.md) built: a
+  button on the Saved draft asks Wicket for the empty fields, from the page text Fetch details kept,
+  and fills them marked "from AI" ([docs/decisions.md](../../docs/decisions.md), "A model only on
+  request, through Wicket"; the flow in [docs/architecture.md](../../docs/architecture.md)). Off
+  until `WICKET_URL` and `WICKET_TOKEN` are set; vps-deploy's stack passes both. Not deployed.
 
 ## Open
 
 Filed 2026-11-04 from the owner's grill, numbered in build order (numbering continues after the old
 12, see [CLAUDE.md](../CLAUDE.md)):
 
-- [18](../briefs/todo/18-fill-the-gaps-with-wicket.md), "Fill the gaps" through Wicket on the Saved
-  draft. Written only: it waits for Wicket, which is being built.
 - imobiliare's own price element, once its bot check lifts.
 
-## Owner steps (2026-11-04)
+## Owner steps (2026-11-05)
 
-- Production Ward: register the `ro-housing` app and client (owner-setup step 1), then write
-  `WARD_OIDC_CLIENT_KEY` into vps-deploy's `secrets/ro-housing.env` (step 2).
+Done by 2026-11-05, per vps-deploy's log: production Ward's app and client, the deploy, the
+account in the container, the grant and "Link Ward", the seed command as `node dist/seed.js`, and
+the brief-board sync.
+
+- Fill the gaps: add `WICKET_TOKEN=<ro-housing's token>` (the value after `ro-housing=` in
+  `WICKET_APP_TOKENS`, vps-deploy's `secrets/wicket.env`) to vps-deploy's
+  `secrets/ro-housing.env`, then `node cli.ts ro-housing all` there. Then on a fresh draft with an
+  empty field: Fill the gaps shows the ticket line, then fills the field marked "from AI"; the job
+  shows on Wicket's page at `/wicket`.
 - Ward's local seed: add the `ro-housing` entry to `APPS` in wzd_auth's
   `infrastructure/local/seed.mjs` (the line is in owner-setup, "Local development").
 - With Docker Desktop up: walk a local Ward sign-in and "Link Ward" once (Local development,
   step 5). Building and checking the container (step 3) is optional now: brief 19 did it, but not
   Fetch details on a live page or Chromium.
-- vps-deploy's ro-housing stack exists; its printed seed command must become `node dist/seed.js`
-  (it still says `node --import tsx src/seed.ts`; brief 19's outcome). Then deploy (step 4), make
-  the account in the container (step 5), grant and link Ward (step 6).
-- `brief-board sync` to give briefs 13 to 18 their tickets.
 - The README's Sources screenshot shows nine sites and no sign-in; retake it with
   `docs/images/shots.md` when convenient.
 - Optional: `ollama rm qwen2.5:3b llama3.2:3b` frees the 3.9 GB pulled for the research.

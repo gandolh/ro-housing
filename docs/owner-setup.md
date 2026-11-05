@@ -23,7 +23,7 @@ prefix to one container on loopback.
 | Volume | A host data directory bind-mounted at `/data` (`RO_HOUSING_DATA_DIR` in the compose file). It holds `ro-housing.db` (with its `-wal` and `-shm` files: listings, saved flats, accounts, sessions) and `issues/` (the Report button's files). Back up the directory, not the file alone |
 | Health check | `GET /api/health` answers `{"ok":true}` with no session: `curl -s http://127.0.0.1:8809/api/health` on the box, or `<production origin>/ro-housing-api/api/health`. The image has its own `HEALTHCHECK` (Node's `fetch`; the slim image has no `wget` or `curl`) |
 | Caps | `cpus: 1.0`, `mem_limit: 1g`, `memswap_limit: 1g`, `pids_limit: 256`, `init: true`, `restart: unless-stopped`. Already in the compose file; see [Caps](#caps) |
-| Outbound network | HTTPS to the listing sites and to Ward's issuer. Nothing listens but 8809 |
+| Outbound network | HTTPS to the listing sites, to Ward's issuer and to Wicket. Nothing listens but 8809 |
 | Schedule | None. Refresh runs only when someone presses the button |
 | Database | Starts fresh: the first start creates it and its tables, and the accounts' tables. Nothing to copy or migrate |
 
@@ -43,9 +43,12 @@ interpolation and as the service's `env_file`:
 | `WARD_OIDC_POST_LOGOUT_REDIRECT_URI` | `<production origin>/ro-housing/` | no |
 | `RO_HOUSING_DATA_DIR` | The host data directory, for the compose file's volume line | no |
 | `RO_HOUSING_PORT` | Optional; `8809` when unset | no |
+| `WICKET_URL` | `<production origin>/wicket-api`, the public address: under the box's rootless Docker a container can't reach the host's loopback, so not `127.0.0.1:8808` | no |
+| `WICKET_TOKEN` | ro-housing's own token, its pair in Wicket's `WICKET_APP_TOKENS` | **yes** |
 
-`WARD_OIDC_CLIENT_KEY` is the only secret: kept, like brief-board's, in vps-deploy's
-`secrets/ro-housing.env`. ro-housing has no CLI token. The image sets the rest itself, and the
+`WARD_OIDC_CLIENT_KEY` and `WICKET_TOKEN` are the secrets: kept, like brief-board's, in
+vps-deploy's `secrets/ro-housing.env`. Without both Wicket settings the app runs as before, with
+no "Fill the gaps" button. ro-housing has no CLI token. The image sets the rest itself, and the
 compose file's `environment:` pins them so an `.env` can't move them: `HOST=0.0.0.0`,
 `PORT=8809`, `RO_HOUSING_DB=/data/ro-housing.db`, `RO_HOUSING_ISSUES_DIR=/data/issues`,
 `CHROMIUM_DISABLE_DEV_SHM=1`, `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. `WEB_ORIGINS` stays
@@ -98,10 +101,11 @@ wzd_auth repo.
 
 ## 2. Write the deploy secret
 
-Create `secrets/ro-housing.env` in vps-deploy with one line, then `chmod 600` it:
+Create `secrets/ro-housing.env` in vps-deploy with these lines, then `chmod 600` it. The second can wait: without it the app runs with no "Fill the gaps":
 
 ```
 WARD_OIDC_CLIENT_KEY=<the private key from step 1>
+WICKET_TOKEN=<ro-housing's token from WICKET_APP_TOKENS in secrets/wicket.env>
 ```
 
 ## 3. Check the container locally

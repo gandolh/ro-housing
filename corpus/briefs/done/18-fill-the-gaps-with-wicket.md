@@ -120,3 +120,14 @@ What Wicket's API page adds to that (the wicket repo, `corpus/wiki/api.md`, 2026
   line, then fills only the empty fields, each marked "from AI", and Save stores them.
 - No Wicket call from Refresh or Fetch details.
 - `npx tsc --noEmit`/`npx tsc -b` and `npx vitest run` pass in both packages.
+
+## Outcome (2026-11-05)
+
+Built as specified, against stubs: Wicket's API page matched the contract. Server:
+`api/src/lib/wicket.ts`, `api/src/details/pageText.ts`, `api/src/details/fill.ts`,
+`api/src/routes/fill.ts` (registered only with both settings); `sane()` and `textLines()` are now
+exported from `extract.ts`. Web: `web/src/components/FillGaps.tsx` beside the "N of 10 fields
+read" line, the "from AI" mark in `ApartmentForm.tsx`. The blocked case shows the button
+disabled rather than hiding it. Not deployed: the owner adds `WICKET_TOKEN` to vps-deploy's
+`secrets/ro-housing.env` (vps-deploy's stack already passes it and `WICKET_URL`), then
+`node cli.ts ro-housing all`.

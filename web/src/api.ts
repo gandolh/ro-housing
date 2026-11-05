@@ -92,6 +92,26 @@ export interface ScrapeResult {
     kind: 'blocked' | 'not_found' | 'unreachable';
     message: string;
   } | null;
+  /** "Fill the gaps" is on (the server has Wicket's settings). */
+  fillable?: boolean;
+}
+
+/** The fields "Fill the gaps" may ask the model for: the ten a page can give. */
+export type FillField = Exclude<keyof ApartmentFields, 'pricePlusVat'>;
+
+/** A "Fill the gaps" job, as ro-housing's API passes Wicket's on. */
+export interface FillJob {
+  id: string;
+  /** Wicket's ticket line: this job's number and the one running now. */
+  ticket?: number;
+  nowServing?: number;
+  position?: number;
+  status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
+  /** On `done`: the values the model gave for the asked fields, checked. */
+  values?: Partial<ApartmentFields>;
+  model?: string;
+  /** On `failed` or `cancelled`: why. */
+  error?: string | null;
 }
 
 export class ApiError extends Error {
@@ -177,6 +197,17 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     }).then(jsonOrApiError<ScrapeResult>),
+  startFill: (url: string, missing: FillField[]) =>
+    apiFetch('/api/saved/fill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, missing }),
+    }).then(jsonOrApiError<FillJob>),
+  /** Waits up to 25 seconds on the server for the job to change. */
+  pollFill: (id: string) =>
+    apiFetch(`/api/saved/fill/${encodeURIComponent(id)}?wait=25`).then(jsonOrApiError<FillJob>),
+  cancelFill: (id: string) =>
+    apiFetch(`/api/saved/fill/${encodeURIComponent(id)}`, { method: 'DELETE' }).then(jsonOrApiError<FillJob>),
   listSaved: () => apiFetch('/api/saved').then(jsonOrApiError<SavedApartment[]>),
   createSaved: (input: SavedInput) =>
     apiFetch('/api/saved', {

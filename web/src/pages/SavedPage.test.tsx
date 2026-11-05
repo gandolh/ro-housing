@@ -58,7 +58,9 @@ function apiPath(input: string): string {
   return path.slice('/ro-housing-api'.length);
 }
 
-function mockApi(routes: Record<string, (body: unknown) => [number, unknown]>) {
+function mockApi(
+  routes: Record<string, (body: unknown) => [number, unknown] | Promise<[number, unknown]>>,
+) {
   const calls: Call[] = [];
   vi.stubGlobal(
     'fetch',
@@ -69,7 +71,7 @@ function mockApi(routes: Record<string, (body: unknown) => [number, unknown]>) {
       calls.push({ url, method, body });
       const handler = routes[`${method} ${url}`];
       if (!handler) throw new Error(`unexpected ${method} ${url}`);
-      const [status, payload] = handler(body);
+      const [status, payload] = await handler(body);
       return new Response(payload === undefined ? null : JSON.stringify(payload), { status });
     }),
   );
@@ -347,3 +349,170 @@ describe('<SavedPage> when the API is down', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
+
+describe('<SavedPage> Fill the gaps', () => {
+  const FILLABLE: ScrapeResult = { ...DRAFT, fillable: true };
+  const job = (over: object) => ({ id: 'w1', ticket: 14, nowServing: 11, position: 3, status: 'queued', ...over });
+
+  /** Answers to the form's polls, one per poll, each when the test releases it. */
+  function polls() {
+    const waiting: ((answer: [number, unknown]) => void)[] = [];
+    return {
+      handler: () => new Promise<[number, unknown]>((resolve) => waiting.push(resolve)),
+      async answer(payload: unknown) {
+        await waitFor(() => expect(waiting.length).toBeGreaterThan(0));
+        waiting.shift()!([200, payload]);
+      },
+    };
+  }
+
+  async function openDraft(result: ScrapeResult = FILLABLE) {
+    const user = userEvent.setup();
+    render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+    await user.type(screen.getByRole('textbox', { name: 'Listing link' }), result.url);
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    await screen.findByText(/Read \d+ of 10 fields/);
+    return user;
+  }
+
+  it('shows no button when Wicket is off', async () => {
+    mockApi({ 'GET /api/saved': () => [200, []], 'POST /api/saved/scrape': () => [200, DRAFT] });
+    await openDraft(DRAFT);
+    expect(screen.queryByRole('button', { name: 'Fill the gaps' })).not.toBeInTheDocument();
+  });
+
+  it('shows the ticket line, fills only the empty fields from AI, and Save stores them', async () => {
+    const poll = polls();
+    let saved: SavedApartment[] = [];
+    const calls = mockApi({
+      'GET /api/saved': () => [200, saved],
+      'POST /api/saved/scrape': () => [200, FILLABLE],
+      'POST /api/saved/fill': () => [202, job({})],
+      'GET /api/saved/fill/w1': poll.handler,
+      'POST /api/saved': (body) => {
+        saved = [savedRow(body as Partial<SavedApartment>)];
+        return [201, saved[0]];
+      },
+    });
+    const user = await openDraft();
+
+    await user.click(screen.getByRole('button', { name: 'Fill the gaps' }));
+    expect(calls.find((c) => c.url === '/api/saved/fill')?.body).toEqual({
+      url: LINK,
+      missing: ['partitioning', 'imageUrl'],
+    });
+    expect(await screen.findByText("You're number 14, now serving 11")).toBeInTheDocument();
+    await poll.answer(job({ nowServing: 13, position: 1 }));
+    expect(await screen.findByText("You're number 14, now serving 13")).toBeInTheDocument();
+    await poll.answer(job({ status: 'running', nowServing: 14, position: 0 }));
+    expect(await screen.findByText('Reading the page…')).toBeInTheDocument();
+
+    // The user types the photo link while the model reads: it stays theirs.
+    await user.type(screen.getByRole('textbox', { name: /Photo link/ }), 'https://img.example/1.jpg');
+    await poll.answer(
+      job({
+        status: 'done',
+        position: 0,
+        values: { partitioning: 'decomandat', imageUrl: 'https://img.example/model.jpg' },
+        model: 'gpt-oss:120b',
+      }),
+    );
+
+    expect(await screen.findByText(/Filled 1 field from AI \(gpt-oss:120b\)/)).toBeInTheDocument();
+    expect(screen.getByText('Partitioning').textContent).toContain('from AI');
+    expect(screen.getByRole('textbox', { name: /Photo link/ })).toHaveValue('https://img.example/1.jpg');
+    expect(screen.getByText('Price €').textContent).toContain('from page');
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/Saved: Apartament 2 camere/);
+    expect(calls.find((c) => c.method === 'POST' && c.url === '/api/saved')?.body).toMatchObject({
+      partitioning: 'decomandat',
+      imageUrl: 'https://img.example/1.jpg',
+      priceEur: 72000,
+    });
+  });
+
+  it('marks an AI value as edited once the user changes it', async () => {
+    const poll = polls();
+    mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [200, FILLABLE],
+      'POST /api/saved/fill': () => [202, job({})],
+      'GET /api/saved/fill/w1': poll.handler,
+    });
+    const user = await openDraft();
+    await user.click(screen.getByRole('button', { name: 'Fill the gaps' }));
+    await poll.answer(job({ status: 'done', values: { imageUrl: 'https://img.example/m.jpg' }, model: 'm' }));
+    const photo = screen.getByRole('textbox', { name: /Photo link/ });
+    await waitFor(() => expect(photo).toHaveValue('https://img.example/m.jpg'));
+    expect(screen.getByText('Photo link').textContent).toContain('from AI');
+    await user.type(photo, '?x');
+    expect(screen.getByText('Photo link').textContent).toContain('edited');
+  });
+
+  it('cancels a waiting job, and leaves the form as it was', async () => {
+    const poll = polls();
+    const calls = mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [200, FILLABLE],
+      'POST /api/saved/fill': () => [202, job({})],
+      'GET /api/saved/fill/w1': poll.handler,
+      'DELETE /api/saved/fill/w1': () => [200, job({ status: 'cancelled', error: 'cancelled by the caller' })],
+    });
+    const user = await openDraft();
+    await user.click(screen.getByRole('button', { name: 'Fill the gaps' }));
+    await screen.findByText("You're number 14, now serving 11");
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByText('Fill the gaps was cancelled here.')).toBeInTheDocument();
+    expect(calls.some((c) => c.method === 'DELETE' && c.url === '/api/saved/fill/w1')).toBe(true);
+    // The poll still out comes back cancelled and changes nothing.
+    await poll.answer(job({ status: 'cancelled', error: 'cancelled by the caller' }));
+    expect(screen.getByText('Partitioning').textContent).toContain('not on page');
+  });
+
+  it('says why a job failed or was cancelled on Wicket, and a full queue', async () => {
+    const poll = polls();
+    let refuse = false;
+    mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [200, FILLABLE],
+      'POST /api/saved/fill': () =>
+        refuse ? [503, { error: "Wicket's queue is full; try again in a while." }] : [202, job({})],
+      'GET /api/saved/fill/w1': poll.handler,
+    });
+    const user = await openDraft();
+    await user.click(screen.getByRole('button', { name: 'Fill the gaps' }));
+    await poll.answer(job({ status: 'failed', error: 'the cloud model answered 429' }));
+    expect(await screen.findByText(/couldn't fill the gaps: the cloud model answered 429/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Fill the gaps' }));
+    await poll.answer(job({ status: 'cancelled', error: 'cleared' }));
+    expect(await screen.findByText('Fill the gaps was cancelled: cleared')).toBeInTheDocument();
+
+    refuse = true;
+    await user.click(screen.getByRole('button', { name: 'Fill the gaps' }));
+    expect(await screen.findByText("Wicket's queue is full; try again in a while.")).toBeInTheDocument();
+    expect(screen.getByText('Partitioning').textContent).toContain('not on page');
+  });
+
+  it('shows the button disabled on a bot-check draft', async () => {
+    mockApi({
+      'GET /api/saved': () => [200, []],
+      'POST /api/saved/scrape': () => [
+        200,
+        {
+          ...FILLABLE,
+          found: [],
+          via: null,
+          problem: { kind: 'blocked', message: 'The site answered with a bot check instead of the listing.' },
+        },
+      ],
+    });
+    const user = userEvent.setup();
+    render(<SavedPage incomingLink={null} onIncomingTaken={noop} />);
+    await user.type(screen.getByRole('textbox', { name: 'Listing link' }), LINK);
+    await user.click(screen.getByRole('button', { name: 'Fetch details' }));
+    expect(await screen.findByRole('button', { name: 'Fill the gaps' })).toBeDisabled();
+  });
+});
+
