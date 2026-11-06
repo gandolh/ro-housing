@@ -276,3 +276,12 @@ routes aren't registered. Refresh, Fetch details and the adapters never call Wic
 page matched the brief. vps-deploy's ro-housing stack now passes `WICKET_URL` (the public
 `/wicket-api`) and an optional `WICKET_TOKEN` secret. Checks: api tsc (and the build config) clean,
 vitest 185/185; web tsc -b clean, vitest 79/79. Not run against a live Wicket; not deployed.
+
+## [2026-11-06] todo | Brief 20: every hop of a fetch is checked
+
+Promoted from the todo `check-every-hop-of-a-pasted-link` at the owner's
+ask, built the way newspapper closed the same gap the same day: redirects
+followed by hand with the check on every hop, the connection made with
+`node:http`/`node:https` and a vetting lookup (no new dependency), every
+`createSession()` fetch covered, and a Chromium route filter with the
+rebinding gap there written down.
