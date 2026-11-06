@@ -20,7 +20,7 @@ A `ScrapedListing` is intentionally permissive — every field except `sourceUid
 
 ### cheerio (default)
 
-For sites whose listing cards are present in the raw HTML response. Use `lib/fetch.ts` to issue requests — it sets a real browser User-Agent and carries cookies across calls in a session. This matters for sites like imobiliare.ro that set consent cookies on first visit and 302 you to a wall otherwise.
+For sites whose listing cards are present in the raw HTML response. Use `lib/fetch.ts` to issue requests — it sets a real browser User-Agent and carries cookies across calls in a session, and across the hops of a redirect. This matters for sites like imobiliare.ro that set consent cookies on first visit and 302 you to a wall otherwise. Since 2026-11-06 the session follows redirects itself (at most 5) and refuses any hop to a local address, so a source URL that redirects to one fails the run (decisions.md, "Every hop of a fetch is checked").
 
 ### Playwright
 

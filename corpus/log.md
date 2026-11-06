@@ -285,3 +285,17 @@ followed by hand with the check on every hop, the connection made with
 `node:http`/`node:https` and a vetting lookup (no new dependency), every
 `createSession()` fetch covered, and a Chromium route filter with the
 rebinding gap there written down.
+
+## [2026-11-06] done | Brief 20: every hop of a fetch is checked
+
+`createSession()` follows redirects by hand (at most 5, one 20 s timeout for the chain), checks
+every hop's host before requesting it, and makes each request with `node:http`/`node:https` and a
+lookup that refuses unless every address is public, so the socket connects only to an address
+that passed; no new dependency. Cookies set by a redirect go with the next hop; gzip, deflate and
+br are decoded as `fetch` did; bodies are capped at 20 MB. `isPrivateAddress` judges NAT64 and
+`::/96` as the IPv4 inside and refuses 6to4. Chromium: a route filter on the context for first
+requests and popups, service workers blocked, and a DevTools session that checks each redirect
+hop, since Playwright's route handler never sees those (checked against real Chromium).
+Rebinding and WebSockets stay open in Chromium, written in decisions.md. Checks: api tsc clean,
+vitest 244/244; foxfort's search (24 listings) and one foxfort listing fetched for real. Ready
+for deploy: `node cli.ts ro-housing all` from vps-deploy.

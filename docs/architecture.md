@@ -72,9 +72,11 @@ User pastes a listing link, clicks Fetch details
 POST /api/saved/scrape { url }
         │  normalize the URL (drop utm_*, fbclid, the hash, a trailing slash)
         │  already saved? → return it as `existing`, fetch nothing
-        │  refuse localhost / private-network hosts
+        │  refuse localhost / private-network hosts (the early 400)
         ▼
 fetchListingPage: plain fetch → on 401/403/429/503 or a bot-check page, headless Chromium
+        │  every redirect hop checked, the socket connects only to a checked address;
+        │  Chromium refuses local addresses too (decisions.md, "Every hop of a fetch is checked")
         │  still a bot check → problem { kind: 'blocked' }, empty draft
         ▼
 extractDetails(html, url): five layers, first value per field wins
@@ -136,9 +138,9 @@ Listings whose `last_seen` is older than the most recent refresh of their source
 
 Two strategies live in `api/src/adapters/`:
 
-- **cheerio path** — plain `fetch` with a browser UA + cookie persistence (`lib/fetch.ts`), then parse with cheerio. Used by 8 of the 9 search adapters.
+- **cheerio path** — a plain HTTP session with a browser UA + cookie persistence (`lib/fetch.ts`), then parse with cheerio. Used by 8 of the 9 search adapters. The session follows redirects by hand and checks every hop, as for a pasted link.
 - **Feed path** — `imobiliare-feed` reads imobiliare.ro's RSS feed with one plain `fetch` that names the app, parsed by cheerio in XML mode; title and link only.
-- **Playwright path** — shared chromium launcher (`lib/playwright.ts`), navigate, wait for the listing grid, dump `page.content()` into cheerio. Used by storia.ro only.
+- **Playwright path** — shared chromium launcher (`lib/playwright.ts`), navigate, wait for the listing grid, dump `page.content()` into cheerio. Used by storia.ro only. Every request the page makes, and every redirect hop, is refused if it goes to a local address.
 
 Both end up passing rendered HTML to cheerio, so listing-parsing code looks similar across the two paths. The only structural difference is *how the HTML got here*.
 
@@ -154,8 +156,8 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 - `api/vendor/ward/`, `web/vendor/ward/` — the vendored ward-auth library (a generated copy; upgrade it with the wzd_auth repo's vendoring script, never by hand).
 - `api/src/db/` — schema, connection, typed query helpers, `migrate.ts` (columns added after the first release). No ORM.
 - `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`.
-- `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain fetch, Chromium fallback, bot-check detection), `extract.ts` (the five layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
-- `api/src/lib/` — shared infrastructure: `fetch.ts` (cookie-aware HTTP), `playwright.ts` (browser singleton), `normalize.ts` (Romanian price/rooms/m² parsers).
+- `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain HTTP, Chromium fallback, bot-check detection), `extract.ts` (the five layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
+- `api/src/lib/` — shared infrastructure: `fetch.ts` (cookie-aware HTTP over `node:http`/`node:https`: redirects followed by hand, every hop checked, a lookup that connects only to public addresses), `playwright.ts` (browser singleton, and the filter that keeps Chromium off local addresses), `normalize.ts` (Romanian price/rooms/m² parsers).
 - `api/src/routes/` — route handlers. Thin; business logic lives in adapters and db.
 - `web/src/pages/` — `ListingsPage` (the unified table), `SavedPage` (add by link, the draft, the saved table, the edit dialog) and `SourcesPage` (per-source URL + enable toggle).
 - `web/src/lib/` — `format.ts` (price, m², €/m², floor formatting shared by both tables), `apartment.ts` (form strings ↔ saved record, floor input "P"/"D").

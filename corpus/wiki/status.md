@@ -1,6 +1,6 @@
 ---
-summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript). The owner deployed it on 2026-11-05 and linked Ward. 18, Fill the gaps through Wicket, built 2026-11-05, not deployed: it needs ro-housing's Wicket token in vps-deploy's secrets.
-updated: 2026-11-05
+summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript). The owner deployed it on 2026-11-05 and linked Ward. 18, Fill the gaps through Wicket, built 2026-11-05, not deployed: it needs ro-housing's Wicket token in vps-deploy's secrets. 20, every hop of a fetch checked and Chromium kept off local addresses, built 2026-11-06, not deployed.
+updated: 2026-11-06
 ---
 
 # Status: 2026-11-04
@@ -20,6 +20,11 @@ Pushed through `bfce142` (2026-11-01); the 2026-11-04 commits are on local main,
 - **API safety** (2026-10-27, 2026-10-28). No CORS; another site's `Origin` gets 403, and so does
   any `Host` but the local names, which closes DNS rebinding at port 3000
   ([docs/decisions.md](../../docs/decisions.md)).
+- **Fetching on someone else's say-so** (2026-11-06, not deployed). Every plain fetch follows
+  redirects by hand, checks each hop and connects only to a checked public address; Chromium
+  refuses local addresses on first requests and redirect hops, but resolves names itself, so
+  rebinding stays open there ([20](../briefs/done/20-every-hop-of-a-fetch-is-checked.md),
+  [docs/decisions.md](../../docs/decisions.md)).
 - **Prices** (2026-10-27). Every adapter reads the price with `extractPriceEur()`, skipping the
   floor number, "Preț vechi" and discounts; the Saved form reads decimals; "+ TVA" prices carry a
   flag and a "+TVA" mark ([docs/adapters.md](../../docs/adapters.md)).
@@ -53,12 +58,14 @@ Filed 2026-11-04 from the owner's grill, numbered in build order (numbering cont
 
 - imobiliare's own price element, once its bot check lifts.
 
-## Owner steps (2026-11-05)
+## Owner steps (2026-11-05, 2026-11-06)
 
 Done by 2026-11-05, per vps-deploy's log: production Ward's app and client, the deploy, the
 account in the container, the grant and "Link Ward", the seed command as `node dist/seed.js`, and
 the brief-board sync.
 
+- Brief 20: `node cli.ts ro-housing all` from vps-deploy (no new setting). Then Fetch details on
+  a real listing still fills the draft.
 - Fill the gaps: add `WICKET_TOKEN=<ro-housing's token>` (the value after `ro-housing=` in
   `WICKET_APP_TOKENS`, vps-deploy's `secrets/wicket.env`) to vps-deploy's
   `secrets/ro-housing.env`, then `node cli.ts ro-housing all` there. Then on a fresh draft with an

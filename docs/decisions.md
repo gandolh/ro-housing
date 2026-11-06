@@ -75,6 +75,8 @@ The API answers any origin (`cors: origin: true`), so any page open in the brows
 
 Since 2026-10-27 the API no longer answers other origins (see "Only the web app's own origin" below), so the first sentence no longer holds. The local-address guard stays as a second line.
 
+Since 2026-11-06 "only the first hop" no longer holds either: every fetch checks each redirect hop and connects only to an address that passed, and Chromium refuses local addresses too (see "Every hop of a fetch is checked" below). This early check stays, so a pasted local link gets a plain 400 before anything is fetched.
+
 ## Improvement sweep briefs (2026-10-27)
 
 ### Only the web app's own origin
@@ -119,6 +121,22 @@ The VPS has 3.7 GiB of RAM for every app on it, and the owner decided on 2026-11
 
 ### A model only on request, through Wicket
 The "No Firecrawl" call above left one use for a model: reading the fields the rules missed, when the owner asks. On 2026-11-04 the owner settled how, and it was built on 2026-11-05. A "Fill the gaps" button on the Saved draft starts one job on Wicket, the estate's queue for LLM calls, which holds the Ollama Cloud key, runs one call at a time and picks the model. The job reads the page text Fetch details kept (the input the research scored: the URL, the title and tags, the JSON scripts, the visible text), so the site is not asked a second time. It asks only for the fields still empty, with a JSON schema where every field may be null and a prompt that says never to guess. The answer goes through the extractor's sanity ranges, and the form fills a field only if it is still empty when the answer comes, marked "from AI" until edited. Nothing is saved until Save, and raw_json records which fields the model gave and its name. While the job waits, the form shows Wicket's ticket line ("You're number N, now serving M") and a Cancel. Rejected: a model inside Refresh or Fetch details (the research's slow CPU runs and the invented flat), a model on the box itself (Wicket asks the cloud only since 2026-11-04, so the box keeps its memory), and the browser calling Wicket directly (the token stays on the server). The button is off without `WICKET_URL` and `WICKET_TOKEN`, and disabled on a bot-check draft, where there is no listing to read.
+
+## Fetching on someone else's say-so (2026-11-06)
+
+### Every hop of a fetch is checked, and the connection too
+With the app on the VPS, a pasted link is a request the server makes from inside the box. The old guard checked only the pasted link's first address: `fetch` then followed redirects unchecked, so a public page could send the server to `127.0.0.1` or another app's port, and `fetch` resolved the name again when it connected, so a name with a short TTL could answer public to the check and private to the connection (DNS rebinding). newspapper closed the same gap the same day; the approach is copied, not the code.
+
+Every fetch through `createSession()` (`api/src/lib/fetch.ts`) now follows redirects by hand, at most 5, and checks each hop before requesting it: http(s) only, and every address the host resolves to must be public. The request goes through Node's own `node:http` / `node:https` with a `lookup` option that replaces the connection's name resolution: it resolves, refuses unless every address is public, and hands the socket only those, so the socket connects only to an address that passed. TLS still checks the certificate against the host name. The owner's calls: no new dependency (newspapper's owner turned down the `undici` package for the same fix), and every `createSession()` fetch goes this way, the adapters' search pages included, not only pasted links: one path is simpler to keep right, and the known sites pass anyway. A small adapter keeps what the session used from `fetch`: the cookie jar now works per hop (a cookie set by a redirect goes with the next request), gzip, deflate and br bodies are decoded, the 20 s timeout covers the whole chain, and a refused hop throws the same "local addresses are not allowed" error. One addition of ours: a body over 20 MB, or a compressed one that would grow past that, is refused, since the session now does the decoding `fetch` did.
+
+`isPrivateAddress` (`api/src/details/url.ts`) learned the IPv6 forms that carry an IPv4 address: NAT64 (`64:ff9b::/96`) and IPv4-compatible (`::/96`) are judged as the IPv4 address inside, like IPv4-mapped already was; 6to4 (`2002::/16`) is refused whatever it carries, since the relay it goes through is anyone's. It also refuses multicast and reserved addresses, and anything that is not an IP address.
+
+Two plain `fetch` calls stay outside the session: the imobiliare RSS feed, which only ever asks for one fixed address, and the Wicket client, whose address is the server's own setting.
+
+### Chromium refuses local addresses, but resolves names itself
+The Chromium fallback loaded whatever the page asked for. Now a route filter on the browser context checks the first request of every chain (the page, its frames, its scripts and images) against the same rule and aborts a local one; requests from any other page, such as a popup, are aborted outright, and service workers are blocked, since route handlers don't see their requests. Playwright's route handler is never called for the hops a redirect leads to (its docs say so, and a check on 2026-11-06 confirmed it: the handler saw a page's address but not the one it redirected to, which the server still received), so a DevTools session on the page pauses each redirect hop and runs the same check before it goes out. A refused navigation reads as the same "local addresses are not allowed" error.
+
+The accepted gaps: Chromium resolves names itself when it connects, so DNS rebinding stays possible there, and WebSockets are not filtered (Playwright's WebSocket routing replaces the page's `WebSocket` class with a script, which a bot check could notice). The DevTools session sees the frames in the page's own process; the headless shell put a cross-site frame there in the 2026-11-06 check, but a frame Chromium ever moves to its own process would have its redirect hops unchecked. If any of this starts to matter, the way to close all three is to run Chromium through a small proxy in the API process that resolves and checks every host itself.
 
 ## What we'd revisit if usage proves us wrong
 

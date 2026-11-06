@@ -84,3 +84,45 @@ dependency** (newspapper's owner call: Node's own `http`/`https`, not the
   details, and the adapters' scrape of one source still works (one run, not
   a loop).
 - **Owner step:** `node cli.ts ro-housing all` from vps-deploy.
+
+## Outcome (2026-11-06)
+
+Built as specified, both owner defaults taken. Code in `2ab9318`; the reasoning and the gaps are in
+[docs/decisions.md](../../../docs/decisions.md), "Fetching on someone else's say-so (2026-11-06)".
+
+- **`lib/fetch.ts`.** `createSession(deps?)` keeps its shape (`get(url)` to text), so the adapters
+  and `fetchPage.ts` are unchanged. Each hop: `checkedUrl` (http(s), every address public via
+  `publicAddresses`), then one GET through `node:http`/`node:https` with `vettingLookup` (both call
+  shapes) on the module's own agents; redirects (301/302/303/307/308) followed by hand, at most 5;
+  cookies stored per hop's host before the next hop; one 20 s timeout for the chain, which reads as
+  `fetch`'s did; `HTTP <status> for <url>` kept for `fetchPage.ts`'s regexes; a refusal throws
+  `LocalAddressError` ("local addresses are not allowed"). gzip, deflate (zlib and raw) and br are
+  decoded, Accept-Encoding as `fetch` sent it. `deps.connectTo` is the test-only seam after the check.
+- **`details/url.ts`.** `isPrivateAddress` judges NAT64 and `::/96` as the IPv4 inside, refuses
+  6to4, strips a zone id. `assertPublicHost` unchanged apart from its comment.
+- **`lib/playwright.ts`.** `guardPage`: `context.route` checks every first request and aborts any
+  from another page (popups); a DevTools session (`Fetch.requestPaused` with `redirectedRequestId`)
+  checks each redirect hop, because a check here showed Playwright's route is never called for
+  them. Service workers blocked. A refused navigation throws `LocalAddressError`.
+
+**Decided here.** (1) A 20 MB cap on the body and on what a compressed body may grow into: the
+session now decodes, so a gzip bomb was its problem. (2) `isPrivateAddress` also refuses multicast
+and reserved addresses and anything that is not an IP. (3) The Chromium redirect check uses a
+DevTools session on top of the route filter, the smallest way to honour "its redirects included".
+(4) WebSockets in Chromium are not filtered: Playwright routes them by replacing the page's
+`WebSocket` class with a script, which a bot check could notice; written down as a gap with
+rebinding. (5) `lib/fetch.ts` imports `isPrivateAddress` from `details/url.ts`, where the brief put
+it, so lib now depends on details for that one function. (6) A refused redirect on a pasted link
+shows as the "unreachable" notice "Could not load the page (local addresses are not allowed)", not
+the early 400: changing that would touch `fetchPage.ts` and `routes/saved.ts`, outside this brief;
+it never falls through to Chromium (tested). (7) The imobiliare RSS feed (one fixed address) and
+the Wicket client (the server's own setting) keep their plain `fetch`.
+
+**Checks.** api `tsc --noEmit` with both configs clean; vitest, the whole API run, 244/244 (no
+Chromium in it; new `fetch.test.ts`, more in `url.test.ts` and `playwright.test.ts`). Once against
+real Chromium with a loopback server: a loopback link threw `LocalAddressError` with no request
+made; the redirect of a page, of a script and of a `fetch()` to a refused path, and an image on
+one, never reached the server. Real sites, once each: foxfort's search page gave 24 listings, and one of them
+fetched with plain HTTP filled all ten fields. No lint is configured in this repo.
+
+**Owner step.** `node cli.ts ro-housing all` from vps-deploy.
