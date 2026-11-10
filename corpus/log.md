@@ -311,3 +311,7 @@ for deploy: `node cli.ts ro-housing all` from vps-deploy.
 - 24: the error handler passes Fastify's 4xx through and never echoes a thrown message (Q43); no decorators as a
   test seam (Q56); stream and binary routes exempt (Q53, none here); the `from "fastify"` check uses double
   quotes, since brief 22 reformats the quotes.
+
+## [2026-11-10] done | Brief 21: `@base-ui/react` 1.5.0 to 1.9.0, pinned exactly in `web/`
+
+One commit (`chore(deps): @base-ui/react 1.9.0`): `web/package.json` and `web/package-lock.json` only. One copy, hoisted at `node_modules/@base-ui/react` 1.9.0; ten lockfile entries changed (eight versions plus two new nested `@babel/runtime` 8.1.0), as the brief predicted. In `web/`, `npx tsc -b`, `npx vitest run` (79 tests in 12 files) and `npm run build` pass. 1.9.0 still sets `data-active` on a selected tab (`TabsTabDataAttributes.js:24`), so `Tabs.tsx`'s styling holds.

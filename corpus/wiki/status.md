@@ -9,6 +9,8 @@ Pushed through `bfce142` (2026-11-01); the 2026-11-04 commits are on local main,
 [log.md](../log.md)); project knowledge is in [docs/](../../docs/README.md), the session record in
 [docs/worklog.md](../../docs/worklog.md).
 
+Brief 21 (Base UI 1.9.0) was built on 2026-11-10 and awaits a deploy; see [log.md](../log.md).
+
 ## By area
 
 - **On the VPS: ready, not deployed** (2026-11-04). Sign-in (a seeded local account or Sign in

@@ -117,3 +117,9 @@ One commit for the bump: `chore(deps): @base-ui/react 1.9.0`.
 
 - The lockfile of `web/` is rewritten here. Run briefs 22 and 23 only after this one is committed.
 - Nothing in the image changes: `infrastructure/Dockerfile` copies only `api/`.
+
+## Outcome (2026-11-10)
+
+Built: `web/package.json` reads `1.9.0`; the lockfile resolves one copy at 1.9.0, with the ten changed entries listed in Context; the diff is those two files only. The renamed-API grep found only `docs/base-ui.txt:71`. `npx tsc -b` exits 0, 79 tests in 12 files pass (as before), `npm run build` exits 0; no source fix was needed. For the `Tabs` active attribute: the installed 1.9.0 still defines `data-active` (`node_modules/@base-ui/react/tabs/tab/TabsTabDataAttributes.js:24`).
+
+Not done: the per-wrapper changelog lines (no GitHub access) and the browser behaviour table (no dev servers started). The owner should walk Tabs, Dialog and Select after deploy. The image copies only `api/`, so nothing changes in it.
