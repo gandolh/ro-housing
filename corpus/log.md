@@ -299,3 +299,15 @@ hop, since Playwright's route handler never sees those (checked against real Chr
 Rebinding and WebSockets stay open in Chromium, written in decisions.md. Checks: api tsc clean,
 vitest 244/244; foxfort's search (24 listings) and one foxfort listing fetched for real. Ready
 for deploy: `node cli.ts ro-housing all` from vps-deploy.
+
+## [2026-11-10] todo | Briefs 22-24 revised for the owner's grilling and the technical calls
+
+- 22: `house-style` is vendored (a copy with a version header in `api/` and in `web/`, `house-style:sync`), so
+  the Dockerfile needs no change; width 120 decided, with the 6,674-line reformat as the one-off cost; the 361
+  single-quoted imports move to double quotes and the `.ts` import suffixes stay; `!` is an error in source and
+  a warning in tests; the `.claude` un-ignore stays as step 3.
+- 23: the theme control is a guarded `ToggleGroup` (the choice saves on each press, Q57); the two arbitrary text
+  sizes become a named scale (Q62); the root font size already sits on `body` (Q44).
+- 24: the error handler passes Fastify's 4xx through and never echoes a thrown message (Q43); no decorators as a
+  test seam (Q56); stream and binary routes exempt (Q53, none here); the `from "fastify"` check uses double
+  quotes, since brief 22 reformats the quotes.

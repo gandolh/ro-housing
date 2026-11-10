@@ -7,7 +7,7 @@
   - brief 03, *A code-structure skill for the Fastify + React apps*: rules 1-11, `server-skeleton.md`, `zod-type-provider.md`, `migrating-a-server.md`, `check-structure.mjs`, and the dependency-cruiser and knip presets;
   - brief 16, *The Fastify servers adopt the code structure*: the method;
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: `check-structure` runs `--warn-only` until this brief is done.
-- The owner's grilling of 2026-11-10: Q1 is answered (a fact): the container starts a file path, and the repo owns its Dockerfile. Q23 (`features/`), Q24 (plugin options, explicit registration), Q25 (response schemas everywhere), Q54, Q55 and Q56 are unanswered; this brief builds their defaults.
+- The owner's grilling of 2026-11-10: Q1 is answered (a fact): the container starts a file path, and the repo owns its Dockerfile. The technical calls settle Q23 (`features/`), Q24 (plugin options, explicit registration), Q25 and Q53 (response schemas, with the stream and binary exemption), Q43 (the error handler), Q54-Q56; the decisions below say how.
 
 **Order:** after 22. It touches no file that 23 touches, but never run it at the same time as another brief.
 
@@ -98,15 +98,17 @@ Every error reply is `{ error: "<sentence>" }`, and `web/src/api.ts` (`ApiError`
 
 `db/index.ts:9-18` opens the database when it is imported (`export const db = new Database(DB_PATH)`), runs the schema and seeds the sources. `routes/issues.ts:12` makes its folder at import. `app.test.ts:9-10` sets `RO_HOUSING_DB=:memory:` before importing. Turning this into `openDatabase(path)` is a large change: every store function reads the `db` singleton. **Default: the singleton stays**, `config.ts` only owns the two path functions, and the skill's allowance for import-time config applies. The alternative is worth a later brief.
 
-## Owner decisions (defaults this brief builds)
+## Owner decisions
 
-1. **`features/<name>/`** (Q23), with `saved` as one feature (fill belongs to it).
-2. **Dependencies as plugin options** (Q24): `buildApp` passes `wicket` and `fillable` as options, as it does today. No decorators except `accounts`, which the tests use; check if the test can build its own and drop the `declare module`.
-3. **Zod route schemas with a response schema on every route** (Q25). Response schemas are transform-free. A route's schema declares only the statuses its handler sends itself (a declared status the handler never sends becomes a 500).
-4. **Where the schemas live** (Q55): `api/src/features/<name>/schema.ts`. There is no `shared/`, and none can exist: the image copies only `api/`, and `web/` is built apart. `web/src/api.ts` keeps its hand-written types, so a response schema and its web type can drift; a test per route compares the reply with the web type's keys. *New question for the grilling.*
-5. **Error body** (skill rule 8): the repo's `{ error: string }`. A schema failure answers 400 with the first issue's message, so the sentences in `saved-input.ts` survive as zod messages.
+Items 1-5 and 7 are decided 2026-11-10 (technical calls, the questions named); 6 and 8 are defaults no question covers.
+
+1. **`features/<name>/`** (Q23, technical call), with `saved` as one feature (fill belongs to it).
+2. **Dependencies as plugin options** (Q24, Q56, technical call): `buildApp` passes `wicket` and `fillable` as options, as it does today, and tests pass their dependencies the same way. No decorators as a test seam: `accounts` goes too, and the tests build their own, which drops the `declare module`. One error class stays if it has one (Q56).
+3. **Zod route schemas with a response schema on every route** (Q25, technical call). Pass-through JSON uses a loose object. Response schemas are transform-free. A route's schema declares only the statuses its handler sends itself (a declared status the handler never sends becomes a 500).
+4. **Where the schemas live** (Q55, technical call: a schema lives in `shared/` when the client imports it, otherwise in its feature folder; here the client cannot import one): `api/src/features/<name>/schema.ts`. There is no `shared/`, and none can exist: the image copies only `api/`, and `web/` is built apart. `web/src/api.ts` keeps its hand-written types, so a response schema and its web type can drift; a test per route compares the reply with the web type's keys.
+5. **Error body** (Q43, technical call): one error handler, keeping the repo's `{ error: string }`. It passes Fastify's own 4xx through with their status and message, and never echoes a thrown message to the client (a 500 answers a fixed sentence, and the error is logged). A schema failure answers 400 with the first issue's message, so the sentences in `saved-input.ts` survive as zod messages.
 6. **Timeouts.** `POST /api/refresh` runs every source in turn and can take minutes (`routes/refresh.ts:42-80`), and the fill poll waits up to 25 s (`api/src/lib/wicket.ts:49`). So no `connectionTimeout` or `requestTimeout` is set that would cut either; the default stays and the reason goes in `docs/decisions.md`.
-7. **Streams and binary routes** (Q53): none here.
+7. **Streams and binary routes** (Q53, technical call): exempt from response schemas, each with a `scripts/conventions.json` entry. None here.
 8. **The `trustProxy` setting.** ward-auth takes `trustedProxies` as its own option (`app.ts:93`), so Fastify's `trustProxy` stays unset. Record it.
 
 ## Files you OWN
@@ -128,7 +130,7 @@ One commit per step. After each, `npm run check` passes (the API's tests are 244
 
 1. **Before.** Run `check-structure` and record the counts by rule. Save the real JSON of every route the web calls (`web/src/api.ts`) from a seeded local API, for the step 5 comparison.
 2. **`config.ts`.** Fold `env.ts` and `paths.ts` in, add `HOST`, `WEB_ORIGINS`, `CHROMIUM_DISABLE_DEV_SHM`, `loadSeedConfig()` and the `loadEnvFile()` test. `server.ts` and `seed.ts` read nothing else. `n/no-process-env` becomes an error here.
-3. **Plugins.** `plugins/errors.ts` (one handler: no 5xx detail to the client, the error logged), `plugins/host-guard.ts`, `plugins/origin-guard.ts`, `plugins/auth.ts`, all in `fastify-plugin`, registered in the same order as today (Host, Origin, Ward). `close-with-grace` in `server.ts`. The guard tests keep passing unchanged.
+3. **Plugins.** `plugins/errors.ts` (one handler, `{ error: string }`: a Fastify 4xx passes through with its own status and message, and a thrown message is never echoed to the client, only logged), `plugins/host-guard.ts`, `plugins/origin-guard.ts`, `plugins/auth.ts`, all in `fastify-plugin`, registered in the same order as today (Host, Origin, Ward). `close-with-grace` in `server.ts`. The guard tests keep passing unchanged.
 4. **Move the features** one folder per commit, in this order: health, sources, listings, issues, refresh, saved. Update every import, the tests, and docs paths.
 5. **Schemas, one feature per commit.** Add zod and the provider in the first of these. For each route, write the body, query and params schemas and a response schema per status the handler sends. Replace `parseSavedInput`, `parseId`, and the hand checks in `issues` and `fill`. `PUT /api/sources/:id` gets its first validation: `searchUrl` a string, null or absent, `enabled` a boolean. Before each commit, compare the new JSON with step 1's for every route the web calls; response schemas strip unknown keys. Check the web's real payloads first, because a schema stricter than the client breaks it.
 6. **dependency-cruiser and knip.** Feature boundaries (only through `index.ts`), no Fastify under `lib/`, no cycles, the `adapters/` exception. Fix `lib/fetch.ts`'s import of `details/url.ts`.
@@ -138,10 +140,11 @@ One commit per step. After each, `npm run check` passes (the API's tests are 244
 
 - [ ] `grep -rn "process\.env" api/src --include=*.ts | grep -v "\.test\.ts" | grep -v "src/config.ts"` prints nothing.
 - [ ] `grep -rn "listen(" api/src --include=*.ts | grep -v "\.test\.ts"` prints only `server.ts`.
-- [ ] `grep -rln "from 'fastify'" api/src/lib` prints nothing.
+- [ ] `grep -rln "from \"fastify\"" api/src/lib` prints nothing.
 - [ ] `grep -rnE "\.parse\(req|parseSavedInput|parseId" api/src --include=*.ts | grep -v "\.test\.ts"` prints nothing.
 - [ ] Every route in the table has an `inject()` test for its success and, where it takes input, for input that fails its schema (the 15 routes).
 - [ ] A test per route compares the reply's keys with step 1's saved JSON.
+- [ ] A test throws an error with a recognisable message from a route and expects the reply not to contain it, and a malformed JSON body keeps Fastify's own 4xx status.
 - [ ] `npm run check` passes, `check-structure` strict reports 0, dependency-cruiser and knip pass, and `npm run build` in `api` produces `dist/server.js` and `dist/db/schema.sql`.
 - [ ] `docker build -f infrastructure/Dockerfile .` passes, and the container answers `GET /api/health` (the Dockerfile's own health check).
 - [ ] `bash corpus/lint.sh` ends clean.

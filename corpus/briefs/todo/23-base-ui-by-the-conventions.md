@@ -6,7 +6,7 @@
 - In the owner's skills library:
   - brief 02, *A base-ui skill, styled with Tailwind*: rules 1-13, the references and `check-base-ui.mjs`;
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: the checker runs `--warn-only` until the repo's Base UI brief is done.
-- The owner's grilling of 2026-11-10: Q18 (a theme switch, light by default), Q19 (visual parity is "close enough") and Q58 (form dialogs stay open on an outside tap) are **decided** and written below as decisions. Q57 and Q59 are unanswered.
+- The owner's grilling of 2026-11-10: the owner's answers (Q18, Q19, Q58) and the technical calls (Q15-Q17, Q41, Q44, Q57, Q59-Q62) are all decided and written below as decisions.
 
 **Runs before:** 25, the redesign.
 
@@ -43,24 +43,25 @@ Also found:
 
 ## Owner decisions
 
-Decided on 2026-11-10 (the grilling):
+Decided on 2026-11-10, owner answers 1-3 and technical calls from 4:
 
-1. **A Light / Dark / System choice, light by default** (Q18). A first visit shows the light theme, not the system's. `dark:` keys off a `data-theme` attribute through `@custom-variant dark`, not `prefers-color-scheme`. ro-housing keeps no per-user settings, so the choice is kept on the device, in `localStorage`.
-2. **Close enough** (Q19). Before and after screenshots at 1280 and 390 px show no visible change to layout or colour in the light theme. A few pixels of drift are neither fixed nor listed.
-3. **Form dialogs stay open on an outside tap** (Q58). The Report and Edit dialogs set `disablePointerDismissal`. They close with Cancel, the X or Esc.
+1. **A Light / Dark / System choice, light by default** (Q18, owner). A first visit shows the light theme, not the system's. `dark:` keys off a `data-theme` attribute through `@custom-variant dark`, not `prefers-color-scheme`. ro-housing keeps no per-user settings, so the choice is kept on the device, in `localStorage`.
+2. **Close enough** (Q19, owner). Before and after screenshots at 1280 and 390 px show no visible change to layout or colour in the light theme. A few pixels of drift are neither fixed nor listed.
+3. **Form dialogs stay open on an outside tap** (Q58, owner). The Report and Edit dialogs set `disablePointerDismissal`. They close with Cancel, the X or Esc.
 
-Defaults this brief builds:
-
-4. **Where the control lives.** The Account dialog (`web/src/components/AccountButton.tsx`), as a `RadioGroup` wrapper. The inline script applies the saved choice before first paint, so the login page also follows it. *New question for the grilling.*
-5. **`items` replaces `SelectValueLabel`.** The wrapper is deleted once nothing uses it (Q57 and Q59 don't touch this).
-6. **The dark values** are derived by inverting the paper and ink roles, and kept honest by a contrast test (step 7). Brief 25 may replace them.
+4. **Where the control lives** (Q41, Q57, technical call). The Account dialog (`web/src/components/AccountButton.tsx`), as a guarded `ToggleGroup` wrapper, because the picker **saves** on each choice: arrow keys move focus without saving, a press chooses, and one item always stays pressed. The inline script applies the saved choice before first paint, so the login page also follows it.
+5. **`items` replaces `SelectValueLabel`** (Q57, Q59, technical call). The wrapper is deleted once nothing uses it. Wrappers stay in `web/src/components/ui/` (Q59).
+6. **The dark values** are derived by inverting the paper and ink roles, and kept honest by a contrast test (step 7). Brief 25 may replace them (default, no question covers it).
+7. **Native controls and imports** (Q15, Q16, technical call). Base UI is imported only under `ui/` folders (it already is: all 7 imports). The app's text and search inputs stay native.
+8. **The type scale and tests** (Q62, Q60, technical call). The two arbitrary text sizes (`text-[11px]`, `text-[10px]`) become named scale entries in `@theme` at the same pixels. There is no `phone` variant: `max-sm:` is used. Tests select by role, and the repo has no `data-testid` (0 found). The web tests already run in happy-dom, so no jsdom is added; a wrapper gets its own test only if it holds logic (`Dialog`'s Escape guard and the new `ToggleGroup`'s guard).
+9. **The root font size** (Q44, technical call). No change: the 13px size is already on `body` (`web/src/styles.css:63`), with a comment that a size on `html` would shrink every `rem`.
 
 ## Files you OWN
 
-- `web/src/components/ui/**` (the wrappers and their tests), plus a new `RadioGroup.tsx`.
+- `web/src/components/ui/**` (the wrappers and their tests), plus a new `ToggleGroup.tsx`.
 - `web/src/styles.css`, `web/index.html` (the pre-paint script), `web/src/main.tsx` (only if the theme module needs mounting).
 - The call sites of the five selects, and `AccountButton.tsx`, `ReportIssueButton.tsx`, `SavedPage.tsx` (only the dialog props).
-- A new `web/src/theme.ts` and its test.
+- A new `web/src/theme.ts` and its test, and a test for the `Dialog` and `ToggleGroup` guards (decision 8).
 - `.claude/rules/web.md` (add the Base UI and Tailwind lines), `scripts/conventions.json` if an exception is needed.
 - `docs/design.md` (the dark tokens), `docs/decisions.md`, `corpus/wiki/status.md`, `corpus/log.md`.
 
@@ -76,9 +77,9 @@ One commit per step. After each, `npm run check` passes with `check-base-ui` in 
 1. **Before.** Run `check-base-ui` strict and record the counts by rule. Take Playwright screenshots, kept out of git, at 1280 and 390 px of: Listings, Saved with a draft, the Edit dialog, Sources, the Account dialog, the Report dialog, the login page, an open select.
 2. **Select `items`.** Give each of the five `Select.Root`s an `items` map, drop `SelectValueLabel`, add `aria-hidden` to the `▾`, and use the bare `data-popup-open:` form. The empty "All sources" value keeps working.
 3. **The dialog wrapper.** `Dialog.tsx` takes the Escape guard (`details.reason === "escape-key" && details.event.defaultPrevented` keeps it open), `initialFocus` in the house order (the first `[data-autofocus]`, else the first field, else the footer's first button) and a `disablePointerDismissal` prop. Set the prop on the Report and Edit dialogs. Replace `autoFocus` at `ReportIssueButton.tsx:102` with `data-autofocus`. Add tests: Esc in the edit dialog's open select closes only the select; an outside press leaves the Report dialog open.
-4. **Layers and tokens.** Add a `--z-*` scale to `@theme` (header, backdrop, dialog) and use it. Wrap `a`, `table`, `body` and `::selection` in `@layer base`, move `.knob` into the parts as Tailwind variants (`data-pressed:`, `data-popup-open:`, `active:`) with a `--color-bevel` token, add `motion-safe:` to the two transitions. The `*{border-radius:0 !important}` rule stays, in `@layer base`. Compare screenshots (Q19).
+4. **Layers and tokens.** Add a `--z-*` scale to `@theme` (header, backdrop, dialog) and use it. Turn the two arbitrary text sizes into named `--text-*` entries (decision 8). Wrap `a`, `table`, `body` and `::selection` in `@layer base`, move `.knob` into the parts as Tailwind variants (`data-pressed:`, `data-popup-open:`, `active:`) with a `--color-bevel` token, add `motion-safe:` to the two transitions. The `*{border-radius:0 !important}` rule stays, in `@layer base`. Compare screenshots (Q19).
 5. **The theme module.** `web/src/theme.ts` exports the choice type, `readTheme()`, `saveTheme()` and `applyTheme()`. Every read and write of `localStorage` is in a `try`. `system` resolves through `matchMedia`, and listens for changes only while it is chosen.
-6. **The control.** A `RadioGroup` wrapper on Base UI's `radio-group`, used in the Account dialog for Light, Dark and System. The inline script in `web/index.html` sets `data-theme` before first paint, with light when nothing is saved.
+6. **The control.** A guarded `ToggleGroup` wrapper on Base UI's `toggle-group` (arrow keys move focus without saving, one item always pressed; decision 4), used in the Account dialog for Light, Dark and System. The inline script in `web/index.html` sets `data-theme` before first paint, with light when nothing is saved.
 7. **Dark tokens.** `@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *))`, and a `[data-theme="dark"]` block that redefines the colour tokens, plus a `--color-scrim` token for the dialog backdrop (today `bg-ink/30` at `Dialog.tsx:17` would turn light). Add a test that computes the contrast ratio of each text token on each surface in both themes and fails under 4.5:1 for body text.
 8. **After.** Screenshots again, both themes. Run `check-base-ui` strict: rules 1-3 and 8-12 report 0 and rule 4's `.knob` is gone. Update the docs and `log.md`.
 
@@ -88,7 +89,7 @@ One commit per step. After each, `npm run check` passes with `check-base-ui` in 
 - [ ] `grep -n "\.knob" web/src/styles.css` prints nothing, and `grep -rnE "\bz-[0-9]" web/src` prints nothing.
 - [ ] `grep -rn "@base-ui/react" web/src --include=*.tsx --include=*.ts | grep -v "components/ui/" | grep -v "vi.mock"` prints nothing.
 - [ ] A test shows Esc in the open select leaves the edit dialog open, and an outside press leaves the Report and Edit dialogs open.
-- [ ] A test shows a first visit (empty `localStorage`) has `data-theme="light"` on `html`, that choosing Dark sets `dark` and survives a reload, and that `system` follows `matchMedia`.
+- [ ] A test shows the theme control's arrow keys move focus without changing the saved choice, and one choice always stays pressed. A test shows a first visit (empty `localStorage`) has `data-theme="light"` on `html`, that choosing Dark sets `dark` and survives a reload, and that `system` follows `matchMedia`.
 - [ ] The contrast test passes in both themes.
 - [ ] Before and after screenshots of the light theme at 1280 and 390 px show no visible change (Q19).
 - [ ] `check-base-ui` strict reports 0 for rules 1-3 and 8-12.
