@@ -149,6 +149,16 @@ The repo adopted the estate's house style: Prettier at width 120 with trailing c
 
 **Temporary exceptions**, each with a dated comment that says what removes it: `n/no-process-env` is a warning (ten reads outside `config.ts`), `react-hooks/set-state-in-effect` and `react-hooks/refs` are warnings (four pages set state in an effect and `SavedPage` reads a ref while rendering; each fix changes render timing and needs a test first), dependency-cruiser's `lib-without-fastify` is a warning (`lib/host.ts` and `lib/origin.ts` import Fastify's instance type), and `check-structure` runs `--warn-only` (29 findings: `process.env` reads and routes without a schema). `check-base-ui` reports nothing and runs strict. `!` is an error in source and a warning in tests (24 left).
 
+## Base UI by the conventions (2026-11-11)
+
+**Selects take `items`.** `Select` wraps Base UI's root and requires an `items` map (value to label), so the trigger shows the label, not the raw value, and `SelectValueLabel` is gone. The empty "All sources" value is an item with the key `""`.
+
+**Dialogs.** `Dialog` skips a close whose Escape another control already used, focus lands on the first `[data-autofocus]` (else the first field, else the first button), and the Report and Edit dialogs set `disablePointerDismissal` so an outside tap doesn't throw away what was typed.
+
+**Layers and tokens.** The bare-element rules sit in `@layer base`; the z-index scale (`z-header`, `z-overlay`, `z-dialog`), the type scale (`text-mark`) and the knob's bevel (`shadow-knob`, `--color-bevel`) are `@theme` tokens, and `.knob` is gone. Moving the rules into the layer made inputs lose to `text-sm`, so `Input` and `Textarea` say `text-base` (13px) to keep the look.
+
+**Theme: Light, Dark, System, a RadioGroup.** The choice is kept on the device (`localStorage`, key `theme`), not on the server, so the control is a `RadioGroup` whose arrow keys choose (the base-ui skill's rule 16), not a guarded ToggleGroup as the brief said. Tokens are `light-dark()` pairs and `data-theme` on `<html>` sets `color-scheme`, so System tracks the operating system with no script; `@custom-variant dark` keys off the attribute for the rare class that needs it. A script in `index.html` sets the attribute before first paint, light when nothing is saved.
+
 ## What we'd revisit if usage proves us wrong
 
 - **Dedup**: if the same apartment appears 3+ times across sources every refresh, that noise might outweigh the false-positive risk. Add a "group by (rooms, m², ±5% price, fuzzy-neighborhood)" view as a toggle.

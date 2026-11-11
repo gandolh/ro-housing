@@ -32,6 +32,19 @@ Defined in `web/src/styles.css` under `@theme`. Use these Tailwind color tokens 
 | `bad` / `bad-soft`| `#a51a1a` / `#f7dcdc` | Error banner, failed status, "full" cap state. |
 | `warn`            | `#8a5a00` | Dirty-changes counter; a Refresh that found no listings (EMPTY badge, Sources line). |
 
+**Dark theme.** Each token is `light-dark(<light>, <dark>)` in `styles.css`, and `<html data-theme>` (`light`, `dark` or `system`) sets `color-scheme`, so the page follows without a class. The dark values invert the paper and ink roles:
+
+| Token | Dark | Token | Dark |
+|---|---|---|---|
+| `paper` | `#121212` | `accent` | `#e8913a` |
+| `panel` | `#1b1b1b` | `accent-soft` | `#3d2a14` |
+| `panel-alt` | `#242422` | `ok` / `ok-soft` | `#74d17f` / `#1e3321` |
+| `ink`, `rule` | `#ececec` | `bad` / `bad-soft` | `#ff8080` / `#3c1a1a` |
+| `ink-dim` | `#a9a9a9` | `warn` | `#e6ae45` |
+| `ink-faint` | `#7d7d7d` | `rule-soft` | `#3b3b38` |
+
+`scrim` (the dialog backdrop) and `bevel` (the knob highlight) are tokens too. `web/src/contrast.test.ts` reads these pairs from the stylesheet and fails a body-text pair under 4.5:1 in either theme; the one exception is light `accent` on `accent-soft` (3.9:1, as it always was), which may not drop further. A first visit shows light; the choice lives in `localStorage` (`theme`) and is set in the Account dialog.
+
 **Rules**
 - Body text is `ink` on `paper` or `panel`. Anything else needs justification.
 - Use `ink-dim` for labels, captions, meta. Not lighter than that on white — it stops being readable.
@@ -80,7 +93,7 @@ Scale (defined as Tailwind tokens):
   - Select popup: `shadow-[2px_2px_0_0_var(--color-ink)]`
   - Dialog popup: `shadow-[4px_4px_0_0_var(--color-ink)]`
   Hard-edge ink shadow, not blurry. It reinforces the retro feel.
-- **Backdrops** behind a Dialog use `bg-ink/30`. No backdrop-blur.
+- **Backdrops** behind a Dialog use `bg-scrim`. No backdrop-blur.
 
 ## Components
 
@@ -93,8 +106,9 @@ All interactive elements come from `web/src/components/ui/`, which wrap **Base U
 | `Textarea` | `ui/Textarea.tsx` | native (no Base UI textarea exists) |
 | `Checkbox` | `ui/Checkbox.tsx` | `@base-ui/react/checkbox` |
 | `Field`, `FieldLabel`, `FieldDescription`, `FieldError` | `ui/Field.tsx` | `@base-ui/react/field` |
-| `Select`, `SelectTrigger`, `SelectValue`, `SelectPopup`, `SelectItem` | `ui/Select.tsx` | `@base-ui/react/select` |
+| `Select` (takes `items`), `SelectTrigger`, `SelectValue`, `SelectPopup`, `SelectItem` | `ui/Select.tsx` | `@base-ui/react/select` |
 | `Dialog`, `DialogTrigger`, `DialogContent`, `DialogTitle`, `DialogDescription`, `DialogClose` | `ui/Dialog.tsx` | `@base-ui/react/dialog` |
+| `RadioGroup` (the theme switch) | `ui/RadioGroup.tsx` | `@base-ui/react/radio-group` |
 | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | `ui/Tabs.tsx` | `@base-ui/react/tabs` |
 | `Panel` (1px ink-bordered surface) | `ui/Panel.tsx` | none — semantic div |
 | `Badge` (tones: default / ok / bad / warn / accent) | `ui/Badge.tsx` | none |
@@ -117,7 +131,7 @@ On the Sources page, when a row has unsaved changes, its border switches from `i
 ### Modal (Dialog)
 
 - Centered, 1px ink border, 4px offset ink shadow.
-- Backdrop: `bg-ink/30`.
+- Backdrop: `bg-scrim`. A dialog that holds a form (Report, Edit) ignores an outside press.
 - Title: uppercase, bold, tracked tight.
 - Footer buttons right-aligned: ghost Cancel + primary Submit.
 
