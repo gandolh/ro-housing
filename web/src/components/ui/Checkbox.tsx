@@ -16,7 +16,7 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(({ classNam
         className,
       )}
     >
-      <BaseCheckbox.Indicator className="text-[11px] leading-none data-unchecked:hidden">×</BaseCheckbox.Indicator>
+      <BaseCheckbox.Indicator className="text-mark leading-none data-unchecked:hidden">×</BaseCheckbox.Indicator>
     </BaseCheckbox.Root>
   );
 });

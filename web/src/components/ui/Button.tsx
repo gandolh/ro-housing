@@ -14,7 +14,7 @@ const variantClass: Record<Variant, string> = {
     "h-7 px-3 border-2 border-ink bg-panel text-ink hover:bg-paper active:bg-rule-soft data-disabled:opacity-40 data-disabled:hover:bg-panel",
   // Primary: solid ink with industrial-knob bevel. The dominant action on a screen.
   primary:
-    "knob h-7 px-3 border-ink bg-ink text-paper hover:bg-ink-dim active:bg-ink data-disabled:opacity-40 data-disabled:hover:bg-ink",
+    "h-7 px-3 border-2 border-ink shadow-knob data-pressed:shadow-knob-pressed data-popup-open:shadow-knob-pressed active:shadow-knob-pressed bg-ink text-paper hover:bg-ink-dim active:bg-ink data-disabled:opacity-40 data-disabled:hover:bg-ink",
   // Ghost: flat, no chrome. Used inline (tabs, table actions).
   ghost:
     "h-7 px-3 border border-transparent text-ink hover:underline underline-offset-2 data-disabled:opacity-40 data-disabled:hover:no-underline",

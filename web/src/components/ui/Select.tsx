@@ -17,9 +17,9 @@ export const SelectTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithout
       ref={ref}
       {...props}
       className={cn(
-        // Industrial-knob depth: 2px ink border + top-inset highlight (see styles.css .knob).
+        // Industrial-knob depth: 2px ink border + top-inset highlight (the shadow-knob tokens).
         // Inverts on open: ink fill, paper text, highlight flips to the bottom edge.
-        "knob inline-flex h-7 min-w-[8rem] items-center justify-between gap-2 border-ink bg-panel px-2 text-sm",
+        "inline-flex h-7 min-w-[8rem] items-center justify-between gap-2 border-2 border-ink shadow-knob data-pressed:shadow-knob-pressed data-popup-open:shadow-knob-pressed active:shadow-knob-pressed bg-panel px-2 text-sm",
         "hover:bg-paper",
         "data-popup-open:bg-ink data-popup-open:text-paper",
         "data-disabled:opacity-50",

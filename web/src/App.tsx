@@ -19,7 +19,7 @@ export function App({ account }: { account?: ReactNode } = {}) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-30 flex h-9 items-center justify-between border-b border-ink bg-panel px-4">
+      <header className="sticky top-0 z-header flex h-9 items-center justify-between border-b border-ink bg-panel px-4">
         <span className="text-xl font-bold uppercase tracking-tight">ro-housing</span>
         <div className="flex items-center gap-3">
           <ReportIssueButton />

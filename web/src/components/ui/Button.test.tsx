@@ -14,8 +14,8 @@ describe("<Button>", () => {
     expect(screen.getByRole("button")).toHaveClass("border-ink");
 
     rerender(<Button variant="primary">x</Button>);
-    // Primary uses the .knob bevel class (defined in styles.css)
-    expect(screen.getByRole("button")).toHaveClass("knob");
+    // Primary carries the knob bevel (the shadow-knob token)
+    expect(screen.getByRole("button")).toHaveClass("shadow-knob");
 
     rerender(<Button variant="ghost">x</Button>);
     expect(screen.getByRole("button")).toHaveClass("border-transparent");
