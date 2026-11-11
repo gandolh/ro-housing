@@ -150,7 +150,8 @@ data/*.db-shm
 
 # User-reported issues (consumed by Claude, deleted after fix)
 issues/
-.claude
+.claude/*
+!.claude/rules/
 .agents
 .playwright-mcp
 
