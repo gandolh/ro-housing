@@ -1,0 +1,19 @@
+# Markdown stays out of Prettier (decided 2026-11-10).
+*.md
+
+# Generated or vendored copies: the house-style copy and the Ward library's.
+vendor/house-style/
+api/vendor/
+web/vendor/
+
+# Lockfiles, build output, local data.
+package-lock.json
+dist/
+coverage/
+/data/
+
+# Frozen pages the extractors are tested against.
+api/src/details/fixtures/
+
+# Deploy config, not source: Prettier rewrites its quoting.
+infrastructure/
