@@ -10,6 +10,7 @@ Pushed through `bfce142` (2026-11-01); the 2026-11-04 commits are on local main,
 [docs/worklog.md](../../docs/worklog.md).
 
 Brief 21 (Base UI 1.9.0) was built on 2026-11-10 and awaits a deploy; see [log.md](../log.md).
+Brief 22 (the house style and quality harness) was built on 2026-11-11: `npm run check` and `npm run check:fast` run both projects; the temporary exceptions are in [docs/decisions.md](../../docs/decisions.md). Awaits a deploy.
 
 ## By area
 

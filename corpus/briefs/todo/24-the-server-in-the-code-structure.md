@@ -153,3 +153,4 @@ One commit per step. After each, `npm run check` passes (the API's tests are 244
 
 - Brief 22 turns on the gate this one tightens. Brief 23 touches only `web/`.
 - The web's `api.ts` is untouched, so a changed reply shape is a bug here.
+- (2026-11-11, brief 22) Step 6's dependency-cruiser landed in brief 22: `.dependency-cruiser.cjs` at the root, in `check:conventions`, passing with `lib-without-fastify` lowered to a warning by name (`lib/host.ts` and `lib/origin.ts` import Fastify's instance type). This brief keeps the `adapters/` exception, the feature-boundary check, and drops that lowered rule. `check-structure` runs `--warn-only` (29 findings: 10 `process.env` reads outside `config.ts`, 19 routes without a schema, plus two 400-line warnings), and `n/no-process-env` is a warning in `api/eslint.config.js`; drop both here.

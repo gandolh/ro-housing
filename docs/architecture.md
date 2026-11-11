@@ -36,7 +36,7 @@ browser, `AuthGate.tsx` shows the login page until the session hook says signed 
 answered 401 makes it ask again. `/ro-housing/login` and `/ro-housing/account` are addresses (the
 account one opens a dialog over the app, so an open draft survives); the tabs are not.
 
-Two independent npm packages. No monorepo tooling — `npm install` and `npm run dev` happen separately in each. Intentional: keeps the moving parts minimal for a personal project.
+Two independent npm packages, each with its own lockfile. No workspaces — `npm install` and `npm run dev` happen separately in each. Intentional: keeps the moving parts minimal for a personal project. The repo root has a `package.json` too, but it only holds the house-style tools and the scripts that run both packages (`npm run check`); it is not a workspace root and nothing is built from it.
 
 ## Request flow
 

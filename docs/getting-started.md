@@ -10,7 +10,7 @@ The README has the short version. This is the full one.
 
 ## Install and run
 
-The repo is two separate npm packages with no root `package.json`, so `npm run dev` at the root fails. Use two terminals.
+The repo is two separate npm packages. The root `package.json` holds only the house-style tools and the check scripts, so `npm run dev` at the root fails. Run `npm ci` in the root once for the tools, then use two terminals.
 
 **Terminal 1, the API:**
 
@@ -66,12 +66,22 @@ Nothing runs in the background: the data is as fresh as your last Refresh.
 
 ## Tests and checks
 
-Run each in both `api/` and `web/`:
+From the repo root, after `npm ci` in the root, `api/` and `web/`:
+
+```bash
+npm run check       # typecheck, lint, format check, conventions and tests, across both packages
+npm run check:fast  # both typechecks, then ESLint on the changed files
+npm run format      # Prettier writes every file it covers (Markdown stays out)
+```
+
+Inside `api/` or `web/`, each package has its own:
 
 ```bash
 npm test            # Vitest, once
 npm run test:watch  # Vitest, watching
-npx tsc --noEmit    # typecheck
+npm run typecheck   # tsc, tests included
+npm run lint        # ESLint with the house config
+npm run check       # typecheck, lint, knip, tests
 ```
 
 `npm run build` in `web/` typechecks and builds into `web/dist/`. In `api/` it compiles the API to

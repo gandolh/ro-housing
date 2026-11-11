@@ -161,3 +161,48 @@ One commit per step, each with the package checks green.
 
 - Brief 23 adds `better-tailwindcss`'s class-order rule and `check-base-ui`. Brief 24 adds dependency-cruiser and `check-structure`, and makes `no-process-env` an error.
 - The reformat changes `web/src/styles.css` by 8 lines of formatting.
+
+## Outcome (2026-11-11)
+
+Built with house-style 1.1.0, following the brief with these overrides: the copy and the tool pins sit in a root `package.json` (scripts and tools only, no workspaces, no app dependency), not in `api/house-style/` and `web/house-style/`, because the vendored ESLint config resolves its plugins from where it sits. Each project keeps its own `eslint.config.js`, `knip.config.js` and `check:fast`; the root's `check` and `check:fast` call both.
+
+**Commits** (local, in order): vendor and pins `885e05f`, track `.claude/rules`, Prettier config and scripts, the reformat `8699e7e`, its blame-ignore entry, tsconfig flags and parameter properties, the ESLint configs and the fixes, the gate (knip, dependency-cruiser, checkers, scripts), the Claude Code layer and docs, this closeout.
+
+**The reformat.** 113 files, about 3,190 lines added and 3,615 removed (the brief measured 112 files and 6,674 changed lines). Bundle compare (esbuild minify, 129 files: TS, TSX, JS, CSS through the `css` loader, JSON parsed): no file differs. `api/tsconfig.build.json` holds comments, so it was compared by diff, and Prettier left it unchanged. `infrastructure/docker-compose.yml` is in `.prettierignore`: Prettier rewrote one healthcheck's quoting.
+
+**Rule counts, before the fixes then after** (api / web):
+
+| Rule | Before | After |
+|---|---|---|
+| `no-non-null-assertion`, source | 6 / 3 | 0 / 0 |
+| `no-non-null-assertion`, tests | 17 / 7 | 17 / 7 (warnings) |
+| `no-unnecessary-type-assertion` | 2 / 1 | 0 / 0 |
+| `no-misused-promises` | 1 / 7 | 0 / 0 |
+| `no-require-imports` | 2 / 0 | 0 / 0 |
+| `no-import-type-side-effects` | 0 / 2 | 0 / 0 |
+| `no-empty-object-type` | 0 / 1 | 0 / 0 |
+| `no-useless-assignment` | 0 / 1 | 0 / 0 |
+| `n/no-process-env` (source) | 10 / 0 | 10 / 0 (warning) |
+| `react-hooks/set-state-in-effect` | n/a / 4 | 4 (warning) |
+| `react-hooks/refs` | n/a / 1 | 1 (warning) |
+| `react-hooks/exhaustive-deps` | n/a / 4 | 4 (warning, as the house sets it) |
+
+No rule passed about 20 findings. The tests hold 24 `!` as warnings (decision 8). The fixes changed no behaviour: the six parameter properties became fields (`WicketError.code` still exists as `undefined` when absent), the source `!` became `??` or a guard, async handlers on attributes became `() => void handler()`, and `Dialog.tsx`'s empty interface became a type alias.
+
+**Checkers.** `check-base-ui`: 0 errors, 0 warnings, strict from the start (with `"stylesheet": "styles.css"`). `check-structure`, `--warn-only`: 31 findings, 29 of them errors (rule 3: 10, `process.env` outside `config.ts`; rule 6: 19, routes without a schema or input parsed by hand), plus rule 11: 2 (`SavedPage.tsx` is 513 lines). dependency-cruiser: 4 `lib-without-fastify` violations (`lib/host.ts`, `lib/origin.ts` and their tests import Fastify's instance type), lowered to a warning by name.
+
+**Timings** (warm): `check:fast` with one `api` file changed, 10.8 s; `npm run check`, 39.9 s (ESLint on `api` 8.6 s cold).
+
+**Checks run:** `npm run check` (exit 0; api 244 tests, web 79), `npx prettier --check .` (0), `npm run house-style:sync -- --check` (0), `npm run typecheck` in both projects (0), `npm run build` in both (0), `bash corpus/lint.sh` (ok). The Docker compile, run the way the Dockerfile does it on only the files it copies (`package.json`, lockfile, `.npmrc`, both tsconfigs, `vendor`, `src`; `npm ci --ignore-scripts`, `npm run build`): exit 0, `dist/` imports `./app.js`, and `npm ls --omit=dev` names no ESLint, Prettier or house-style. The same for `web/` with `vendor/house-style/` beside it, as vps-deploy builds it from the checkout: exit 0. Deliberate violations, each making `npm run lint` exit 1 and reverted: `enum` (api and web), `!`, `console.log` in `api/src/app.ts`, `// TODO`, `export default` in a source file. The plugin's hooks, run by hand with the event JSON: the formatter hook reformatted a messy `api/src/paths.ts`; the Stop hook, after `note-saved-file.mjs`, exited 2 with `TS2322` from a type error there, and 0 once it was reverted; a `console.log` in `web/src/route.ts` exited 2 with `no-console`.
+
+**Checks skipped:** the live-session hook check waits for the plugin update. No `docker build` (local Docker fails on I/O). A per-project `format:check`: Prettier reads `.prettierignore` from the folder it runs in, so formatting is checked once, from the root.
+
+**Deviations:**
+
+- `api/tsconfig.json` keeps the house flags itself instead of extending the vendored base (`api/tsconfig.json:2`): the build stage copies only `api/` and the Dockerfile is not to be touched. `web/tsconfig.json` extends the vendored base.
+- The root `package.json` and `vendor/house-style/` replace `api/house-style/` and `web/house-style/` (decision 2), and the root has devDependencies (decision 1 said none).
+- `react-hooks/set-state-in-effect` and `react-hooks/refs` are warnings (`web/eslint.config.js`): fixing the five sites changes render timing, so each needs a test first.
+- `infrastructure/` is in `.prettierignore`.
+- `docs/architecture.md`'s "two independent packages" line now names the root `package.json`.
+
+**For house-style:** the adoption reference says the Stop hook finds `check:fast` per project and the sync checks pins only in the target and first-level `package.json` files; both held here. Two things were missing: nothing says a `knip` project below the root needs `ignoreBinaries: ["eslint", "knip"]` only when its scripts call them (with no scripts, knip says to remove them; `vendor/house-style/knip.json` has no hint), and the base tsconfig cannot be extended where a Dockerfile copies only one project, so `sync --check` cannot see drift in a hand-written copy of its flags.

@@ -99,3 +99,4 @@ One commit per step. After each, `npm run check` passes with `check-base-ui` in 
 
 - Brief 25 redesigns on top of the tokens and wrappers built here, in both themes.
 - Brief 22's `better-tailwindcss` rules can turn to errors once this brief is done.
+- (2026-11-11, brief 22) `check-base-ui` already runs strict in `npm run check:conventions`: it reports nothing today (its `"stylesheet": "styles.css"` is in `scripts/conventions.json`), so the "`--warn-only`" steps above need none. The class-order rule of `better-tailwindcss` is still off; this brief turns it on.

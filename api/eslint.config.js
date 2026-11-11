@@ -16,6 +16,7 @@ export default [
     // server takes its settings from config.ts, this block goes and the rule is an error again.
     name: "ro-housing-api/process-env-warns",
     files: ["src/**"],
+    ignores: ["**/*.test.ts"],
     rules: { "n/no-process-env": "warn" },
   },
 ];
