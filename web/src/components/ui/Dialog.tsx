@@ -46,7 +46,7 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
       true;
     return (
       <BaseDialog.Portal>
-        <BaseDialog.Backdrop className="fixed inset-0 z-overlay bg-ink/30 data-starting-style:opacity-0 data-ending-style:opacity-0 motion-safe:transition-opacity motion-safe:duration-150" />
+        <BaseDialog.Backdrop className="fixed inset-0 z-overlay bg-scrim data-starting-style:opacity-0 data-ending-style:opacity-0 motion-safe:transition-opacity motion-safe:duration-150" />
         <BaseDialog.Popup
           ref={setRef}
           initialFocus={initialFocus}

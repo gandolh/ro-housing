@@ -7,6 +7,7 @@ import {
 } from "../../vendor/ward/ward-auth-react.js";
 import { accountMessage } from "../messages.ts";
 import { navigate, usePage } from "../route.ts";
+import { ThemeSwitch } from "./ThemeSwitch.tsx";
 import { Button } from "./ui/Button.tsx";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/Dialog.tsx";
 
@@ -54,6 +55,9 @@ export function AccountButton() {
             </>
           )}
         </dl>
+        <div className="mt-4">
+          <ThemeSwitch />
+        </div>
         {result.result === "linked" && (
           <p role="status" className="mt-3 text-xs text-ok">
             Ward is linked. You can sign in with it from now on.

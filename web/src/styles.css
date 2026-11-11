@@ -1,24 +1,38 @@
 @import "tailwindcss";
 
+/* dark: follows the theme switch, never the system alone: Dark always, System
+   only while the system is dark. Most of the difference lives in the
+   light-dark() tokens below, so few classes need it. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme="system"], [data-theme="system"] *) {
+      @slot;
+    }
+  }
+}
+
 @theme {
   /* Terminal/retro palette. Paper-white ground, ink-black foreground, single
      muted accent. OKLCH-ish neutrals with a faint warm tint so it doesn't read
      as dead pixel-gray on screen. */
-  --color-paper: #f9f9f9;
-  --color-ink: #0a0a0a;
-  --color-ink-dim: #5c5c5c;
-  --color-ink-faint: #9a9a9a;
-  --color-panel: #ffffff;
-  --color-panel-alt: #f3f3f1;
-  --color-rule: #0a0a0a;
-  --color-rule-soft: #d8d8d4;
-  --color-accent: #b25a00;
-  --color-accent-soft: #f5e6d3;
-  --color-ok: #1f6b2a;
-  --color-ok-soft: #e3efd8;
-  --color-bad: #a51a1a;
-  --color-bad-soft: #f7dcdc;
-  --color-warn: #8a5a00;
+  --color-paper: light-dark(#f9f9f9, #121212);
+  --color-ink: light-dark(#0a0a0a, #ececec);
+  --color-ink-dim: light-dark(#5c5c5c, #a9a9a9);
+  --color-ink-faint: light-dark(#9a9a9a, #7d7d7d);
+  --color-panel: light-dark(#ffffff, #1b1b1b);
+  --color-panel-alt: light-dark(#f3f3f1, #242422);
+  --color-rule: light-dark(#0a0a0a, #ececec);
+  --color-rule-soft: light-dark(#d8d8d4, #3b3b38);
+  --color-accent: light-dark(#b25a00, #e8913a);
+  --color-accent-soft: light-dark(#f5e6d3, #3d2a14);
+  --color-ok: light-dark(#1f6b2a, #74d17f);
+  --color-ok-soft: light-dark(#e3efd8, #1e3321);
+  --color-bad: light-dark(#a51a1a, #ff8080);
+  --color-bad-soft: light-dark(#f7dcdc, #3c1a1a);
+  --color-warn: light-dark(#8a5a00, #e6ae45);
 
   /* Type system: monospace primary, single second face for headings reserved
      for future use. One ratio, 4 sizes. Vertical rhythm = 18px row,
@@ -48,7 +62,8 @@
   /* Industrial-knob depth for primary buttons and select triggers: the 2px ink
      border defines the shape, the inset top highlight suggests a raised key,
      and on press the highlight flips to the bottom edge. */
-  --color-bevel: rgba(255, 255, 255, 0.65);
+  --color-bevel: light-dark(rgb(255 255 255 / 0.65), rgb(0 0 0 / 0.35));
+  --color-scrim: light-dark(rgb(10 10 10 / 0.3), rgb(0 0 0 / 0.6));
   --shadow-knob: inset 0 1px 0 0 var(--color-bevel);
   --shadow-knob-pressed: inset 0 -1px 0 0 var(--color-bevel);
 
@@ -57,6 +72,17 @@
 }
 
 @layer base {
+  /* Light on a first visit; the switch sets data-theme on <html>. */
+  :root {
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+  :root[data-theme="system"] {
+    color-scheme: light dark;
+  }
+
   /* Force sharp corners across everything. The retro look depends on this. */
   *,
   *::before,
