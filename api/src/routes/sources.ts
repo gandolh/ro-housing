@@ -1,8 +1,8 @@
-import type { FastifyInstance } from 'fastify';
-import { getSource, listSources, updateSource } from '../db/queries.ts';
+import type { FastifyInstance } from "fastify";
+import { getSource, listSources, updateSource } from "../db/queries.ts";
 
 export async function sourcesRoutes(app: FastifyInstance): Promise<void> {
-  app.get('/api/sources', async () => {
+  app.get("/api/sources", async () => {
     return listSources().map((s) => ({
       id: s.id,
       displayName: s.display_name,
@@ -17,10 +17,10 @@ export async function sourcesRoutes(app: FastifyInstance): Promise<void> {
   app.put<{
     Params: { id: string };
     Body: { searchUrl?: string | null; enabled?: boolean };
-  }>('/api/sources/:id', async (req, reply) => {
+  }>("/api/sources/:id", async (req, reply) => {
     const existing = getSource(req.params.id);
     if (!existing) {
-      return reply.code(404).send({ error: 'unknown source' });
+      return reply.code(404).send({ error: "unknown source" });
     }
     updateSource(req.params.id, req.body);
     return { ok: true };

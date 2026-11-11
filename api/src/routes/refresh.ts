@@ -1,10 +1,6 @@
-import type { FastifyInstance } from 'fastify';
-import { ADAPTER_REGISTRY } from '../adapters/index.ts';
-import {
-  listSources,
-  markSourceRun,
-  upsertListingWithSnapshot,
-} from '../db/queries.ts';
+import type { FastifyInstance } from "fastify";
+import { ADAPTER_REGISTRY } from "../adapters/index.ts";
+import { listSources, markSourceRun, upsertListingWithSnapshot } from "../db/queries.ts";
 
 // One Refresh at a time: a second one would hit the same sites in parallel,
 // which the sequential design exists to avoid (docs/decisions.md).
@@ -12,12 +8,12 @@ let running = false;
 
 /** A run that found no listings worked, but says so: a site that changed its
  *  markup usually makes its adapter return an empty list, not throw. */
-export const EMPTY_RUN_WARNING = 'no listings found';
+export const EMPTY_RUN_WARNING = "no listings found";
 
 export async function refreshRoutes(app: FastifyInstance): Promise<void> {
-  app.post('/api/refresh', async (_req, reply) => {
+  app.post("/api/refresh", async (_req, reply) => {
     if (running) {
-      return reply.code(409).send({ error: 'a refresh is already running' });
+      return reply.code(409).send({ error: "a refresh is already running" });
     }
     running = true;
     try {
@@ -47,7 +43,7 @@ async function refreshAll(app: FastifyInstance) {
         id: src.id,
         ok: false,
         count: 0,
-        errorMsg: 'no adapter registered',
+        errorMsg: "no adapter registered",
       });
       markSourceRun(src.id, false);
       continue;
@@ -66,7 +62,7 @@ async function refreshAll(app: FastifyInstance) {
         ...(scraped.length === 0 ? { warning: EMPTY_RUN_WARNING } : {}),
       });
     } catch (err) {
-      app.log.error({ err, sourceId: src.id }, 'adapter failed');
+      app.log.error({ err, sourceId: src.id }, "adapter failed");
       markSourceRun(src.id, false);
       results.push({
         id: src.id,

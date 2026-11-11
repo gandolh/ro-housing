@@ -1,24 +1,21 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from "fastify";
 
 /** The names this machine answers to. A page that rebinds its own name to
  *  127.0.0.1 still sends that name in Host, so it is not among them. */
-export const DEFAULT_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]'];
+export const DEFAULT_HOSTNAMES = ["localhost", "127.0.0.1", "[::1]"];
 
 /** Lowercases a hostname and puts an IPv6 address in brackets, the way it
  *  appears in a Host header (`::1` in `HOST` is `[::1]` in Host). */
 function normalizeHostname(name: string): string {
   const lower = name.trim().toLowerCase();
-  return lower.includes(':') && !lower.startsWith('[') ? `[${lower}]` : lower;
+  return lower.includes(":") && !lower.startsWith("[") ? `[${lower}]` : lower;
 }
 
 /** The allowed hostnames: the defaults, plus `HOST` when it binds the API to
  *  another address (one on the LAN), so that address keeps working, plus the
  *  host of the app's public origin. Behind Caddy the browser's own `Host`
  *  comes through, so on the VPS that is the name every request carries. */
-export function allowedHostnames(
-  bindHost: string | undefined = process.env.HOST,
-  publicOrigin?: string,
-): Set<string> {
+export function allowedHostnames(bindHost: string | undefined = process.env.HOST, publicOrigin?: string): Set<string> {
   const names = new Set(DEFAULT_HOSTNAMES);
   if (bindHost && bindHost.trim().length > 0) names.add(normalizeHostname(bindHost));
   if (publicOrigin && URL.canParse(publicOrigin)) {
@@ -48,13 +45,10 @@ export function hostAllowed(host: string | undefined, allowed: ReadonlySet<strin
  *  127.0.0.1 makes same-origin requests, which carry no Origin header and pass
  *  `refuseOtherOrigins`, but its Host header still names the hostile site.
  *  Call this on the root instance before the routes are registered. */
-export function refuseOtherHosts(
-  app: FastifyInstance,
-  allowed: ReadonlySet<string> = allowedHostnames(),
-): void {
-  app.addHook('onRequest', async (req, reply) => {
+export function refuseOtherHosts(app: FastifyInstance, allowed: ReadonlySet<string> = allowedHostnames()): void {
+  app.addHook("onRequest", async (req, reply) => {
     if (hostAllowed(req.headers.host, allowed)) return;
-    req.log.warn({ host: req.headers.host, url: req.url }, 'refused another host');
-    return reply.code(403).send({ error: 'requests for other host names are refused' });
+    req.log.warn({ host: req.headers.host, url: req.url }, "refused another host");
+    return reply.code(403).send({ error: "requests for other host names are refused" });
   });
 }

@@ -1,9 +1,9 @@
-import { useEffect, type ReactNode } from 'react';
-import { useSession } from '../vendor/ward/ward-auth-react.js';
-import { Button } from './components/ui/Button.tsx';
-import { Panel } from './components/ui/Panel.tsx';
-import { LoginPage } from './LoginPage.tsx';
-import { navigate, usePage } from './route.ts';
+import { useEffect, type ReactNode } from "react";
+import { useSession } from "../vendor/ward/ward-auth-react.js";
+import { Button } from "./components/ui/Button.tsx";
+import { Panel } from "./components/ui/Panel.tsx";
+import { LoginPage } from "./LoginPage.tsx";
+import { navigate, usePage } from "./route.ts";
 
 /**
  * The session gate around the app, on the vendored hooks (`useSession`: one
@@ -19,13 +19,13 @@ import { navigate, usePage } from './route.ts';
 export function AuthGate({ children }: { children: ReactNode }) {
   const session = useSession();
   switch (session.status) {
-    case 'loading':
+    case "loading":
       return (
         <main className="grid min-h-screen place-items-center" aria-busy="true">
           <p className="text-sm text-ink-dim">Loading…</p>
         </main>
       );
-    case 'error':
+    case "error":
       return (
         <main className="grid min-h-screen place-items-center px-4">
           <Panel className="w-full max-w-sm px-5 py-4">
@@ -39,25 +39,25 @@ export function AuthGate({ children }: { children: ReactNode }) {
           </Panel>
         </main>
       );
-    case 'signed_out':
+    case "signed_out":
       return <SignedOut />;
-    case 'signed_in':
+    case "signed_in":
       return <SignedIn>{children}</SignedIn>;
   }
 }
 
 function SignedOut() {
-  const atLogin = usePage() === 'login';
+  const atLogin = usePage() === "login";
   useEffect(() => {
-    if (!atLogin) navigate('login', { replace: true });
+    if (!atLogin) navigate("login", { replace: true });
   }, [atLogin]);
   return <LoginPage />;
 }
 
 function SignedIn({ children }: { children: ReactNode }) {
-  const atLogin = usePage() === 'login';
+  const atLogin = usePage() === "login";
   useEffect(() => {
-    if (atLogin) navigate('app', { replace: true });
+    if (atLogin) navigate("app", { replace: true });
   }, [atLogin]);
   // Nothing for the instant `/login` is replaced, so the app never mounts on it.
   return atLogin ? null : children;

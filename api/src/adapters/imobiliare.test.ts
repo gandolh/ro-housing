@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from "vitest";
 
 // Two made-up cards shaped like imobiliare.ro's search results (the site has
 // answered with a bot check since 2026-10-16, so there is no real page to
@@ -32,21 +32,19 @@ const SEARCH_PAGE = `
   </article>
 </body></html>`;
 
-vi.mock('../lib/fetch.ts', () => ({
+vi.mock("../lib/fetch.ts", () => ({
   createSession: () => ({ get: async () => SEARCH_PAGE }),
 }));
 
-const { imobiliareAdapter } = await import('./imobiliare.ts');
+const { imobiliareAdapter } = await import("./imobiliare.ts");
 
-describe('imobiliareAdapter', () => {
-  it('takes the price, not the crossed-out old one or the discount, and its VAT mark', async () => {
-    const rows = await imobiliareAdapter.scrape('https://www.imobiliare.ro/vanzare-apartamente/timisoara');
-    expect(
-      rows.map((r) => [r.sourceUid, r.priceEur, r.pricePlusVat, r.rooms, r.sqm, r.location]),
-    ).toEqual([
-      ['apartament-de-vanzare-timisoara-lipovei-2-camere-275346765', 109000, false, 2, 54, 'lipovei'],
-      ['apartament-de-vanzare-timisoara-aradului-3-camere-271420872', 111359, false, 3, 72, 'aradului'],
-      ['apartament-de-vanzare-timisoara-torontalului-2-camere-280000001', 92033, true, 2, 51, 'torontalului'],
+describe("imobiliareAdapter", () => {
+  it("takes the price, not the crossed-out old one or the discount, and its VAT mark", async () => {
+    const rows = await imobiliareAdapter.scrape("https://www.imobiliare.ro/vanzare-apartamente/timisoara");
+    expect(rows.map((r) => [r.sourceUid, r.priceEur, r.pricePlusVat, r.rooms, r.sqm, r.location])).toEqual([
+      ["apartament-de-vanzare-timisoara-lipovei-2-camere-275346765", 109000, false, 2, 54, "lipovei"],
+      ["apartament-de-vanzare-timisoara-aradului-3-camere-271420872", 111359, false, 3, 72, "aradului"],
+      ["apartament-de-vanzare-timisoara-torontalului-2-camere-280000001", 92033, true, 2, 51, "torontalului"],
     ]);
   });
 });

@@ -1,5 +1,5 @@
-import { apiErrorMessage } from '../api.ts';
-import { Button } from './ui/Button.tsx';
+import { apiErrorMessage } from "../api.ts";
+import { Button } from "./ui/Button.tsx";
 
 interface Props {
   /** What the failed call threw. */
@@ -23,7 +23,7 @@ export function ApiErrorNotice({ error, onRetry, busy = false, action }: Props) 
     >
       <span className="flex-1">{action ? `${action}. ${reason}` : reason}</span>
       <Button variant="default" onClick={onRetry} disabled={busy}>
-        {busy ? 'Retrying…' : 'Retry'}
+        {busy ? "Retrying…" : "Retry"}
       </Button>
     </div>
   );

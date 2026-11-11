@@ -2,12 +2,12 @@ const RON_PER_EUR = 5;
 
 export function parsePriceEur(input: string | null | undefined): number | undefined {
   if (!input) return undefined;
-  const text = input.replace(/\s+/g, ' ').trim();
+  const text = input.replace(/\s+/g, " ").trim();
   const isRon = /\bron\b|\blei\b/i.test(text);
   const isEur = /€|\beur\b/i.test(text);
-  const digits = text.replace(/[^\d.,]/g, '');
+  const digits = text.replace(/[^\d.,]/g, "");
   if (!digits) return undefined;
-  const normalized = digits.replace(/[.,](?=\d{3}(\D|$))/g, '').replace(',', '.');
+  const normalized = digits.replace(/[.,](?=\d{3}(\D|$))/g, "").replace(",", ".");
   const n = Number(normalized);
   if (!Number.isFinite(n) || n <= 0) return undefined;
   if (isRon && !isEur) return Math.round(n / RON_PER_EUR);
@@ -61,9 +61,7 @@ export function extractPriceEur(text: string | null | undefined): number | undef
 /** extractPriceEur's price, and whether that amount is marked as before VAT
  *  ("92.033 € + TVA"). The mark belongs to the amount it follows: in
  *  "111.359 € 92.033 € +TVA" the price is 111359 and is not marked. */
-export function extractPrice(
-  text: string | null | undefined,
-): { eur: number; plusVat: boolean } | undefined {
+export function extractPrice(text: string | null | undefined): { eur: number; plusVat: boolean } | undefined {
   if (!text) return undefined;
 
   // Every reading of a price, grouped by where it ends (at its currency sign).
@@ -74,7 +72,7 @@ export function extractPrice(
     const m = PRICE_TOKEN.exec(text);
     if (!m || !m[1]) continue;
     const end = i + m[0].length;
-    const reading = { start: i, value: Number(m[1].replace(/\D/g, '')) };
+    const reading = { start: i, value: Number(m[1].replace(/\D/g, "")) };
     const readings = readingsByEnd.get(end);
     if (readings) readings.push(reading);
     else readingsByEnd.set(end, [reading]);
@@ -83,9 +81,7 @@ export function extractPrice(
   // Readings start left to right, so the last one in range is the shortest.
   const prices: { start: number; value: number; old: boolean; plusVat: boolean }[] = [];
   for (const end of [...readingsByEnd.keys()].sort((a, b) => a - b)) {
-    const inRange = readingsByEnd
-      .get(end)!
-      .filter((r) => r.value >= PRICE_MIN_EUR && r.value <= PRICE_MAX_EUR);
+    const inRange = readingsByEnd.get(end)!.filter((r) => r.value >= PRICE_MIN_EUR && r.value <= PRICE_MAX_EUR);
     const chosen = inRange[inRange.length - 1];
     if (!chosen) continue;
     const before = text.slice(Math.max(0, chosen.start - 24), chosen.start);
@@ -129,10 +125,10 @@ export function locationFromImobiliareUrl(url: string): string | undefined {
   try {
     const path = new URL(url).pathname;
     const m = path.match(/timisoara-([a-z0-9-]+?)-(?:mobilat-)?\d+-cam/i);
-    if (m && m[1]) return m[1].replace(/-/g, ' ');
+    if (m && m[1]) return m[1].replace(/-/g, " ");
     // Garsoniera fallback: `garsoniera-de-vanzare-timisoara-<neighborhood>-<...>`
     const g = path.match(/garsoniera-de-vanzare-timisoara-([a-z0-9-]+?)-\d/i);
-    if (g && g[1]) return g[1].replace(/-/g, ' ');
+    if (g && g[1]) return g[1].replace(/-/g, " ");
     return undefined;
   } catch {
     return undefined;
@@ -155,21 +151,21 @@ export function parseSqm(input: string | null | undefined): number | undefined {
   if (!input) return undefined;
   const m = input.match(/([\d.,]+)\s*(m\s*²|m\s*2|mp|sqm)/i);
   if (!m || !m[1]) return undefined;
-  const n = Number(m[1].replace(',', '.'));
+  const n = Number(m[1].replace(",", "."));
   return Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
 export function cleanText(input: string | null | undefined): string | undefined {
   if (!input) return undefined;
-  const t = input.replace(/\s+/g, ' ').trim();
+  const t = input.replace(/\s+/g, " ").trim();
   return t.length ? t : undefined;
 }
 
 export function slugFromUrl(url: string): string {
   try {
     const u = new URL(url);
-    const path = u.pathname.replace(/\/$/, '');
-    const last = path.split('/').pop();
+    const path = u.pathname.replace(/\/$/, "");
+    const last = path.split("/").pop();
     return last && last.length > 0 ? last : path || url;
   } catch {
     return url;

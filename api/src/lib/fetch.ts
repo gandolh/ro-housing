@@ -1,9 +1,9 @@
-import { lookup as dnsLookup } from 'node:dns/promises';
-import http from 'node:http';
-import https from 'node:https';
-import { isIP, type LookupFunction } from 'node:net';
-import zlib from 'node:zlib';
-import { isPrivateAddress } from '../details/url.ts';
+import { lookup as dnsLookup } from "node:dns/promises";
+import http from "node:http";
+import https from "node:https";
+import { isIP, type LookupFunction } from "node:net";
+import zlib from "node:zlib";
+import { isPrivateAddress } from "../details/url.ts";
 
 /**
  * Every page the API reads with plain HTTP goes through `createSession()`: the
@@ -25,7 +25,7 @@ import { isPrivateAddress } from '../details/url.ts';
  */
 
 const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
 /** The whole redirect chain, body included, gets this long. */
 const TIMEOUT_MS = 20_000;
@@ -49,9 +49,9 @@ export class CookieJar {
       this.store.set(host, jar);
     }
     for (const raw of list) {
-      const first = raw.split(';')[0];
+      const first = raw.split(";")[0];
       if (!first) continue;
-      const eq = first.indexOf('=');
+      const eq = first.indexOf("=");
       if (eq <= 0) continue;
       const name = first.slice(0, eq).trim();
       const value = first.slice(eq + 1).trim();
@@ -65,7 +65,7 @@ export class CookieJar {
     if (!jar || jar.size === 0) return undefined;
     return Array.from(jar.entries())
       .map(([k, v]) => `${k}=${v}`)
-      .join('; ');
+      .join("; ");
   }
 }
 
@@ -73,8 +73,8 @@ export class CookieJar {
  *  `assertPublicHost` (details/url.ts) throws, so both read the same. */
 export class LocalAddressError extends Error {
   constructor() {
-    super('local addresses are not allowed');
-    this.name = 'LocalAddressError';
+    super("local addresses are not allowed");
+    this.name = "LocalAddressError";
   }
 }
 
@@ -87,12 +87,9 @@ const systemResolve: Resolve = async (host) =>
 /** The addresses `host` resolves to (a literal IP stands for itself), when
  *  every one of them is public. Otherwise a `LocalAddressError`; a name that
  *  does not resolve throws DNS's own error. */
-export async function publicAddresses(
-  host: string,
-  resolve: Resolve = systemResolve,
-): Promise<string[]> {
-  const bare = host.replace(/^\[|\]$/g, '').toLowerCase();
-  if (bare === 'localhost' || bare.endsWith('.localhost')) throw new LocalAddressError();
+export async function publicAddresses(host: string, resolve: Resolve = systemResolve): Promise<string[]> {
+  const bare = host.replace(/^\[|\]$/g, "").toLowerCase();
+  if (bare === "localhost" || bare.endsWith(".localhost")) throw new LocalAddressError();
   const addresses = isIP(bare) ? [bare] : await resolve(bare);
   if (addresses.length === 0 || addresses.some(isPrivateAddress)) {
     throw new LocalAddressError();
@@ -104,7 +101,7 @@ export async function publicAddresses(
  *  only. */
 export async function checkedUrl(raw: string, resolve?: Resolve): Promise<URL> {
   const url = new URL(raw);
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
     throw new Error(`not an http(s) link: ${url.protocol}`);
   }
   await publicAddresses(url.hostname, resolve);
@@ -123,8 +120,7 @@ export function vettingLookup(
   connectTo: (address: string) => string = (address) => address,
 ): LookupFunction {
   return (hostname, options, callback) => {
-    const family =
-      options.family === 'IPv4' ? 4 : options.family === 'IPv6' ? 6 : options.family;
+    const family = options.family === "IPv4" ? 4 : options.family === "IPv6" ? 6 : options.family;
     publicAddresses(hostname, resolve).then(
       (addresses) => {
         const entries = addresses
@@ -134,15 +130,15 @@ export function vettingLookup(
         const first = entries[0];
         if (!first) {
           const err: NodeJS.ErrnoException = new Error(`${hostname} has no IPv${family} address`);
-          err.code = 'ENOTFOUND';
-          callback(err, '');
+          err.code = "ENOTFOUND";
+          callback(err, "");
         } else if (options.all) {
           callback(null, entries);
         } else {
           callback(null, first.address, first.family);
         }
       },
-      (err: NodeJS.ErrnoException) => callback(err, ''),
+      (err: NodeJS.ErrnoException) => callback(err, ""),
     );
   };
 }
@@ -150,8 +146,8 @@ export function vettingLookup(
 /** This module's own connection pools, so every kept-alive socket in them was
  *  opened through `vettingLookup`. */
 const AGENTS: Record<string, http.Agent> = {
-  'http:': new http.Agent({ keepAlive: true }),
-  'https:': new https.Agent({ keepAlive: true }),
+  "http:": new http.Agent({ keepAlive: true }),
+  "https:": new https.Agent({ keepAlive: true }),
 };
 
 /** Decoding stops at the end of what arrived instead of failing on a body cut
@@ -169,21 +165,20 @@ const BROTLI_OPTIONS = {
  *  did: gzip, deflate (zlib-wrapped or raw, as servers send both) and br. An
  *  unknown coding leaves the bytes as they came. */
 function decode(body: Buffer, contentEncoding: string | undefined): Buffer {
-  const codings = (contentEncoding ?? '')
+  const codings = (contentEncoding ?? "")
     .toLowerCase()
-    .split(',')
+    .split(",")
     .map((coding) => coding.trim())
-    .filter((coding) => coding && coding !== 'identity')
+    .filter((coding) => coding && coding !== "identity")
     .reverse();
   let out = body;
   for (const coding of codings) {
     if (out.length === 0) break;
-    if (coding === 'gzip' || coding === 'x-gzip') out = zlib.gunzipSync(out, ZLIB_OPTIONS);
-    else if (coding === 'deflate') {
-      out = ((out[0] ?? 0) & 0x0f) === 0x08
-        ? zlib.inflateSync(out, ZLIB_OPTIONS)
-        : zlib.inflateRawSync(out, ZLIB_OPTIONS);
-    } else if (coding === 'br') out = zlib.brotliDecompressSync(out, BROTLI_OPTIONS);
+    if (coding === "gzip" || coding === "x-gzip") out = zlib.gunzipSync(out, ZLIB_OPTIONS);
+    else if (coding === "deflate") {
+      out =
+        ((out[0] ?? 0) & 0x0f) === 0x08 ? zlib.inflateSync(out, ZLIB_OPTIONS) : zlib.inflateRawSync(out, ZLIB_OPTIONS);
+    } else if (coding === "br") out = zlib.brotliDecompressSync(out, BROTLI_OPTIONS);
     else return body;
   }
   return out;
@@ -216,9 +211,9 @@ function toReply(res: http.IncomingMessage): Reply {
       }
       let body: Buffer;
       try {
-        body = decode(Buffer.concat(chunks), res.headers['content-encoding']);
+        body = decode(Buffer.concat(chunks), res.headers["content-encoding"]);
       } catch (err) {
-        if ((err as NodeJS.ErrnoException).code === 'ERR_BUFFER_TOO_LARGE') throw tooLarge();
+        if ((err as NodeJS.ErrnoException).code === "ERR_BUFFER_TOO_LARGE") throw tooLarge();
         throw err;
       }
       // TextDecoder, as `fetch`'s text() did: UTF-8, a byte-order mark dropped.
@@ -240,13 +235,11 @@ function request(
   signal: AbortSignal,
 ): Promise<Reply> {
   return new Promise((resolve, reject) => {
-    const send = url.protocol === 'https:' ? https.request : http.request;
-    const req = send(
-      url,
-      { method: 'GET', headers, agent: AGENTS[url.protocol], lookup, signal },
-      (res) => resolve(toReply(res)),
+    const send = url.protocol === "https:" ? https.request : http.request;
+    const req = send(url, { method: "GET", headers, agent: AGENTS[url.protocol], lookup, signal }, (res) =>
+      resolve(toReply(res)),
     );
-    req.on('error', reject);
+    req.on("error", reject);
     req.end();
   });
 }
@@ -286,12 +279,11 @@ export function createSession(deps: SessionDeps = {}): FetchSession {
           const reply = await request(
             target,
             {
-              'User-Agent': UA,
-              Accept:
-                'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-              'Accept-Language': 'ro-RO,ro;q=0.9,en;q=0.8',
+              "User-Agent": UA,
+              Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "Accept-Language": "ro-RO,ro;q=0.9,en;q=0.8",
               // What `fetch` asked for; `decode` undoes each.
-              'Accept-Encoding': target.protocol === 'https:' ? 'br, gzip, deflate' : 'gzip, deflate',
+              "Accept-Encoding": target.protocol === "https:" ? "br, gzip, deflate" : "gzip, deflate",
               ...(cookie ? { Cookie: cookie } : {}),
             },
             lookup,
@@ -299,7 +291,7 @@ export function createSession(deps: SessionDeps = {}): FetchSession {
           );
           // Stored before the next hop, so a consent cookie set by a redirect
           // goes with the request it redirects to.
-          jar.setFromResponse(target.href, reply.headers['set-cookie']);
+          jar.setFromResponse(target.href, reply.headers["set-cookie"]);
           const location = reply.headers.location;
           if (REDIRECT.has(reply.status) && location) {
             reply.discard();

@@ -1,11 +1,6 @@
-import type {
-  ApartmentFields,
-  Partitioning,
-  SavedApartment,
-  SavedInput,
-} from '../api.ts';
-import { PARTITIONINGS } from '../api.ts';
-import { floorLabel } from './format.ts';
+import type { ApartmentFields, Partitioning, SavedApartment, SavedInput } from "../api.ts";
+import { PARTITIONINGS } from "../api.ts";
+import { floorLabel } from "./format.ts";
 
 /** The form edits strings; parseForm turns them back into a SavedInput. */
 export interface FormValues {
@@ -28,26 +23,22 @@ export interface FormValues {
 export type FormField = keyof FormValues;
 export type FormErrors = Partial<Record<FormField, string>>;
 
-const asText = (v: number | string | null): string => (v === null ? '' : String(v));
+const asText = (v: number | string | null): string => (v === null ? "" : String(v));
 
-export function formFromFields(
-  url: string,
-  f: ApartmentFields | null,
-  notes: string | null = null,
-): FormValues {
+export function formFromFields(url: string, f: ApartmentFields | null, notes: string | null = null): FormValues {
   return {
     url,
     title: asText(f?.title ?? null),
     priceEur: asText(f?.priceEur ?? null),
     rooms: asText(f?.rooms ?? null),
     sqm: asText(f?.sqm ?? null),
-    floor: f?.floor == null ? '' : floorLabel(f.floor),
+    floor: f?.floor == null ? "" : floorLabel(f.floor),
     floorsTotal: asText(f?.floorsTotal ?? null),
     yearBuilt: asText(f?.yearBuilt ?? null),
     location: asText(f?.location ?? null),
-    partitioning: f?.partitioning ?? '',
+    partitioning: f?.partitioning ?? "",
     imageUrl: asText(f?.imageUrl ?? null),
-    pricePlusVat: f?.pricePlusVat ? 'yes' : '',
+    pricePlusVat: f?.pricePlusVat ? "yes" : "",
     notes: asText(notes),
   };
 }
@@ -61,7 +52,7 @@ class FieldError extends Error {}
 function whole(v: string): number | null {
   const t = v.trim();
   if (!t) return null;
-  if (!/^\d+$/.test(t)) throw new FieldError('Whole number');
+  if (!/^\d+$/.test(t)) throw new FieldError("Whole number");
   return Number(t);
 }
 
@@ -72,23 +63,26 @@ const MAX_PRICE_EUR = 10_000_000;
  *  after the last "." or ","), then the thousands separators. */
 function price(v: string): number | null {
   const t = v
-    .replace(/€|euro?/gi, '')
+    .replace(/€|euro?/gi, "")
     .trim()
-    .replace(/[.,]\d{1,2}$/, '')
-    .replace(/[\s.,]/g, '');
+    .replace(/[.,]\d{1,2}$/, "")
+    .replace(/[\s.,]/g, "");
   if (!t) return null;
-  if (!/^\d+$/.test(t)) throw new FieldError('Price in euro, digits only');
+  if (!/^\d+$/.test(t)) throw new FieldError("Price in euro, digits only");
   const n = Number(t);
-  if (n > MAX_PRICE_EUR) throw new FieldError('Price looks too large');
+  if (n > MAX_PRICE_EUR) throw new FieldError("Price looks too large");
   return n;
 }
 
 /** "42,5" or "42.5" → 42.5. */
 function area(v: string): number | null {
-  const t = v.trim().replace(/\s*(m²|mp|m2)$/i, '').replace(',', '.');
+  const t = v
+    .trim()
+    .replace(/\s*(m²|mp|m2)$/i, "")
+    .replace(",", ".");
   if (!t) return null;
   const n = Number(t);
-  if (!Number.isFinite(n) || n <= 0) throw new FieldError('Number of m²');
+  if (!Number.isFinite(n) || n <= 0) throw new FieldError("Number of m²");
   return n;
 }
 
@@ -96,15 +90,13 @@ function area(v: string): number | null {
 export function parseFloorInput(v: string): number | null {
   const t = v.trim().toLowerCase();
   if (!t) return null;
-  if (t === 'p' || t === 'parter') return 0;
-  if (['d', 'demisol', 's', 'subsol'].includes(t)) return -1;
+  if (t === "p" || t === "parter") return 0;
+  if (["d", "demisol", "s", "subsol"].includes(t)) return -1;
   if (/^\d{1,2}$/.test(t)) return Number(t);
-  throw new FieldError('P, D or a number');
+  throw new FieldError("P, D or a number");
 }
 
-export function parseForm(
-  v: FormValues,
-): { ok: true; input: SavedInput } | { ok: false; errors: FormErrors } {
+export function parseForm(v: FormValues): { ok: true; input: SavedInput } | { ok: false; errors: FormErrors } {
   const errors: FormErrors = {};
   const read = <T>(field: FormField, fn: (s: string) => T): T | null => {
     try {
@@ -118,14 +110,14 @@ export function parseForm(
   const text = (s: string) => s.trim() || null;
 
   const url = v.url.trim();
-  if (!/^https?:\/\/\S+$/i.test(url)) errors.url = 'A link starting with http:// or https://';
+  if (!/^https?:\/\/\S+$/i.test(url)) errors.url = "A link starting with http:// or https://";
   const imageUrl = text(v.imageUrl);
-  if (imageUrl && !/^https?:\/\/\S+$/i.test(imageUrl)) errors.imageUrl = 'A link, or empty';
+  if (imageUrl && !/^https?:\/\/\S+$/i.test(imageUrl)) errors.imageUrl = "A link, or empty";
 
-  const floor = read('floor', parseFloorInput);
-  const floorsTotal = read('floorsTotal', whole);
+  const floor = read("floor", parseFloorInput);
+  const floorsTotal = read("floorsTotal", whole);
   if (floor !== null && floorsTotal !== null && floor > floorsTotal) {
-    errors.floor = 'Above the top floor';
+    errors.floor = "Above the top floor";
   }
   const partitioning = (PARTITIONINGS as readonly string[]).includes(v.partitioning)
     ? (v.partitioning as Partitioning)
@@ -134,16 +126,16 @@ export function parseForm(
   const input: SavedInput = {
     url,
     title: text(v.title),
-    priceEur: read('priceEur', price),
-    rooms: read('rooms', whole),
-    sqm: read('sqm', area),
+    priceEur: read("priceEur", price),
+    rooms: read("rooms", whole),
+    sqm: read("sqm", area),
     floor,
     floorsTotal,
-    yearBuilt: read('yearBuilt', whole),
+    yearBuilt: read("yearBuilt", whole),
     location: text(v.location),
     partitioning,
     imageUrl,
-    pricePlusVat: v.pricePlusVat === 'yes',
+    pricePlusVat: v.pricePlusVat === "yes",
     notes: text(v.notes),
   };
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, input };

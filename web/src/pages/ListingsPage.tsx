@@ -1,45 +1,32 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ApiErrorNotice } from '../components/ApiErrorNotice.tsx';
-import { ListingsTable } from '../components/ListingsTable.tsx';
-import { Badge } from '../components/ui/Badge.tsx';
-import { Button } from '../components/ui/Button.tsx';
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValueLabel,
-} from '../components/ui/Select.tsx';
-import {
-  ApiError,
-  api,
-  apiErrorMessage,
-  type Listing,
-  type RefreshResult,
-  type Source,
-} from '../api.ts';
+import { useEffect, useMemo, useState } from "react";
+import { ApiErrorNotice } from "../components/ApiErrorNotice.tsx";
+import { ListingsTable } from "../components/ListingsTable.tsx";
+import { Badge } from "../components/ui/Badge.tsx";
+import { Button } from "../components/ui/Button.tsx";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValueLabel } from "../components/ui/Select.tsx";
+import { ApiError, api, apiErrorMessage, type Listing, type RefreshResult, type Source } from "../api.ts";
 
-type Sort = 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
-type Order = 'asc' | 'desc';
+type Sort = "price" | "sqm" | "firstSeen" | "lastSeen";
+type Order = "asc" | "desc";
 
 const SORT_LABELS: Record<Sort, string> = {
-  lastSeen: 'Sort: last seen',
-  firstSeen: 'Sort: first seen',
-  price: 'Sort: price',
-  sqm: 'Sort: m²',
+  lastSeen: "Sort: last seen",
+  firstSeen: "Sort: first seen",
+  price: "Sort: price",
+  sqm: "Sort: m²",
 };
 
 const ORDER_LABELS: Record<Order, string> = {
-  desc: '↓ desc',
-  asc: '↑ asc',
+  desc: "↓ desc",
+  asc: "↑ asc",
 };
 
 export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void }) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
-  const [sort, setSort] = useState<Sort>('lastSeen');
-  const [order, setOrder] = useState<Order>('desc');
-  const [sourceFilter, setSourceFilter] = useState<string>('');
+  const [sort, setSort] = useState<Sort>("lastSeen");
+  const [order, setOrder] = useState<Order>("desc");
+  const [sourceFilter, setSourceFilter] = useState<string>("");
   const [refreshing, setRefreshing] = useState(false);
   const [lastResult, setLastResult] = useState<RefreshResult | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -48,10 +35,7 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
 
   const sourceLabels = useMemo(
     () =>
-      Object.fromEntries([
-        ['', 'All sources'],
-        ...sources.map((s) => [s.id, s.displayName]),
-      ]) as Record<string, string>,
+      Object.fromEntries([["", "All sources"], ...sources.map((s) => [s.id, s.displayName])]) as Record<string, string>,
     [sources],
   );
 
@@ -90,7 +74,7 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
     } catch (err) {
       setRefreshError(
         err instanceof ApiError && err.status === 409
-          ? 'Another Refresh is already running. Try again when it has finished.'
+          ? "Another Refresh is already running. Try again when it has finished."
           : `Refresh failed. ${apiErrorMessage(err)}`,
       );
       return;
@@ -104,13 +88,10 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
     <div>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="primary" onClick={refresh} disabled={refreshing}>
-          {refreshing ? 'Refreshing…' : 'Refresh'}
+          {refreshing ? "Refreshing…" : "Refresh"}
         </Button>
 
-        <Select
-          value={sourceFilter}
-          onValueChange={(v) => setSourceFilter(String(v))}
-        >
+        <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(String(v))}>
           <SelectTrigger>
             <SelectValueLabel labels={sourceLabels} placeholder="All sources" />
           </SelectTrigger>
@@ -130,7 +111,9 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
           </SelectTrigger>
           <SelectPopup>
             {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
-              <SelectItem key={k} value={k}>{SORT_LABELS[k]}</SelectItem>
+              <SelectItem key={k} value={k}>
+                {SORT_LABELS[k]}
+              </SelectItem>
             ))}
           </SelectPopup>
         </Select>
@@ -141,15 +124,15 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
           </SelectTrigger>
           <SelectPopup>
             {(Object.keys(ORDER_LABELS) as Order[]).map((k) => (
-              <SelectItem key={k} value={k}>{ORDER_LABELS[k]}</SelectItem>
+              <SelectItem key={k} value={k}>
+                {ORDER_LABELS[k]}
+              </SelectItem>
             ))}
           </SelectPopup>
         </Select>
 
         {!loadError && (
-          <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">
-            {listings.length} listings
-          </span>
+          <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">{listings.length} listings</span>
         )}
       </div>
 
@@ -166,20 +149,17 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
               const empty = p.ok && p.count === 0;
               return (
                 <span key={p.id} className="inline-flex items-center gap-1.5">
-                  <Badge tone={!p.ok ? 'bad' : empty ? 'warn' : 'ok'}>
-                    {!p.ok ? 'FAIL' : empty ? 'EMPTY' : 'OK'}
-                  </Badge>
+                  <Badge tone={!p.ok ? "bad" : empty ? "warn" : "ok"}>{!p.ok ? "FAIL" : empty ? "EMPTY" : "OK"}</Badge>
                   <span className="text-ink-dim">{p.id}:</span>
-                  <span>{p.ok ? p.count : (p.errorMsg ?? 'failed')}</span>
+                  <span>{p.ok ? p.count : (p.errorMsg ?? "failed")}</span>
                 </span>
               );
             })}
           </div>
           {emptySources.length > 0 && (
             <p role="status" className="mt-2 text-warn">
-              {emptySources.join(', ')} found no listings. The search URL or the
-              site&apos;s page may have changed; check it on Sources. Their earlier
-              listings are not dimmed.
+              {emptySources.join(", ")} found no listings. The search URL or the site&apos;s page may have changed;
+              check it on Sources. Their earlier listings are not dimmed.
             </p>
           )}
         </div>
@@ -194,11 +174,7 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
             busy={loading}
           />
         ) : (
-          <ListingsTable
-            listings={listings}
-            sources={sources}
-            onSave={(l) => onSaveLink(l.url)}
-          />
+          <ListingsTable listings={listings} sources={sources} onSave={(l) => onSaveLink(l.url)} />
         )}
       </div>
     </div>

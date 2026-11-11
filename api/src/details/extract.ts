@@ -1,18 +1,7 @@
-import * as cheerio from 'cheerio';
-import {
-  cleanText,
-  isPlusVat,
-  parsePriceEur,
-  parseRooms,
-  parseSqm,
-} from '../lib/normalize.ts';
+import * as cheerio from "cheerio";
+import { cleanText, isPlusVat, parsePriceEur, parseRooms, parseSqm } from "../lib/normalize.ts";
 
-export const PARTITIONINGS = [
-  'decomandat',
-  'semidecomandat',
-  'nedecomandat',
-  'circular',
-] as const;
+export const PARTITIONINGS = ["decomandat", "semidecomandat", "nedecomandat", "circular"] as const;
 export type Partitioning = (typeof PARTITIONINGS)[number];
 
 /** What a single listing page can tell us about one apartment. Every field is
@@ -33,23 +22,23 @@ export interface DetailFields {
    *  price, not a field of its own: not in DETAIL_FIELDS, not counted. */
   pricePlusVat: boolean | null;
 }
-export type DetailField = Exclude<keyof DetailFields, 'pricePlusVat'>;
+export type DetailField = Exclude<keyof DetailFields, "pricePlusVat">;
 
 export const DETAIL_FIELDS: DetailField[] = [
-  'title',
-  'priceEur',
-  'rooms',
-  'sqm',
-  'floor',
-  'floorsTotal',
-  'yearBuilt',
-  'location',
-  'partitioning',
-  'imageUrl',
+  "title",
+  "priceEur",
+  "rooms",
+  "sqm",
+  "floor",
+  "floorsTotal",
+  "yearBuilt",
+  "location",
+  "partitioning",
+  "imageUrl",
 ];
 
 /** Where a field came from, kept in raw_json so a wrong value can be traced. */
-export type Layer = 'storia' | 'jsonld' | 'labels' | 'meta' | 'text';
+export type Layer = "storia" | "jsonld" | "labels" | "meta" | "text";
 
 export interface Extraction {
   fields: DetailFields;
@@ -66,29 +55,21 @@ type Found = { [K in DetailField]?: DetailFields[K] | null | undefined } & {
 /** Lowercases and strips diacritics one character at a time, so the folded
  *  string has the same length as the original and indices carry over. */
 export function fold(s: string): string {
-  let out = '';
+  let out = "";
   for (const ch of s) {
-    out += ch.length === 1 ? ch.normalize('NFD').charAt(0).toLowerCase() : ch;
+    out += ch.length === 1 ? ch.normalize("NFD").charAt(0).toLowerCase() : ch;
   }
   return out;
 }
 
-export function parseFloor(
-  value: string,
-): { floor?: number; floorsTotal?: number } {
+export function parseFloor(value: string): { floor?: number; floorsTotal?: number } {
   const v = fold(value)
-    .replace(/^etaj(?:ul)?\s*:?\s*/, '')
+    .replace(/^etaj(?:ul)?\s*:?\s*/, "")
     .trim();
-  const m = v.match(
-    /^(parter|p|demisol|subsol|d|s|\d{1,2})\b(?:\s*(?:\/|din)\s*(?:p\s*\+\s*)?(\d{1,2}))?/,
-  );
+  const m = v.match(/^(parter|p|demisol|subsol|d|s|\d{1,2})\b(?:\s*(?:\/|din)\s*(?:p\s*\+\s*)?(\d{1,2}))?/);
   if (!m?.[1]) return {};
   const head = m[1];
-  const floor = /^\d/.test(head)
-    ? Number(head)
-    : head === 'parter' || head === 'p'
-      ? 0
-      : -1;
+  const floor = /^\d/.test(head) ? Number(head) : head === "parter" || head === "p" ? 0 : -1;
   return {
     floor,
     floorsTotal: m[2] ? Number(m[2]) : undefined,
@@ -112,11 +93,9 @@ export function parseYear(value: string): number | undefined {
 }
 
 export function parsePartitioning(value: string): Partitioning | undefined {
-  const m = fold(value).match(
-    /\b(semi-?decomandat|nedecomandat|decomandat|circular)/,
-  );
+  const m = fold(value).match(/\b(semi-?decomandat|nedecomandat|decomandat|circular)/);
   if (!m?.[1]) return undefined;
-  return m[1].replace('-', '') as Partitioning;
+  return m[1].replace("-", "") as Partitioning;
 }
 
 function parseCount(value: string): number | undefined {
@@ -128,12 +107,12 @@ function parseArea(value: string): number | undefined {
   const withUnit = parseSqm(value);
   if (withUnit !== undefined) return withUnit;
   const bare = value.trim().match(/^(\d+(?:[.,]\d+)?)\s*$/);
-  return bare?.[1] ? Number(bare[1].replace(',', '.')) : undefined;
+  return bare?.[1] ? Number(bare[1].replace(",", ".")) : undefined;
 }
 
 function parsePlace(value: string): string | undefined {
-  const v = cleanText(value.replace(/^[:\s]+/, ''));
-  if (!v || v.length > 50 || v.split(' ').length > 5) return undefined;
+  const v = cleanText(value.replace(/^[:\s]+/, ""));
+  if (!v || v.length > 50 || v.split(" ").length > 5) return undefined;
   if (!/\p{L}/u.test(v)) return undefined;
   return v;
 }
@@ -143,12 +122,12 @@ function parsePlace(value: string): string | undefined {
 // a Next.js `__NEXT_DATA__` script. Verified 2026-10-16.
 
 function num(v: unknown): number | undefined {
-  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
+  const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
   return Number.isFinite(n) ? n : undefined;
 }
 
 function str(v: unknown): string | undefined {
-  return typeof v === 'string' ? cleanText(v) : undefined;
+  return typeof v === "string" ? cleanText(v) : undefined;
 }
 
 function first(v: unknown): unknown {
@@ -156,35 +135,31 @@ function first(v: unknown): unknown {
 }
 
 function record(v: unknown): Record<string, unknown> | undefined {
-  return v && typeof v === 'object' && !Array.isArray(v)
-    ? (v as Record<string, unknown>)
-    : undefined;
+  return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : undefined;
 }
 
 function storiaFloor(code: unknown): number | undefined {
-  if (typeof code !== 'string') return undefined;
-  if (code === 'ground_floor') return 0;
-  if (code === 'cellar') return -1;
+  if (typeof code !== "string") return undefined;
+  if (code === "ground_floor") return 0;
+  if (code === "cellar") return -1;
   const m = code.match(/^floor_(\d{1,2})$/);
   return m?.[1] ? Number(m[1]) : undefined;
 }
 
 function htmlToText(html: string): string {
-  const spaced = html.replace(/<\/?(p|br|li|div|h\d)\b[^>]*>/gi, '\n');
+  const spaced = html.replace(/<\/?(p|br|li|div|h\d)\b[^>]*>/gi, "\n");
   return cheerio
     .load(spaced)
     .root()
     .text()
-    .split('\n')
+    .split("\n")
     .map((l) => cleanText(l))
     .filter(Boolean)
-    .join('\n');
+    .join("\n");
 }
 
-function fromNextData(
-  $: cheerio.CheerioAPI,
-): { fields: Found; description?: string } | undefined {
-  const json = $('script#__NEXT_DATA__').first().text();
+function fromNextData($: cheerio.CheerioAPI): { fields: Found; description?: string } | undefined {
+  const json = $("script#__NEXT_DATA__").first().text();
   if (!json) return undefined;
   let data: unknown;
   try {
@@ -198,30 +173,22 @@ function fromNextData(
   if (!adRec || !t) return undefined;
 
   let priceEur: number | undefined;
-  const characteristics = Array.isArray(adRec.characteristics)
-    ? adRec.characteristics.map(record)
-    : [];
-  const price = characteristics.find((c) => c?.key === 'price');
-  if (price && typeof price.value === 'string') {
-    priceEur = parsePriceEur(`${price.value} ${str(price.currency) ?? ''}`);
+  const characteristics = Array.isArray(adRec.characteristics) ? adRec.characteristics.map(record) : [];
+  const price = characteristics.find((c) => c?.key === "price");
+  if (price && typeof price.value === "string") {
+    priceEur = parsePriceEur(`${price.value} ${str(price.currency) ?? ""}`);
   }
   priceEur ??= num(t.Price);
 
   const places = record(record(adRec.location)?.reverseGeocoding)?.locations;
-  const lastPlace = Array.isArray(places)
-    ? record(places[places.length - 1])
-    : undefined;
+  const lastPlace = Array.isArray(places) ? record(places[places.length - 1]) : undefined;
   const location =
-    lastPlace &&
-    !['county', 'county_capital', 'city'].includes(String(lastPlace.locationLevel))
+    lastPlace && !["county", "county_capital", "city"].includes(String(lastPlace.locationLevel))
       ? str(lastPlace.name)
       : undefined;
 
   const image = record(first(adRec.images));
-  const description =
-    typeof adRec.description === 'string'
-      ? htmlToText(adRec.description)
-      : undefined;
+  const description = typeof adRec.description === "string" ? htmlToText(adRec.description) : undefined;
 
   return {
     fields: {
@@ -247,14 +214,14 @@ function fromNextData(
 /** The schema.org types a listing's own JSON-LD uses. `Organization`,
  *  `RealEstateAgent` and `WebSite` are the agency, not the flat. */
 const LISTING_TYPES = new Set([
-  'product',
-  'offer',
-  'residence',
-  'apartment',
-  'singlefamilyresidence',
-  'house',
-  'accommodation',
-  'realestatelisting',
+  "product",
+  "offer",
+  "residence",
+  "apartment",
+  "singlefamilyresidence",
+  "house",
+  "accommodation",
+  "realestatelisting",
 ]);
 
 /** An asking price a flat for sale can have: the card readers' range. */
@@ -263,17 +230,17 @@ function plausiblePrice(n: number | undefined): number | undefined {
 }
 
 function hasListingType(item: Record<string, unknown>): boolean {
-  const types = Array.isArray(item['@type']) ? item['@type'] : [item['@type']];
-  return types.some((t) => typeof t === 'string' && LISTING_TYPES.has(t.toLowerCase()));
+  const types = Array.isArray(item["@type"]) ? item["@type"] : [item["@type"]];
+  return types.some((t) => typeof t === "string" && LISTING_TYPES.has(t.toLowerCase()));
 }
 
 function offerPriceEur(offer: Record<string, unknown> | undefined): number | undefined {
   if (!offer) return undefined;
   const currency = str(offer.priceCurrency);
-  if (!currency || currency.toUpperCase() !== 'EUR') return undefined;
+  if (!currency || currency.toUpperCase() !== "EUR") return undefined;
   // A string goes through the Romanian reader, so "98.000" is 98000, not 98.
   const price = offer.price;
-  const n = typeof price === 'string' ? parsePriceEur(`${price} EUR`) : num(price);
+  const n = typeof price === "string" ? parsePriceEur(`${price} EUR`) : num(price);
   return plausiblePrice(n);
 }
 
@@ -281,7 +248,7 @@ function jsonLdItems(data: unknown): Record<string, unknown>[] {
   if (Array.isArray(data)) return data.flatMap(jsonLdItems);
   const item = record(data);
   if (!item) return [];
-  const graph = Array.isArray(item['@graph']) ? jsonLdItems(item['@graph']) : [];
+  const graph = Array.isArray(item["@graph"]) ? jsonLdItems(item["@graph"]) : [];
   return [item, ...graph];
 }
 
@@ -297,7 +264,7 @@ function fromJsonLd($: cheerio.CheerioAPI): Found {
       if (!hasListingType(item)) continue;
       const priceEur =
         offerPriceEur(record(first(item.offers))) ??
-        (String(item['@type']).toLowerCase() === 'offer' ? offerPriceEur(item) : undefined);
+        (String(item["@type"]).toLowerCase() === "offer" ? offerPriceEur(item) : undefined);
       if (priceEur !== undefined) return { priceEur };
     }
   }
@@ -334,13 +301,11 @@ const LABEL_RULES: LabelRule[] = [
   { label: /suprafata(?=\s*:)/, parse: (v) => ({ sqm: parseArea(v) }) },
   { label: /etaj(?:ul)?/, parse: (v) => parseFloor(v) },
   {
-    label:
-      /regim\s+(?:de\s+)?inaltime|(?:nr\.?|numar)\s*(?:de\s+)?etaje|etaje(?:\s+(?:bloc|imobil|cladire))?(?=\s*:)/,
+    label: /regim\s+(?:de\s+)?inaltime|(?:nr\.?|numar)\s*(?:de\s+)?etaje|etaje(?:\s+(?:bloc|imobil|cladire))?(?=\s*:)/,
     parse: (v) => ({ floorsTotal: parseFloorsTotal(v) }),
   },
   {
-    label:
-      /an(?:ul)?\s+(?:de\s+)?constructi(?:e|ei)|constructie|construit(?:\s+in)?/,
+    label: /an(?:ul)?\s+(?:de\s+)?constructi(?:e|ei)|constructie|construit(?:\s+in)?/,
     parse: (v) => ({ yearBuilt: parseYear(v) }),
   },
   {
@@ -358,7 +323,7 @@ const MAX_LABEL_LINE = 60;
 /** The page's visible text, one text node per line, and the index of the
  *  first line after the first `<h1>` (undefined when the page has none). */
 export function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?: number } {
-  $('script, style, noscript, svg, template, iframe, select, nav, footer').remove();
+  $("script, style, noscript, svg, template, iframe, select, nav, footer").remove();
   const lines: string[] = [];
   let afterTitle: number | undefined;
   interface WalkNode {
@@ -366,9 +331,9 @@ export function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?
     data?: string;
     children?: WalkNode[];
   }
-  const h1 = $('h1').get(0) as unknown as WalkNode | undefined;
+  const h1 = $("h1").get(0) as unknown as WalkNode | undefined;
   const walk = (node: WalkNode): void => {
-    if (node.type === 'text') {
+    if (node.type === "text") {
       const t = cleanText(node.data);
       if (t) lines.push(t);
       return;
@@ -376,15 +341,15 @@ export function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?
     for (const child of node.children ?? []) walk(child);
     if (node === h1 && afterTitle === undefined) afterTitle = lines.length;
   };
-  const body = $('body').get(0) ?? $.root().get(0);
+  const body = $("body").get(0) ?? $.root().get(0);
   if (body) walk(body as unknown as WalkNode);
   return { lines, afterTitle };
 }
 
 function fromLabels(lines: string[]): Found {
   const out: Found = {};
-  const folded = lines.map((l) => fold(l).replace(/^[*•·\-–]\s*/, ''));
-  const originals = lines.map((l) => l.replace(/^[*•·\-–]\s*/, ''));
+  const folded = lines.map((l) => fold(l).replace(/^[*•·\-–]\s*/, ""));
+  const originals = lines.map((l) => l.replace(/^[*•·\-–]\s*/, ""));
   for (const rule of LABEL_RULES) {
     const re = new RegExp(`^(?:${rule.label.source})(?![a-z])\\s*:?\\s*(.*)$`);
     for (let i = 0; i < folded.length; i++) {
@@ -393,13 +358,11 @@ function fromLabels(lines: string[]): Found {
       const m = line.match(re);
       if (!m) continue;
       const original = originals[i]!;
-      const rest = original.slice(original.length - (m[1] ?? '').length).trim();
-      const value = rest || lines[i + 1] || '';
+      const rest = original.slice(original.length - (m[1] ?? "").length).trim();
+      const value = rest || lines[i + 1] || "";
       if (value.length > MAX_LABEL_LINE) continue;
       const parsed = rule.parse(value);
-      const fresh = Object.entries(parsed).filter(
-        ([k, v]) => v != null && out[k as DetailField] == null,
-      );
+      const fresh = Object.entries(parsed).filter(([k, v]) => v != null && out[k as DetailField] == null);
       if (fresh.length === 0) continue;
       Object.assign(out, Object.fromEntries(fresh));
       break;
@@ -416,7 +379,7 @@ function absoluteHttpUrl(href: string | undefined, base: string): string | undef
   if (!href) return undefined;
   try {
     const u = new URL(href, base);
-    return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : undefined;
+    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : undefined;
   } catch {
     return undefined;
   }
@@ -426,34 +389,27 @@ function absoluteHttpUrl(href: string | undefined, base: string): string | undef
  *  trailing listing ID ("… Zona excelenta 0016647", "… - ID 0016647"). */
 function stripSiteSuffix(title: string): string {
   return title
-    .replace(/\s+[-|•–]\s+[^-|•–]*\.(?:ro|com|eu|net)\s*$/i, '')
-    .replace(/\s+(?:[-|•–]\s+)?(?:ID:?\s*)?\d{5,}\s*$/i, '');
+    .replace(/\s+[-|•–]\s+[^-|•–]*\.(?:ro|com|eu|net)\s*$/i, "")
+    .replace(/\s+(?:[-|•–]\s+)?(?:ID:?\s*)?\d{5,}\s*$/i, "");
 }
 
 function meta($: cheerio.CheerioAPI, key: string): string | undefined {
-  return cleanText(
-    $(`meta[property="${key}"], meta[name="${key}"]`).first().attr('content'),
-  );
+  return cleanText($(`meta[property="${key}"], meta[name="${key}"]`).first().attr("content"));
 }
 
 function fromMeta($: cheerio.CheerioAPI, pageUrl: string): Found {
-  const rawTitle =
-    meta($, 'og:title') ??
-    cleanText($('h1').first().text()) ??
-    cleanText($('title').first().text());
+  const rawTitle = meta($, "og:title") ?? cleanText($("h1").first().text()) ?? cleanText($("title").first().text());
   return {
     title: rawTitle ? stripSiteSuffix(rawTitle) : undefined,
-    imageUrl:
-      absoluteHttpUrl(meta($, 'og:image'), pageUrl) ??
-      absoluteHttpUrl(meta($, 'twitter:image'), pageUrl),
+    imageUrl: absoluteHttpUrl(meta($, "og:image"), pageUrl) ?? absoluteHttpUrl(meta($, "twitter:image"), pageUrl),
   };
 }
 
 function metaDescription($: cheerio.CheerioAPI): string | undefined {
   return (
-    meta($, 'og:description') ??
-    meta($, 'description') ??
-    cleanText($('meta[name="Description"]').first().attr('content'))
+    meta($, "og:description") ??
+    meta($, "description") ??
+    cleanText($('meta[name="Description"]').first().attr("content"))
   );
 }
 
@@ -472,10 +428,7 @@ const BARE_PRICE_LINE =
 /** A price standing alone on a line just under the title, as some agency
  *  sites show it with no "Preț" label. Only that window: a "similar listings"
  *  block lower down is full of bare prices of other flats. */
-export function priceUnderTitle(
-  lines: string[],
-  afterTitle: number | undefined,
-): Found {
+export function priceUnderTitle(lines: string[], afterTitle: number | undefined): Found {
   if (afterTitle === undefined) return {};
   for (const line of lines.slice(afterTitle, afterTitle + TITLE_PRICE_WINDOW)) {
     const folded = fold(line).trim();
@@ -487,7 +440,7 @@ export function priceUnderTitle(
 }
 
 function fromText(title: string | undefined, prose: string): Found {
-  const t = fold(title ?? '');
+  const t = fold(title ?? "");
   const p = fold(prose);
   const out: Found = {};
 
@@ -496,21 +449,15 @@ function fromText(title: string | undefined, prose: string): Found {
 
   // Spaces and tabs only, never a line break: "zona Lidia" at the end of one
   // line must not take the next line's first word as part of the name.
-  const zone = `${title ?? ''}\n${prose}`.match(
-    /\bzon[aă][ \t]+([\p{Lu}][\p{L}-]+(?:[ \t]+[\p{Lu}][\p{L}-]+)?)/u,
-  );
+  const zone = `${title ?? ""}\n${prose}`.match(/\bzon[aă][ \t]+([\p{Lu}][\p{L}-]+(?:[ \t]+[\p{Lu}][\p{L}-]+)?)/u);
   out.location = zone?.[1];
 
-  const area = p.match(
-    /suprafat[a]?\s+utila\s*:?\s*(?:de\s+)?(\d+(?:[.,]\d+)?)\s*(?:mp|m2|m²)/,
-  );
-  if (area?.[1]) out.sqm = Number(area[1].replace(',', '.'));
+  const area = p.match(/suprafat[a]?\s+utila\s*:?\s*(?:de\s+)?(\d+(?:[.,]\d+)?)\s*(?:mp|m2|m²)/);
+  if (area?.[1]) out.sqm = Number(area[1].replace(",", "."));
 
-  const floor = p.match(
-    /\betaj(?:ul)?\s*:?\s*(parter|\d{1,2})\b(?:\s*(?:\/|din)\s*(\d{1,2}))?/,
-  );
+  const floor = p.match(/\betaj(?:ul)?\s*:?\s*(parter|\d{1,2})\b(?:\s*(?:\/|din)\s*(\d{1,2}))?/);
   if (floor?.[1]) {
-    out.floor = floor[1] === 'parter' ? 0 : Number(floor[1]);
+    out.floor = floor[1] === "parter" ? 0 : Number(floor[1]);
     if (floor[2]) out.floorsTotal = Number(floor[2]);
   } else if (/\bla\s+parter\b/.test(p)) {
     out.floor = 0;
@@ -571,14 +518,14 @@ export function extractDetails(html: string, pageUrl: string): Extraction {
   const jsonLd = fromJsonLd($);
   const { lines, afterTitle } = textLines($);
   const title = storia?.fields.title ?? metaFields.title ?? undefined;
-  const prose = [description ?? '', ...lines].join('\n');
+  const prose = [description ?? "", ...lines].join("\n");
 
   const layers: [Layer, Found][] = [
-    ...(storia ? ([['storia', storia.fields]] as [Layer, Found][]) : []),
-    ['jsonld', jsonLd],
-    ['labels', fromLabels(lines)],
-    ['meta', metaFields],
-    ['text', { ...priceUnderTitle(lines, afterTitle), ...fromText(title, prose) }],
+    ...(storia ? ([["storia", storia.fields]] as [Layer, Found][]) : []),
+    ["jsonld", jsonLd],
+    ["labels", fromLabels(lines)],
+    ["meta", metaFields],
+    ["text", { ...priceUnderTitle(lines, afterTitle), ...fromText(title, prose) }],
   ];
 
   const merged = Object.fromEntries(DETAIL_FIELDS.map((k) => [k, null])) as unknown as DetailFields;
@@ -595,9 +542,7 @@ export function extractDetails(html: string, pageUrl: string): Extraction {
   // The VAT mark goes with the price: from the layer that gave it, or from
   // any other layer that read the same amount and saw "+ TVA" beside it
   // (JSON-LD carries no VAT mark; the label next to the same price may).
-  const samePrice = layers.filter(
-    ([, found]) => merged.priceEur != null && found.priceEur === merged.priceEur,
-  );
+  const samePrice = layers.filter(([, found]) => merged.priceEur != null && found.priceEur === merged.priceEur);
   merged.pricePlusVat = samePrice.some(([, found]) => found.pricePlusVat === true)
     ? true
     : (layers.find(([layer]) => layer === sources.priceEur)?.[1].pricePlusVat ?? null);

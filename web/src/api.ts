@@ -1,4 +1,4 @@
-import { API_BASE } from './base.ts';
+import { API_BASE } from "./base.ts";
 
 export interface Source {
   id: string;
@@ -41,12 +41,7 @@ export interface RefreshResult {
   }[];
 }
 
-export const PARTITIONINGS = [
-  'decomandat',
-  'semidecomandat',
-  'nedecomandat',
-  'circular',
-] as const;
+export const PARTITIONINGS = ["decomandat", "semidecomandat", "nedecomandat", "circular"] as const;
 export type Partitioning = (typeof PARTITIONINGS)[number];
 
 /** The facts about one apartment that a listing page can carry. */
@@ -87,9 +82,9 @@ export interface ScrapeResult {
   existing: SavedApartment | null;
   draft: ApartmentFields | null;
   found: (keyof ApartmentFields)[];
-  via: 'fetch' | 'browser' | null;
+  via: "fetch" | "browser" | null;
   problem: {
-    kind: 'blocked' | 'not_found' | 'unreachable';
+    kind: "blocked" | "not_found" | "unreachable";
     message: string;
   } | null;
   /** "Fill the gaps" is on (the server has Wicket's settings). */
@@ -97,7 +92,7 @@ export interface ScrapeResult {
 }
 
 /** The fields "Fill the gaps" may ask the model for: the ten a page can give. */
-export type FillField = Exclude<keyof ApartmentFields, 'pricePlusVat'>;
+export type FillField = Exclude<keyof ApartmentFields, "pricePlusVat">;
 
 /** A "Fill the gaps" job, as ro-housing's API passes Wicket's on. */
 export interface FillJob {
@@ -106,7 +101,7 @@ export interface FillJob {
   ticket?: number;
   nowServing?: number;
   position?: number;
-  status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
+  status: "queued" | "running" | "done" | "failed" | "cancelled";
   /** On `done`: the values the model gave for the asked fields, checked. */
   values?: Partial<ApartmentFields>;
   model?: string;
@@ -168,69 +163,63 @@ async function jsonOrApiError<T>(res: Response): Promise<T> {
 }
 
 export const api = {
-  listSources: () => apiFetch('/api/sources').then(jsonOrApiError<Source[]>),
-  updateSource: (
-    id: string,
-    patch: { searchUrl?: string | null; enabled?: boolean },
-  ) =>
+  listSources: () => apiFetch("/api/sources").then(jsonOrApiError<Source[]>),
+  updateSource: (id: string, patch: { searchUrl?: string | null; enabled?: boolean }) =>
     apiFetch(`/api/sources/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     }).then(jsonOrApiError<{ ok: true }>),
   listListings: (params: {
-    sort?: 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
-    order?: 'asc' | 'desc';
+    sort?: "price" | "sqm" | "firstSeen" | "lastSeen";
+    order?: "asc" | "desc";
     source?: string;
   }) => {
     const q = new URLSearchParams();
-    if (params.sort) q.set('sort', params.sort);
-    if (params.order) q.set('order', params.order);
-    if (params.source) q.set('source', params.source);
+    if (params.sort) q.set("sort", params.sort);
+    if (params.order) q.set("order", params.order);
+    if (params.source) q.set("source", params.source);
     return apiFetch(`/api/listings?${q}`).then(jsonOrApiError<Listing[]>);
   },
-  refresh: () =>
-    apiFetch('/api/refresh', { method: 'POST' }).then(jsonOrApiError<RefreshResult>),
+  refresh: () => apiFetch("/api/refresh", { method: "POST" }).then(jsonOrApiError<RefreshResult>),
   scrapeLink: (url: string) =>
-    apiFetch('/api/saved/scrape', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    apiFetch("/api/saved/scrape", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     }).then(jsonOrApiError<ScrapeResult>),
   startFill: (url: string, missing: FillField[]) =>
-    apiFetch('/api/saved/fill', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    apiFetch("/api/saved/fill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, missing }),
     }).then(jsonOrApiError<FillJob>),
   /** Waits up to 25 seconds on the server for the job to change. */
-  pollFill: (id: string) =>
-    apiFetch(`/api/saved/fill/${encodeURIComponent(id)}?wait=25`).then(jsonOrApiError<FillJob>),
+  pollFill: (id: string) => apiFetch(`/api/saved/fill/${encodeURIComponent(id)}?wait=25`).then(jsonOrApiError<FillJob>),
   cancelFill: (id: string) =>
-    apiFetch(`/api/saved/fill/${encodeURIComponent(id)}`, { method: 'DELETE' }).then(jsonOrApiError<FillJob>),
-  listSaved: () => apiFetch('/api/saved').then(jsonOrApiError<SavedApartment[]>),
+    apiFetch(`/api/saved/fill/${encodeURIComponent(id)}`, { method: "DELETE" }).then(jsonOrApiError<FillJob>),
+  listSaved: () => apiFetch("/api/saved").then(jsonOrApiError<SavedApartment[]>),
   createSaved: (input: SavedInput) =>
-    apiFetch('/api/saved', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    apiFetch("/api/saved", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     }).then(jsonOrApiError<SavedApartment>),
   updateSaved: (id: number, input: SavedInput) =>
     apiFetch(`/api/saved/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     }).then(jsonOrApiError<SavedApartment>),
   deleteSaved: async (id: number) => {
-    const res = await apiFetch(`/api/saved/${id}`, { method: 'DELETE' });
+    const res = await apiFetch(`/api/saved/${id}`, { method: "DELETE" });
     if (!res.ok) await jsonOrApiError<never>(res);
   },
-  getIssuesStatus: () =>
-    apiFetch('/api/issues').then(jsonOrApiError<{ count: number; max: number }>),
+  getIssuesStatus: () => apiFetch("/api/issues").then(jsonOrApiError<{ count: number; max: number }>),
   submitIssue: (body: string) =>
-    apiFetch('/api/issues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    apiFetch("/api/issues", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ body }),
     }).then(jsonOrApiError<{ id: string; count: number; max: number }>),
 };

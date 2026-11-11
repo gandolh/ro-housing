@@ -1,32 +1,14 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import {
-  ApiError,
-  api,
-  type ApartmentFields,
-  type FillField,
-  type SavedApartment,
-  type ScrapeResult,
-} from '../api.ts';
-import { ApartmentForm } from '../components/ApartmentForm.tsx';
-import { ApiErrorNotice } from '../components/ApiErrorNotice.tsx';
-import { FillGaps } from '../components/FillGaps.tsx';
-import { SavedTable } from '../components/SavedTable.tsx';
-import { Button } from '../components/ui/Button.tsx';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '../components/ui/Dialog.tsx';
-import { Input } from '../components/ui/Input.tsx';
-import { Panel } from '../components/ui/Panel.tsx';
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValueLabel,
-} from '../components/ui/Select.tsx';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { ApiError, api, type ApartmentFields, type FillField, type SavedApartment, type ScrapeResult } from "../api.ts";
+import { ApartmentForm } from "../components/ApartmentForm.tsx";
+import { ApiErrorNotice } from "../components/ApiErrorNotice.tsx";
+import { FillGaps } from "../components/FillGaps.tsx";
+import { SavedTable } from "../components/SavedTable.tsx";
+import { Button } from "../components/ui/Button.tsx";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../components/ui/Dialog.tsx";
+import { Input } from "../components/ui/Input.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValueLabel } from "../components/ui/Select.tsx";
 import {
   formFromFields,
   formFromSaved,
@@ -34,17 +16,17 @@ import {
   type FormErrors,
   type FormField,
   type FormValues,
-} from '../lib/apartment.ts';
-import { pricePerSqm } from '../lib/format.ts';
+} from "../lib/apartment.ts";
+import { pricePerSqm } from "../lib/format.ts";
 
-type Sort = 'saved' | 'price' | 'perSqm' | 'sqm' | 'year';
+type Sort = "saved" | "price" | "perSqm" | "sqm" | "year";
 
 const SORT_LABELS: Record<Sort, string> = {
-  saved: 'Sort: newest saved',
-  price: 'Sort: price, low first',
-  perSqm: 'Sort: €/m², low first',
-  sqm: 'Sort: m², large first',
-  year: 'Sort: year built, new first',
+  saved: "Sort: newest saved",
+  price: "Sort: price, low first",
+  perSqm: "Sort: €/m², low first",
+  sqm: "Sort: m², large first",
+  year: "Sort: year built, new first",
 };
 
 /** Ascending key per sort; nulls always last. */
@@ -71,16 +53,16 @@ const TOTAL_FIELDS = 10;
 
 /** The ten fields a page can give, in the form's order: what "Fill the gaps" may ask for. */
 const FILL_FIELDS: FillField[] = [
-  'title',
-  'priceEur',
-  'rooms',
-  'sqm',
-  'floor',
-  'floorsTotal',
-  'yearBuilt',
-  'location',
-  'partitioning',
-  'imageUrl',
+  "title",
+  "priceEur",
+  "rooms",
+  "sqm",
+  "floor",
+  "floorsTotal",
+  "yearBuilt",
+  "location",
+  "partitioning",
+  "imageUrl",
 ];
 
 const NO_FIELDS = {
@@ -89,36 +71,36 @@ const NO_FIELDS = {
 } as unknown as ApartmentFields;
 
 type Stage =
-  | { kind: 'idle' }
-  | { kind: 'fetching' }
-  | { kind: 'existing'; result: ScrapeResult; existing: SavedApartment }
+  | { kind: "idle" }
+  | { kind: "fetching" }
+  | { kind: "existing"; result: ScrapeResult; existing: SavedApartment }
   | {
-      kind: 'draft';
+      kind: "draft";
       result: ScrapeResult;
       values: FormValues;
       page: { values: FormValues; found: FormField[]; ai?: Partial<FormValues> } | undefined;
     };
 
 const FIELD_NAMES: Record<FormField, string> = {
-  url: 'link',
-  title: 'title',
-  priceEur: 'price',
-  rooms: 'rooms',
-  sqm: 'm²',
-  floor: 'floor',
-  floorsTotal: 'floors',
-  yearBuilt: 'year built',
-  location: 'area',
-  partitioning: 'partitioning',
-  imageUrl: 'photo link',
-  pricePlusVat: '+TVA',
-  notes: 'notes',
+  url: "link",
+  title: "title",
+  priceEur: "price",
+  rooms: "rooms",
+  sqm: "m²",
+  floor: "floor",
+  floorsTotal: "floors",
+  yearBuilt: "year built",
+  location: "area",
+  partitioning: "partitioning",
+  imageUrl: "photo link",
+  pricePlusVat: "+TVA",
+  notes: "notes",
 };
 
 /** The fields the user changed in an open draft, notes included: compared
  *  with what the page gave, or with an empty form when nothing was read. */
 function draftEdits(stage: Stage): FormField[] {
-  if (stage.kind !== 'draft') return [];
+  if (stage.kind !== "draft") return [];
   const base = stage.page?.values ?? formFromFields(stage.result.url, null);
   return (Object.keys(stage.values) as FormField[]).filter((f) => stage.values[f] !== base[f]);
 }
@@ -128,7 +110,7 @@ function message(err: unknown): string {
 }
 
 function fmtDate(ts: number): string {
-  return new Date(ts).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(ts).toLocaleDateString("ro-RO", { day: "numeric", month: "short", year: "numeric" });
 }
 
 interface Props {
@@ -139,11 +121,11 @@ interface Props {
 
 export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
   const [saved, setSaved] = useState<SavedApartment[]>([]);
-  const [sort, setSort] = useState<Sort>('saved');
-  const [link, setLink] = useState('');
-  const [stage, setStage] = useState<Stage>({ kind: 'idle' });
+  const [sort, setSort] = useState<Sort>("saved");
+  const [link, setLink] = useState("");
+  const [stage, setStage] = useState<Stage>({ kind: "idle" });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
+  const [notice, setNotice] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   // A fetch waiting for the user to agree to replace a draft with edits.
   const [pendingLink, setPendingLink] = useState<string | null>(null);
@@ -181,29 +163,29 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
   const fetchDetails = async (url: string) => {
     const trimmed = url.trim();
     if (!trimmed) {
-      setNotice({ tone: 'bad', text: 'Paste a listing link first.' });
+      setNotice({ tone: "bad", text: "Paste a listing link first." });
       return;
     }
     setPendingLink(null);
     setNotice(null);
     setErrors({});
-    setStage({ kind: 'fetching' });
+    setStage({ kind: "fetching" });
     try {
       const result = await api.scrapeLink(trimmed);
       if (result.existing) {
-        setStage({ kind: 'existing', result, existing: result.existing });
+        setStage({ kind: "existing", result, existing: result.existing });
         return;
       }
       const values = formFromFields(result.url, result.draft);
       setStage({
-        kind: 'draft',
+        kind: "draft",
         result,
         values,
         page: result.problem ? undefined : { values, found: result.found },
       });
     } catch (err) {
-      setStage({ kind: 'idle' });
-      setNotice({ tone: 'bad', text: message(err) });
+      setStage({ kind: "idle" });
+      setNotice({ tone: "bad", text: message(err) });
     }
   };
 
@@ -245,9 +227,9 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
    *  may have typed meanwhile), each marked "from AI". Saves nothing. */
   const fillFromAi = (values: Partial<ApartmentFields>): number => {
     const s = stageRef.current;
-    if (s.kind !== 'draft' || !s.page) return 0;
+    if (s.kind !== "draft" || !s.page) return 0;
     const asForm = formFromFields(s.result.url, { ...NO_FIELDS, ...values });
-    const filled = FILL_FIELDS.filter((f) => values[f] != null && asForm[f] !== '' && s.values[f].trim() === '');
+    const filled = FILL_FIELDS.filter((f) => values[f] != null && asForm[f] !== "" && s.values[f].trim() === "");
     if (filled.length === 0) return 0;
     const patch = Object.fromEntries(filled.map((f) => [f, asForm[f]])) as Partial<FormValues>;
     const next: Stage = {
@@ -261,11 +243,11 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
   };
 
   const setDraftField = (field: FormField, value: string) => {
-    setStage((s) => (s.kind === 'draft' ? { ...s, values: { ...s.values, [field]: value } } : s));
+    setStage((s) => (s.kind === "draft" ? { ...s, values: { ...s.values, [field]: value } } : s));
   };
 
   const saveDraft = async () => {
-    if (stage.kind !== 'draft') return;
+    if (stage.kind !== "draft") return;
     const parsed = parseForm(stage.values);
     if (!parsed.ok) {
       setErrors(parsed.errors);
@@ -274,21 +256,21 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
     setBusy(true);
     try {
       const row = await api.createSaved(parsed.input);
-      setStage({ kind: 'idle' });
-      setLink('');
+      setStage({ kind: "idle" });
+      setLink("");
       setErrors({});
       setPendingLink(null);
-      setNotice({ tone: 'ok', text: `Saved: ${row.title ?? row.url}` });
+      setNotice({ tone: "ok", text: `Saved: ${row.title ?? row.url}` });
       await reload();
     } catch (err) {
-      setNotice({ tone: 'bad', text: message(err) });
+      setNotice({ tone: "bad", text: message(err) });
     } finally {
       setBusy(false);
     }
   };
 
   const discard = () => {
-    setStage({ kind: 'idle' });
+    setStage({ kind: "idle" });
     setErrors({});
     setNotice(null);
     setPendingLink(null);
@@ -313,7 +295,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
       await api.updateSaved(editing.id, parsed.input);
       setEditing(null);
       // The "Already saved: <title>" line would show the pre-edit values.
-      setStage((s) => (s.kind === 'existing' ? { kind: 'idle' } : s));
+      setStage((s) => (s.kind === "existing" ? { kind: "idle" } : s));
       await reload();
     } catch (err) {
       setEditProblem(message(err));
@@ -327,24 +309,24 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
       await api.deleteSaved(s.id);
       await reload();
     } catch (err) {
-      setNotice({ tone: 'bad', text: message(err) });
+      setNotice({ tone: "bad", text: message(err) });
     }
   };
 
   const sorted = useMemo(() => sortSaved(saved, sort), [saved, sort]);
-  const hasDraft = stage.kind === 'draft';
+  const hasDraft = stage.kind === "draft";
   const edits = draftEdits(stage);
   // The button: Wicket on, and a draft read from a page (or a bot check, where
   // it shows disabled) with an empty field.
   const fill =
-    stage.kind === 'draft' &&
+    stage.kind === "draft" &&
     stage.result.fillable === true &&
-    (!stage.result.problem || stage.result.problem.kind === 'blocked') ? (
+    (!stage.result.problem || stage.result.problem.kind === "blocked") ? (
       <FillGaps
         key={stage.result.url}
         url={stage.result.url}
-        missing={FILL_FIELDS.filter((f) => stage.values[f].trim() === '')}
-        blocked={stage.result.problem?.kind === 'blocked'}
+        missing={FILL_FIELDS.filter((f) => stage.values[f].trim() === "")}
+        blocked={stage.result.problem?.kind === "blocked"}
         disabled={busy}
         onFilled={fillFromAi}
       />
@@ -359,15 +341,15 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
             placeholder="Paste a listing link: storia.ro, an agency site, imobiliare.ro…"
             value={link}
             onChange={(e) => setLink(e.target.value)}
-            disabled={stage.kind === 'fetching'}
+            disabled={stage.kind === "fetching"}
           />
           <Button
             type="submit"
-            variant={hasDraft ? 'default' : 'primary'}
-            disabled={stage.kind === 'fetching'}
+            variant={hasDraft ? "default" : "primary"}
+            disabled={stage.kind === "fetching"}
             className="shrink-0"
           >
-            {stage.kind === 'fetching' ? 'Reading the page…' : 'Fetch details'}
+            {stage.kind === "fetching" ? "Reading the page…" : "Fetch details"}
           </Button>
         </form>
         {pendingLink !== null && (
@@ -377,7 +359,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
           >
             <span className="flex-1">
               Fetching again replaces the open draft.
-              {edits.length > 0 && ` Your edits to it are lost: ${edits.map((f) => FIELD_NAMES[f]).join(', ')}.`}
+              {edits.length > 0 && ` Your edits to it are lost: ${edits.map((f) => FIELD_NAMES[f]).join(", ")}.`}
             </span>
             <Button variant="default" onClick={() => void fetchDetails(pendingLink)}>
               Replace draft
@@ -389,23 +371,23 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
         )}
         {notice && (
           <p
-            role={notice.tone === 'bad' ? 'alert' : 'status'}
-            className={notice.tone === 'bad' ? 'mt-2 text-xs text-bad' : 'mt-2 text-xs text-ok'}
+            role={notice.tone === "bad" ? "alert" : "status"}
+            className={notice.tone === "bad" ? "mt-2 text-xs text-bad" : "mt-2 text-xs text-ok"}
           >
             {notice.text}
           </p>
         )}
-        {stage.kind === 'idle' && !notice && (
+        {stage.kind === "idle" && !notice && (
           <p className="mt-2 text-xs text-ink-dim">
             Reads what it can from the page. You check every field before anything is saved.
           </p>
         )}
 
-        {stage.kind === 'existing' && (
+        {stage.kind === "existing" && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-rule-soft pt-3 text-sm">
             <span>
               Already saved on {fmtDate(stage.existing.savedAt)}
-              {stage.existing.title ? `: ${stage.existing.title}` : ''}.
+              {stage.existing.title ? `: ${stage.existing.title}` : ""}.
             </span>
             <Button variant="default" onClick={() => startEdit(stage.existing)}>
               Edit it
@@ -416,19 +398,18 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
           </div>
         )}
 
-        {stage.kind === 'draft' && (
+        {stage.kind === "draft" && (
           <div className="mt-3 border-t border-rule-soft pt-3">
             <div className="mb-3 flex flex-wrap items-start gap-2">
               {stage.result.problem ? (
                 <p role="alert" className="flex-1 border border-bad bg-bad-soft px-2 py-1.5 text-xs text-bad">
-                  {stage.result.problem.message} Nothing was read from {stage.result.site}. Fill in what
-                  you know; the link is saved with it.
+                  {stage.result.problem.message} Nothing was read from {stage.result.site}. Fill in what you know; the
+                  link is saved with it.
                 </p>
               ) : (
                 <p className="flex-1 text-xs text-ink-dim">
                   Read {stage.result.found.length} of {TOTAL_FIELDS} fields from {stage.result.site}
-                  {stage.result.via === 'browser' ? ' (through a browser)' : ''}. Check them, fill the
-                  gaps, then save.
+                  {stage.result.via === "browser" ? " (through a browser)" : ""}. Check them, fill the gaps, then save.
                 </p>
               )}
               {fill}
@@ -457,7 +438,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
                 Discard
               </Button>
               <Button variant="primary" onClick={saveDraft} disabled={busy}>
-                {busy ? 'Saving…' : 'Save'}
+                {busy ? "Saving…" : "Save"}
               </Button>
             </div>
           </div>
@@ -499,8 +480,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
         <DialogContent className="w-[min(760px,94vw)]">
           <DialogTitle>Edit saved apartment</DialogTitle>
           <DialogDescription>
-            Saved {editing ? fmtDate(editing.savedAt) : ''}. Changes here are yours; nothing is
-            fetched again.
+            Saved {editing ? fmtDate(editing.savedAt) : ""}. Changes here are yours; nothing is fetched again.
           </DialogDescription>
           {editValues && (
             <div className="mt-3">
@@ -523,7 +503,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
               Cancel
             </Button>
             <Button variant="primary" onClick={saveEdit} disabled={busy}>
-              {busy ? 'Saving…' : 'Save changes'}
+              {busy ? "Saving…" : "Save changes"}
             </Button>
           </div>
         </DialogContent>

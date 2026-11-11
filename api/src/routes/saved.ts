@@ -1,21 +1,10 @@
-import type { FastifyInstance, FastifyReply } from 'fastify';
-import {
-  deleteSaved,
-  getSavedByUrl,
-  insertSaved,
-  listSaved,
-  updateSaved,
-  type SavedRow,
-} from '../db/saved.ts';
-import {
-  DETAIL_FIELDS,
-  extractDetails,
-  type DetailFields,
-} from '../details/extract.ts';
-import { fetchListingPage, PageProblem } from '../details/fetchPage.ts';
-import { pageText, pageTexts } from '../details/pageText.ts';
-import { assertPublicHost, normalizeListingUrl, siteOf } from '../details/url.ts';
-import { parseSavedInput } from './saved-input.ts';
+import type { FastifyInstance, FastifyReply } from "fastify";
+import { deleteSaved, getSavedByUrl, insertSaved, listSaved, updateSaved, type SavedRow } from "../db/saved.ts";
+import { DETAIL_FIELDS, extractDetails, type DetailFields } from "../details/extract.ts";
+import { fetchListingPage, PageProblem } from "../details/fetchPage.ts";
+import { pageText, pageTexts } from "../details/pageText.ts";
+import { assertPublicHost, normalizeListingUrl, siteOf } from "../details/url.ts";
+import { parseSavedInput } from "./saved-input.ts";
 
 function toApi(r: SavedRow) {
   return {
@@ -73,30 +62,25 @@ export function recordAiFill(url: string, model: string, values: Record<string, 
 }
 
 function isUniqueViolation(err: unknown): boolean {
-  return (err as { code?: string } | null)?.code === 'SQLITE_CONSTRAINT_UNIQUE';
+  return (err as { code?: string } | null)?.code === "SQLITE_CONSTRAINT_UNIQUE";
 }
 
 function parseId(raw: string, reply: FastifyReply): number | undefined {
   const id = Number(raw);
   if (Number.isInteger(id) && id > 0) return id;
-  void reply.code(400).send({ error: 'bad id' });
+  void reply.code(400).send({ error: "bad id" });
   return undefined;
 }
 
-export async function savedRoutes(
-  app: FastifyInstance,
-  opts: { fillable?: boolean } = {},
-): Promise<void> {
+export async function savedRoutes(app: FastifyInstance, opts: { fillable?: boolean } = {}): Promise<void> {
   // Whether "Fill the gaps" is on: the draft's button shows only then.
   const fillable = opts.fillable === true;
   // Reads one listing page into a draft. Saves nothing: the user confirms or
   // edits the draft and POSTs it to /api/saved.
-  app.post<{ Body: { url?: string } }>('/api/saved/scrape', async (req, reply) => {
-    const url = normalizeListingUrl(req.body?.url ?? '');
+  app.post<{ Body: { url?: string } }>("/api/saved/scrape", async (req, reply) => {
+    const url = normalizeListingUrl(req.body?.url ?? "");
     if (!url) {
-      return reply
-        .code(400)
-        .send({ error: 'Paste a full link, starting with http:// or https://' });
+      return reply.code(400).send({ error: "Paste a full link, starting with http:// or https://" });
     }
     const site = siteOf(url);
     const existing = getSavedByUrl(url);
@@ -109,15 +93,15 @@ export async function savedRoutes(
       await assertPublicHost(url);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('local addresses')) {
-        return reply.code(400).send({ error: 'That link points to a local address.' });
+      if (msg.includes("local addresses")) {
+        return reply.code(400).send({ error: "That link points to a local address." });
       }
       return {
         ...base,
         draft: EMPTY_DRAFT,
         found: [],
         via: null,
-        problem: { kind: 'unreachable', message: `Could not find the site (${msg}).` },
+        problem: { kind: "unreachable", message: `Could not find the site (${msg}).` },
       };
     }
 
@@ -127,15 +111,11 @@ export async function savedRoutes(
       const fetchedAt = Date.now();
       // Kept for "Fill the gaps", which never fetches the page again.
       if (fillable) pageTexts.set(url, pageText(page.html, url));
-      remember(
-        url,
-        { via: page.via, fields: ex.fields, sources: ex.sources, description: ex.description },
-        fetchedAt,
-      );
+      remember(url, { via: page.via, fields: ex.fields, sources: ex.sources, description: ex.description }, fetchedAt);
       return { ...base, draft: ex.fields, found: ex.found, via: page.via, problem: null };
     } catch (err) {
       if (!(err instanceof PageProblem)) throw err;
-      req.log.warn({ url, kind: err.kind, msg: err.message }, 'listing page not read');
+      req.log.warn({ url, kind: err.kind, msg: err.message }, "listing page not read");
       return {
         ...base,
         draft: EMPTY_DRAFT,
@@ -146,9 +126,9 @@ export async function savedRoutes(
     }
   });
 
-  app.get('/api/saved', async () => listSaved().map(toApi));
+  app.get("/api/saved", async () => listSaved().map(toApi));
 
-  app.post('/api/saved', async (req, reply) => {
+  app.post("/api/saved", async (req, reply) => {
     const parsed = parseSavedInput(req.body);
     if (!parsed.ok) return reply.code(400).send({ error: parsed.error });
     const input = parsed.value;
@@ -158,33 +138,33 @@ export async function savedRoutes(
       return reply.code(201).send(toApi(row));
     } catch (err) {
       if (isUniqueViolation(err)) {
-        return reply.code(409).send({ error: 'This link is already saved.' });
+        return reply.code(409).send({ error: "This link is already saved." });
       }
       throw err;
     }
   });
 
-  app.put<{ Params: { id: string } }>('/api/saved/:id', async (req, reply) => {
+  app.put<{ Params: { id: string } }>("/api/saved/:id", async (req, reply) => {
     const id = parseId(req.params.id, reply);
     if (id === undefined) return reply;
     const parsed = parseSavedInput(req.body);
     if (!parsed.ok) return reply.code(400).send({ error: parsed.error });
     try {
       const row = updateSaved(id, parsed.value, siteOf(parsed.value.url), Date.now());
-      if (!row) return reply.code(404).send({ error: 'not found' });
+      if (!row) return reply.code(404).send({ error: "not found" });
       return toApi(row);
     } catch (err) {
       if (isUniqueViolation(err)) {
-        return reply.code(409).send({ error: 'Another saved apartment has this link.' });
+        return reply.code(409).send({ error: "Another saved apartment has this link." });
       }
       throw err;
     }
   });
 
-  app.delete<{ Params: { id: string } }>('/api/saved/:id', async (req, reply) => {
+  app.delete<{ Params: { id: string } }>("/api/saved/:id", async (req, reply) => {
     const id = parseId(req.params.id, reply);
     if (id === undefined) return reply;
-    if (!deleteSaved(id)) return reply.code(404).send({ error: 'not found' });
+    if (!deleteSaved(id)) return reply.code(404).send({ error: "not found" });
     return reply.code(204).send();
   });
 }

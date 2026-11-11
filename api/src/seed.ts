@@ -1,10 +1,10 @@
 // First: fills the environment from the repo root's .env before the database
 // module reads RO_HOUSING_DB.
-import './env.ts';
-import { createInterface } from 'node:readline/promises';
-import { Writable } from 'node:stream';
-import { openAccounts, seedUser } from './accounts.ts';
-import { DB_PATH, db } from './db/index.ts';
+import "./env.ts";
+import { createInterface } from "node:readline/promises";
+import { Writable } from "node:stream";
+import { openAccounts, seedUser } from "./accounts.ts";
+import { DB_PATH, db } from "./db/index.ts";
 
 /**
  * Creates one local account. There is no sign-up page: this is how the owner
@@ -23,7 +23,7 @@ import { DB_PATH, db } from './db/index.ts';
 
 /** The answer to `question`, hidden when `secret`. Empty with no terminal. */
 async function ask(question: string, secret = false): Promise<string> {
-  if (!process.stdin.isTTY) return '';
+  if (!process.stdin.isTTY) return "";
   let muted = false;
   const output = new Writable({
     write(chunk: Buffer | string, encoding, done) {
@@ -39,23 +39,19 @@ async function ask(question: string, secret = false): Promise<string> {
     return secret ? await answer : (await answer).trim();
   } finally {
     rl.close();
-    if (secret) process.stdout.write('\n');
+    if (secret) process.stdout.write("\n");
   }
 }
 
 async function main(): Promise<void> {
-  const username = process.env.SEED_USERNAME?.trim() || (await ask('Username: '));
-  const password = process.env.SEED_PASSWORD || (await ask('Password: ', true));
-  if (username === '' || password === '') {
-    throw new Error(
-      'Set SEED_USERNAME and SEED_PASSWORD in the environment, or run this in a terminal to be asked.',
-    );
+  const username = process.env.SEED_USERNAME?.trim() || (await ask("Username: "));
+  const password = process.env.SEED_PASSWORD || (await ask("Password: ", true));
+  if (username === "" || password === "") {
+    throw new Error("Set SEED_USERNAME and SEED_PASSWORD in the environment, or run this in a terminal to be asked.");
   }
   try {
     const created = await seedUser(openAccounts(db), { username, password });
-    console.log(
-      created ? `Created ${username} in ${DB_PATH}.` : `${username} already exists; left as it was.`,
-    );
+    console.log(created ? `Created ${username} in ${DB_PATH}.` : `${username} already exists; left as it was.`);
   } finally {
     db.close();
   }

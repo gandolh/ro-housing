@@ -1,4 +1,4 @@
-import { REPO_ROOT } from './paths.ts';
+import { REPO_ROOT } from "./paths.ts";
 
 /** Fills in what the environment leaves unset from the repo root's `.env`
  *  (git-ignored), which Ward's local seed writes its `WARD_OIDC_*` values
@@ -7,5 +7,5 @@ import { REPO_ROOT } from './paths.ts';
 try {
   process.loadEnvFile(`${REPO_ROOT}.env`);
 } catch (err) {
-  if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+  if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
 }

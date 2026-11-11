@@ -1,35 +1,35 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-import { Button } from './Button.tsx';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { Button } from "./Button.tsx";
 
-describe('<Button>', () => {
-  it('renders the label as a real <button>', () => {
+describe("<Button>", () => {
+  it("renders the label as a real <button>", () => {
     render(<Button>Hello</Button>);
-    expect(screen.getByRole('button', { name: 'Hello' })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hello" })).toBeInTheDocument();
   });
 
-  it('applies variant classes (default / primary / ghost)', () => {
+  it("applies variant classes (default / primary / ghost)", () => {
     const { rerender } = render(<Button>x</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border-ink');
+    expect(screen.getByRole("button")).toHaveClass("border-ink");
 
     rerender(<Button variant="primary">x</Button>);
     // Primary uses the .knob bevel class (defined in styles.css)
-    expect(screen.getByRole('button')).toHaveClass('knob');
+    expect(screen.getByRole("button")).toHaveClass("knob");
 
     rerender(<Button variant="ghost">x</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border-transparent');
+    expect(screen.getByRole("button")).toHaveClass("border-transparent");
   });
 
-  it('fires onClick when clicked', async () => {
+  it("fires onClick when clicked", async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
     render(<Button onClick={onClick}>Click me</Button>);
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole("button"));
     expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it('does not fire onClick when disabled', async () => {
+  it("does not fire onClick when disabled", async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
     render(
@@ -37,7 +37,7 @@ describe('<Button>', () => {
         Off
       </Button>,
     );
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole("button"));
     expect(onClick).not.toHaveBeenCalled();
   });
 });

@@ -1,19 +1,19 @@
-import Fastify, { type FastifyInstance } from 'fastify';
-import { createWardClient, wardAuth, type Accounts } from '../vendor/ward/ward-auth.js';
-import { openAccounts, USER_ROLE } from './accounts.ts';
-import { API_PREFIX, AUTH_ROUTE_PREFIX, SESSION_COOKIE, WEB_BASE, type Config } from './config.ts';
-import { db } from './db/index.ts';
-import { allowedHostnames, refuseOtherHosts } from './lib/host.ts';
-import { refuseOtherOrigins, webOrigins } from './lib/origin.ts';
-import { issuesRoutes } from './routes/issues.ts';
-import { listingsRoutes } from './routes/listings.ts';
-import { refreshRoutes } from './routes/refresh.ts';
-import { savedRoutes } from './routes/saved.ts';
-import { fillRoutes } from './routes/fill.ts';
-import type { WicketClient } from './lib/wicket.ts';
-import { sourcesRoutes } from './routes/sources.ts';
+import Fastify, { type FastifyInstance } from "fastify";
+import { createWardClient, wardAuth, type Accounts } from "../vendor/ward/ward-auth.js";
+import { openAccounts, USER_ROLE } from "./accounts.ts";
+import { API_PREFIX, AUTH_ROUTE_PREFIX, SESSION_COOKIE, WEB_BASE, type Config } from "./config.ts";
+import { db } from "./db/index.ts";
+import { allowedHostnames, refuseOtherHosts } from "./lib/host.ts";
+import { refuseOtherOrigins, webOrigins } from "./lib/origin.ts";
+import { issuesRoutes } from "./routes/issues.ts";
+import { listingsRoutes } from "./routes/listings.ts";
+import { refreshRoutes } from "./routes/refresh.ts";
+import { savedRoutes } from "./routes/saved.ts";
+import { fillRoutes } from "./routes/fill.ts";
+import type { WicketClient } from "./lib/wicket.ts";
+import { sourcesRoutes } from "./routes/sources.ts";
 
-declare module 'fastify' {
+declare module "fastify" {
   interface FastifyInstance {
     /** The local accounts, for the seed's tests. */
     accounts: Accounts;
@@ -26,9 +26,9 @@ declare module 'fastify' {
 export function stripApiPrefix(url: string, prefix: string = API_PREFIX): string {
   if (!url.startsWith(prefix)) return url;
   const rest = url.slice(prefix.length);
-  if (rest === '') return '/';
-  if (rest.startsWith('/')) return rest;
-  if (rest.startsWith('?')) return `/${rest}`;
+  if (rest === "") return "/";
+  if (rest.startsWith("/")) return rest;
+  if (rest.startsWith("?")) return `/${rest}`;
   return url;
 }
 
@@ -37,10 +37,9 @@ function isUnder(path: string, prefix: string): boolean {
 }
 
 /** Open with no session: the deploy's health check. */
-const PUBLIC_ROUTES: readonly string[] = ['GET /api/health'];
+const PUBLIC_ROUTES: readonly string[] = ["GET /api/health"];
 
-export interface AppOptions
-  extends Pick<Config, 'publicOrigin' | 'ward' | 'trustedProxies'> {
+export interface AppOptions extends Pick<Config, "publicOrigin" | "ward" | "trustedProxies"> {
   /** `HOST`, which the Host check also answers to. */
   bindHost?: string;
   /** `WEB_ORIGINS`, as given. */
@@ -69,14 +68,14 @@ export interface AppOptions
 export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   const app = Fastify({
     logger: options.logger ?? false,
-    rewriteUrl: (request) => stripApiPrefix(request.url ?? '/'),
+    rewriteUrl: (request) => stripApiPrefix(request.url ?? "/"),
   });
 
   refuseOtherHosts(app, allowedHostnames(options.bindHost, options.publicOrigin));
   refuseOtherOrigins(app, webOrigins(options.webOriginsEnv, options.publicOrigin));
 
   const accounts = openAccounts(db);
-  app.decorate('accounts', accounts);
+  app.decorate("accounts", accounts);
   // Checks the settings and imports the key now; talks to Ward only on first
   // use, so the API starts while Ward is down.
   const ward = options.ward && (await createWardClient(options.ward));
@@ -91,9 +90,9 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     // The owner names accounts with the seed; nothing offers a rename.
     allowRename: false,
     isPublic: (request) => {
-      const path = request.url.split('?')[0]!;
+      const path = request.url.split("?")[0]!;
       // Under /api a session is needed; under /auth the plugin's own list decides.
-      if (isUnder(path, '/api') || isUnder(path, AUTH_ROUTE_PREFIX)) return false;
+      if (isUnder(path, "/api") || isUnder(path, AUTH_ROUTE_PREFIX)) return false;
       // Anything else is a 404, not a 401.
       return true;
     },
@@ -109,7 +108,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     }),
   });
 
-  app.get('/api/health', async () => ({ ok: true }));
+  app.get("/api/health", async () => ({ ok: true }));
   await app.register(sourcesRoutes);
   await app.register(listingsRoutes);
   await app.register(refreshRoutes);

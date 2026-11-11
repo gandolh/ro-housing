@@ -1,29 +1,14 @@
-import { cn } from '../../lib/cn.ts';
+import { cn } from "../../lib/cn.ts";
 
-type Status = 'ok' | 'bad' | 'warn' | 'unknown';
+type Status = "ok" | "bad" | "warn" | "unknown";
 
 const classByStatus: Record<Status, string> = {
-  ok: 'bg-ok',
-  bad: 'bg-bad',
-  warn: 'bg-warn',
-  unknown: 'bg-ink-faint',
+  ok: "bg-ok",
+  bad: "bg-bad",
+  warn: "bg-warn",
+  unknown: "bg-ink-faint",
 };
 
-export function StatusDot({
-  status,
-  className,
-}: {
-  status: Status;
-  className?: string;
-}) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        'inline-block size-2 border border-ink',
-        classByStatus[status],
-        className,
-      )}
-    />
-  );
+export function StatusDot({ status, className }: { status: Status; className?: string }) {
+  return <span aria-hidden className={cn("inline-block size-2 border border-ink", classByStatus[status], className)} />;
 }

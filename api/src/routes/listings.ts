@@ -1,15 +1,15 @@
-import type { FastifyInstance } from 'fastify';
-import { listListings } from '../db/queries.ts';
+import type { FastifyInstance } from "fastify";
+import { listListings } from "../db/queries.ts";
 
-type Sort = 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
-type Order = 'asc' | 'desc';
+type Sort = "price" | "sqm" | "firstSeen" | "lastSeen";
+type Order = "asc" | "desc";
 
 export async function listingsRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Querystring: { sort?: Sort; order?: Order; source?: string };
-  }>('/api/listings', async (req) => {
-    const sort: Sort = req.query.sort ?? 'lastSeen';
-    const order: Order = req.query.order ?? 'desc';
+  }>("/api/listings", async (req) => {
+    const sort: Sort = req.query.sort ?? "lastSeen";
+    const order: Order = req.query.order ?? "desc";
     const rows = listListings({ sort, order, source: req.query.source });
     return rows.map((r) => ({
       id: r.id,

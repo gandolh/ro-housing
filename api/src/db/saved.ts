@@ -1,5 +1,5 @@
-import { db } from './index.ts';
-import type { SavedInput } from '../routes/saved-input.ts';
+import { db } from "./index.ts";
+import type { SavedInput } from "../routes/saved-input.ts";
 
 export interface SavedRow {
   id: number;
@@ -86,12 +86,7 @@ const updateStmt = db.prepare(`
   RETURNING *
 `);
 
-export function updateSaved(
-  id: number,
-  input: SavedInput,
-  site: string,
-  now: number,
-): SavedRow | undefined {
+export function updateSaved(id: number, input: SavedInput, site: string, now: number): SavedRow | undefined {
   return updateStmt.get({ ...columns(input, site), id, now }) as SavedRow | undefined;
 }
 

@@ -1,5 +1,5 @@
-import { db } from './index.ts';
-import type { ScrapedListing } from '../adapters/types.ts';
+import { db } from "./index.ts";
+import type { ScrapedListing } from "../adapters/types.ts";
 
 export interface SourceRow {
   id: string;
@@ -34,38 +34,34 @@ export function listSources(): SourceRow[] {
 }
 
 export function getSource(id: string): SourceRow | undefined {
-  return db.prepare(`SELECT * FROM sources WHERE id = ?`).get(id) as
-    | SourceRow
-    | undefined;
+  return db.prepare(`SELECT * FROM sources WHERE id = ?`).get(id) as SourceRow | undefined;
 }
 
-export function updateSource(
-  id: string,
-  patch: { searchUrl?: string | null; enabled?: boolean },
-): void {
+export function updateSource(id: string, patch: { searchUrl?: string | null; enabled?: boolean }): void {
   const fields: string[] = [];
   const values: (string | number | null)[] = [];
-  if ('searchUrl' in patch) {
-    fields.push('search_url = ?');
+  if ("searchUrl" in patch) {
+    fields.push("search_url = ?");
     values.push(patch.searchUrl ?? null);
   }
-  if ('enabled' in patch) {
-    fields.push('enabled = ?');
+  if ("enabled" in patch) {
+    fields.push("enabled = ?");
     values.push(patch.enabled ? 1 : 0);
   }
   if (fields.length === 0) return;
   values.push(id);
-  db.prepare(`UPDATE sources SET ${fields.join(', ')} WHERE id = ?`).run(
-    ...values,
-  );
+  db.prepare(`UPDATE sources SET ${fields.join(", ")} WHERE id = ?`).run(...values);
 }
 
 /** Records a run: when, whether it worked and, for one that worked, how many
  *  listings it returned. */
 export function markSourceRun(id: string, ok: boolean, count: number | null = null): void {
-  db.prepare(
-    `UPDATE sources SET last_run_at = ?, last_run_ok = ?, last_run_count = ? WHERE id = ?`,
-  ).run(Date.now(), ok ? 1 : 0, ok ? count : null, id);
+  db.prepare(`UPDATE sources SET last_run_at = ?, last_run_ok = ?, last_run_count = ? WHERE id = ?`).run(
+    Date.now(),
+    ok ? 1 : 0,
+    ok ? count : null,
+    id,
+  );
 }
 
 const upsertListingStmt = db.prepare(`
@@ -89,11 +85,7 @@ const insertPriceHistoryStmt = db.prepare(`
   VALUES (?, ?, ?)
 `);
 
-export function upsertListingWithSnapshot(
-  sourceId: string,
-  scraped: ScrapedListing,
-  now: number,
-): void {
+export function upsertListingWithSnapshot(sourceId: string, scraped: ScrapedListing, now: number): void {
   const row = upsertListingStmt.get({
     source_id: sourceId,
     source_uid: scraped.sourceUid,
@@ -115,22 +107,20 @@ export interface ListingWithHistory extends ListingRow {
 }
 
 export function listListings(opts: {
-  sort: 'price' | 'sqm' | 'firstSeen' | 'lastSeen';
-  order: 'asc' | 'desc';
+  sort: "price" | "sqm" | "firstSeen" | "lastSeen";
+  order: "asc" | "desc";
   source?: string;
 }): ListingWithHistory[] {
   const sortCol = {
-    price: 'price_eur',
-    sqm: 'sqm',
-    firstSeen: 'first_seen',
-    lastSeen: 'last_seen',
+    price: "price_eur",
+    sqm: "sqm",
+    firstSeen: "first_seen",
+    lastSeen: "last_seen",
   }[opts.sort];
-  const where = opts.source ? `WHERE source_id = ?` : '';
+  const where = opts.source ? `WHERE source_id = ?` : "";
   const params = opts.source ? [opts.source] : [];
   const rows = db
-    .prepare(
-      `SELECT * FROM listings ${where} ORDER BY ${sortCol} ${opts.order === 'asc' ? 'ASC' : 'DESC'} NULLS LAST`,
-    )
+    .prepare(`SELECT * FROM listings ${where} ORDER BY ${sortCol} ${opts.order === "asc" ? "ASC" : "DESC"} NULLS LAST`)
     .all(...params) as ListingRow[];
   const historyStmt = db.prepare(
     `SELECT observed_at, price_eur FROM price_history WHERE listing_id = ? ORDER BY observed_at ASC`,

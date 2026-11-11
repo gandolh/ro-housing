@@ -1,5 +1,5 @@
-import { lookup } from 'node:dns/promises';
-import { isIP } from 'node:net';
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 
 const TRACKING_PARAM = /^(utm_\w+|fbclid|gclid|yclid|mc_eid|ref|ref_src)$/i;
 
@@ -14,20 +14,20 @@ export function normalizeListingUrl(input: string): string | undefined {
   } catch {
     return undefined;
   }
-  if (u.protocol !== 'http:' && u.protocol !== 'https:') return undefined;
-  u.hash = '';
+  if (u.protocol !== "http:" && u.protocol !== "https:") return undefined;
+  u.hash = "";
   for (const key of [...u.searchParams.keys()]) {
     if (TRACKING_PARAM.test(key)) u.searchParams.delete(key);
   }
-  if (u.pathname.length > 1 && u.pathname.endsWith('/')) {
-    u.pathname = u.pathname.replace(/\/+$/, '');
+  if (u.pathname.length > 1 && u.pathname.endsWith("/")) {
+    u.pathname = u.pathname.replace(/\/+$/, "");
   }
   return u.toString();
 }
 
 /** "www.storia.ro" → "storia.ro". Shown as the source badge. */
 export function siteOf(url: string): string {
-  return new URL(url).hostname.replace(/^www\./, '');
+  return new URL(url).hostname.replace(/^www\./, "");
 }
 
 /** An IPv6 address (already known to be one) as its eight 16-bit groups,
@@ -39,10 +39,10 @@ function ipv6Groups(address: string): number[] {
     const [a = 0, b = 0, c = 0, d = 0] = dotted.slice(1).map(Number);
     text = `${text.slice(0, dotted.index)}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
   }
-  const [head = '', tail] = text.split('::');
-  const left = head ? head.split(':') : [];
-  const right = tail ? tail.split(':') : [];
-  const zeros = tail === undefined ? [] : Array<string>(8 - left.length - right.length).fill('0');
+  const [head = "", tail] = text.split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail ? tail.split(":") : [];
+  const zeros = tail === undefined ? [] : Array<string>(8 - left.length - right.length).fill("0");
   return [...left, ...zeros, ...right].map((group) => parseInt(group, 16));
 }
 
@@ -68,10 +68,10 @@ function embeddedIPv4(address: string): string | undefined {
  *  carries, since the relay it goes through is anyone's. Anything that is not
  *  an IP address counts as private. */
 export function isPrivateAddress(ip: string): boolean {
-  const bare = ip.replace(/%.*$/, ''); // an IPv6 zone id ("fe80::1%eth0")
+  const bare = ip.replace(/%.*$/, ""); // an IPv6 zone id ("fe80::1%eth0")
   const v = isIP(bare);
   if (v === 4) {
-    const [a = 0, b = 0] = bare.split('.').map(Number);
+    const [a = 0, b = 0] = bare.split(".").map(Number);
     return (
       a === 0 ||
       a === 10 ||
@@ -103,14 +103,12 @@ export function isPrivateAddress(ip: string): boolean {
  *  connects only to an address that passed (`lib/fetch.ts`); this is the
  *  cheap first refusal, not the only one. */
 export async function assertPublicHost(url: string): Promise<void> {
-  const host = new URL(url).hostname.replace(/^\[|\]$/g, '');
-  if (host === 'localhost' || host.endsWith('.localhost')) {
-    throw new Error('local addresses are not allowed');
+  const host = new URL(url).hostname.replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".localhost")) {
+    throw new Error("local addresses are not allowed");
   }
-  const addresses = isIP(host)
-    ? [host]
-    : (await lookup(host, { all: true })).map((a) => a.address);
+  const addresses = isIP(host) ? [host] : (await lookup(host, { all: true })).map((a) => a.address);
   if (addresses.some(isPrivateAddress)) {
-    throw new Error('local addresses are not allowed');
+    throw new Error("local addresses are not allowed");
   }
 }

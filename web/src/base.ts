@@ -3,7 +3,7 @@
  * proxy both forward `/ro-housing-api/*` to the API with the prefix stripped,
  * so one build runs in both places.
  */
-export const API_BASE = '/ro-housing-api';
+export const API_BASE = "/ro-housing-api";
 
 /**
  * The app's root path with one trailing slash: `/ro-housing/` unless the build
@@ -11,6 +11,6 @@ export const API_BASE = '/ro-housing-api';
  * `import.meta.env.BASE_URL`.
  */
 export function appBase(): string {
-  const base = import.meta.env.BASE_URL || '/';
-  return base.endsWith('/') ? base : `${base}/`;
+  const base = import.meta.env.BASE_URL || "/";
+  return base.endsWith("/") ? base : `${base}/`;
 }

@@ -1,6 +1,6 @@
-import { configureAuth, getAuthClient, type AuthClient } from '../vendor/ward/ward-auth-react.js';
-import { onUnauthorized } from './api.ts';
-import { API_BASE } from './base.ts';
+import { configureAuth, getAuthClient, type AuthClient } from "../vendor/ward/ward-auth-react.js";
+import { onUnauthorized } from "./api.ts";
+import { API_BASE } from "./base.ts";
 
 /**
  * Signing in, from the browser. The app keeps its own accounts and session:

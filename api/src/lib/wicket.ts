@@ -6,11 +6,11 @@
  */
 
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
-export type JobStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
+export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled";
 
 /** A job as Wicket reports it. `position` 1 runs next, 0 once it runs. */
 export interface WicketJob {
@@ -32,7 +32,7 @@ export class WicketError extends Error {
     readonly code?: string,
   ) {
     super(message);
-    this.name = 'WicketError';
+    this.name = "WicketError";
   }
 }
 
@@ -60,7 +60,7 @@ export function wicketClient({
   token: string;
   fetch?: typeof globalThis.fetch;
 }): WicketClient {
-  const base = url.replace(/\/+$/, '');
+  const base = url.replace(/\/+$/, "");
 
   async function call(method: string, path: string, timeoutMs: number, body?: unknown): Promise<Response> {
     try {
@@ -68,39 +68,39 @@ export function wicketClient({
         method,
         headers: {
           authorization: `Bearer ${token}`,
-          ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+          ...(body === undefined ? {} : { "content-type": "application/json" }),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: AbortSignal.timeout(timeoutMs),
       });
     } catch (err) {
-      const timedOut = err instanceof Error && err.name === 'TimeoutError';
-      throw new WicketError(timedOut ? 'Wicket did not answer in time.' : 'Could not reach Wicket.');
+      const timedOut = err instanceof Error && err.name === "TimeoutError";
+      throw new WicketError(timedOut ? "Wicket did not answer in time." : "Could not reach Wicket.");
     }
   }
 
   async function refusal(res: Response): Promise<WicketError> {
     const body = (await res.json().catch(() => undefined)) as { code?: string; message?: string } | undefined;
-    return new WicketError(`Wicket answered ${res.status}${body?.message ? `: ${body.message}` : ''}`, body?.code);
+    return new WicketError(`Wicket answered ${res.status}${body?.message ? `: ${body.message}` : ""}`, body?.code);
   }
 
   const jobPath = (id: string) => `/v1/jobs/${encodeURIComponent(id)}`;
 
   return {
     async submit(messages, format) {
-      const res = await call('POST', '/v1/jobs', SLACK_MS, { messages, format });
+      const res = await call("POST", "/v1/jobs", SLACK_MS, { messages, format });
       if (res.status !== 202) throw await refusal(res);
       return (await res.json()) as WicketJob;
     },
     async get(id, waitSeconds) {
       const wait = Math.max(0, Math.min(MAX_WAIT_SECONDS, Math.floor(waitSeconds)));
-      const res = await call('GET', `${jobPath(id)}${wait > 0 ? `?wait=${wait}` : ''}`, wait * 1000 + SLACK_MS);
+      const res = await call("GET", `${jobPath(id)}${wait > 0 ? `?wait=${wait}` : ""}`, wait * 1000 + SLACK_MS);
       if (res.status === 404) return undefined;
       if (!res.ok) throw await refusal(res);
       return (await res.json()) as WicketJob;
     },
     async cancel(id) {
-      const res = await call('DELETE', jobPath(id), SLACK_MS);
+      const res = await call("DELETE", jobPath(id), SLACK_MS);
       if (res.status === 404) return undefined;
       if (!res.ok) throw await refusal(res);
       return (await res.json()) as WicketJob;

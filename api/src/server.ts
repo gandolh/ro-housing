@@ -1,12 +1,12 @@
 // First: fills the environment from the repo root's .env before the database
 // module reads RO_HOUSING_DB.
-import './env.ts';
-import { buildApp } from './app.ts';
-import { ConfigError, loadConfig, type Config } from './config.ts';
-import { DB_PATH } from './db/index.ts';
-import { closeBrowser } from './lib/playwright.ts';
-import { wicketClient } from './lib/wicket.ts';
-import { issuesDir } from './paths.ts';
+import "./env.ts";
+import { buildApp } from "./app.ts";
+import { ConfigError, loadConfig, type Config } from "./config.ts";
+import { DB_PATH } from "./db/index.ts";
+import { closeBrowser } from "./lib/playwright.ts";
+import { wicketClient } from "./lib/wicket.ts";
+import { issuesDir } from "./paths.ts";
 
 let config: Config;
 try {
@@ -28,14 +28,12 @@ const app = await buildApp({
 });
 app.log.info(`database: ${DB_PATH}; issues: ${issuesDir()}; public origin: ${config.publicOrigin}`);
 app.log.info(
-  config.ward
-    ? 'Sign in with Ward is on'
-    : 'WARD_OIDC_ISSUER is not set: local accounts only, no Sign in with Ward',
+  config.ward ? "Sign in with Ward is on" : "WARD_OIDC_ISSUER is not set: local accounts only, no Sign in with Ward",
 );
 app.log.info(
   config.wicket
     ? `Fill the gaps is on, through Wicket at ${config.wicket.url}`
-    : 'WICKET_URL or WICKET_TOKEN is not set: no Fill the gaps',
+    : "WICKET_URL or WICKET_TOKEN is not set: no Fill the gaps",
 );
 
 try {
@@ -45,7 +43,7 @@ try {
   process.exit(1);
 }
 
-for (const sig of ['SIGINT', 'SIGTERM'] as const) {
+for (const sig of ["SIGINT", "SIGTERM"] as const) {
   process.on(sig, async () => {
     app.log.info(`received ${sig}, shutting down`);
     await app.close();

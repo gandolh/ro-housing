@@ -1,11 +1,11 @@
-import type { Listing, Source } from '../api.ts';
-import { cn } from '../lib/cn.ts';
-import { fmtPrice, fmtPricePerSqm, fmtSqm } from '../lib/format.ts';
-import { PriceHistory } from './PriceHistory.tsx';
-import { VatMarker } from './VatMarker.tsx';
-import { Badge } from './ui/Badge.tsx';
-import { Button } from './ui/Button.tsx';
-import { Panel } from './ui/Panel.tsx';
+import type { Listing, Source } from "../api.ts";
+import { cn } from "../lib/cn.ts";
+import { fmtPrice, fmtPricePerSqm, fmtSqm } from "../lib/format.ts";
+import { PriceHistory } from "./PriceHistory.tsx";
+import { VatMarker } from "./VatMarker.tsx";
+import { Badge } from "./ui/Badge.tsx";
+import { Button } from "./ui/Button.tsx";
+import { Panel } from "./ui/Panel.tsx";
 
 interface Props {
   listings: Listing[];
@@ -39,18 +39,18 @@ export function staleCutoffs(sources: Source[], listings: Listing[]): Map<string
 
 function fmtDateTime(ms: number): string {
   const d = new Date(ms);
-  const pad = (n: number) => String(n).padStart(2, '0');
+  const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function fmtAge(firstSeen: number): string {
   const days = Math.floor((Date.now() - firstSeen) / 86_400_000);
-  if (days === 0) return 'today';
-  if (days === 1) return '1d';
+  if (days === 0) return "today";
+  if (days === 1) return "1d";
   return `${days}d`;
 }
 
-const HEAD = 'border-b border-ink bg-panel-alt px-2 py-1.5 text-xs uppercase tracking-wide text-ink-dim text-left';
+const HEAD = "border-b border-ink bg-panel-alt px-2 py-1.5 text-xs uppercase tracking-wide text-ink-dim text-left";
 
 export function ListingsTable({ listings, sources, onSave }: Props) {
   if (listings.length === 0) {
@@ -88,10 +88,7 @@ export function ListingsTable({ listings, sources, onSave }: Props) {
               <tr
                 key={l.id}
                 data-stale={stale || undefined}
-                className={cn(
-                  'border-b border-rule-soft last:border-b-0',
-                  stale && 'text-ink-faint',
-                )}
+                className={cn("border-b border-rule-soft last:border-b-0", stale && "text-ink-faint")}
               >
                 <td className="px-2 py-1.5">
                   <a
@@ -106,7 +103,7 @@ export function ListingsTable({ listings, sources, onSave }: Props) {
                 <td className="px-2 py-1.5">
                   <Badge>{l.sourceId}</Badge>
                 </td>
-                <td className="px-2 py-1.5">{l.rooms ?? '—'}</td>
+                <td className="px-2 py-1.5">{l.rooms ?? "—"}</td>
                 <td className="whitespace-nowrap px-2 py-1.5">{fmtSqm(l.sqm)}</td>
                 <td className="whitespace-nowrap px-2 py-1.5">
                   {fmtPrice(l.priceEur)}
@@ -116,11 +113,11 @@ export function ListingsTable({ listings, sources, onSave }: Props) {
                   {fmtPricePerSqm(l.priceEur, l.sqm)}
                   <VatMarker show={l.pricePlusVat && l.priceEur !== null && l.sqm !== null} />
                 </td>
-                <td className="px-2 py-1.5">{l.location ?? '—'}</td>
+                <td className="px-2 py-1.5">{l.location ?? "—"}</td>
                 <td
                   className="px-2 py-1.5"
                   title={`Last seen ${fmtDateTime(l.lastSeen)}${
-                    stale ? ', not found by its source’s last refresh' : ''
+                    stale ? ", not found by its source’s last refresh" : ""
                   }`}
                 >
                   {fmtAge(l.firstSeen)}

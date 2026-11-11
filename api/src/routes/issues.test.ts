@@ -1,7 +1,7 @@
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
 
 const created: string[] = [];
 
@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 function freshIssuesDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'ro-housing-issues-'));
+  const dir = mkdtempSync(join(tmpdir(), "ro-housing-issues-"));
   created.push(dir);
   return dir;
 }
@@ -27,44 +27,45 @@ function slugify(text: string): string {
       .toLowerCase()
       .split(/\s+/)
       .slice(0, 6)
-      .join('-')
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 50) || 'issue'
+      .join("-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 50) || "issue"
   );
 }
 
-describe('issue file format', () => {
-  it('slugifies the first six words', () => {
-    expect(slugify('Refresh feels slow when storia is enabled, please show progress'))
-      .toBe('refresh-feels-slow-when-storia-is');
+describe("issue file format", () => {
+  it("slugifies the first six words", () => {
+    expect(slugify("Refresh feels slow when storia is enabled, please show progress")).toBe(
+      "refresh-feels-slow-when-storia-is",
+    );
   });
 
   it('falls back to "issue" if body has no alphanumerics', () => {
-    expect(slugify('!!!')).toBe('issue');
+    expect(slugify("!!!")).toBe("issue");
   });
 
-  it('truncates very long slugs', () => {
-    const long = 'a'.repeat(100);
+  it("truncates very long slugs", () => {
+    const long = "a".repeat(100);
     expect(slugify(long).length).toBeLessThanOrEqual(50);
   });
 });
 
-describe('cap enforcement (10 issues max)', () => {
-  it('counts only .md files in the directory', () => {
+describe("cap enforcement (10 issues max)", () => {
+  it("counts only .md files in the directory", () => {
     const dir = freshIssuesDir();
     // Write a non-.md file — it should not count.
-    require('node:fs').writeFileSync(join(dir, 'README.txt'), 'ignore me');
-    const count = readdirSync(dir).filter((f) => f.endsWith('.md')).length;
+    require("node:fs").writeFileSync(join(dir, "README.txt"), "ignore me");
+    const count = readdirSync(dir).filter((f) => f.endsWith(".md")).length;
     expect(count).toBe(0);
   });
 
-  it('reaches the cap at exactly 10 .md files', () => {
+  it("reaches the cap at exactly 10 .md files", () => {
     const dir = freshIssuesDir();
     for (let i = 0; i < 10; i++) {
-      require('node:fs').writeFileSync(join(dir, `${i}.md`), '---\n');
+      require("node:fs").writeFileSync(join(dir, `${i}.md`), "---\n");
     }
-    expect(readdirSync(dir).filter((f) => f.endsWith('.md')).length).toBe(10);
+    expect(readdirSync(dir).filter((f) => f.endsWith(".md")).length).toBe(10);
   });
 });

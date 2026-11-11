@@ -1,20 +1,20 @@
-import { wardClientOptionsFromEnv, type WardClientOptions } from '../vendor/ward/ward-auth.js';
+import { wardClientOptionsFromEnv, type WardClientOptions } from "../vendor/ward/ward-auth.js";
 
 /** The API's prefix as the browser sees it. Caddy (and the Vite dev proxy)
  *  strip it before the request reaches the server, and the server strips it
  *  too when reached directly, so one build works both ways. It is also the
  *  session cookie's path. */
-export const API_PREFIX = '/ro-housing-api';
+export const API_PREFIX = "/ro-housing-api";
 /** Where the web app is served, with a trailing slash (web/vite.config.ts). */
-export const WEB_BASE = '/ro-housing/';
+export const WEB_BASE = "/ro-housing/";
 /** Where the sign-in routes sit, Fastify-side. */
-export const AUTH_ROUTE_PREFIX = '/auth';
+export const AUTH_ROUTE_PREFIX = "/auth";
 /** Ward's callback as the browser reaches it, under the API prefix. */
 export const WARD_CALLBACK_PATH = `${API_PREFIX}${AUTH_ROUTE_PREFIX}/ward/callback`;
 /** The session cookie. Unique in the estate: the apps share one origin. */
-export const SESSION_COOKIE = 'ro_housing_session';
+export const SESSION_COOKIE = "ro_housing_session";
 /** The Vite dev server, the address the README opens. */
-export const DEFAULT_PUBLIC_ORIGIN = 'http://127.0.0.1:5173';
+export const DEFAULT_PUBLIC_ORIGIN = "http://127.0.0.1:5173";
 export const DEFAULT_PORT = 3000;
 
 /** The server's settings, read once at start from the environment (and the
@@ -45,7 +45,7 @@ export interface Config {
 export class ConfigError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ConfigError';
+    this.name = "ConfigError";
   }
 }
 
@@ -62,14 +62,12 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
   const portText = set(env.PORT);
   const port = portText === undefined ? DEFAULT_PORT : Number(portText);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    problems.push('PORT must be a port number (1-65535).');
+    problems.push("PORT must be a port number (1-65535).");
   }
 
   const publicOrigin = set(env.PUBLIC_ORIGIN) ?? DEFAULT_PUBLIC_ORIGIN;
   if (!URL.canParse(publicOrigin) || new URL(publicOrigin).origin !== publicOrigin) {
-    problems.push(
-      'PUBLIC_ORIGIN must be a bare origin such as https://example.com: no path and no trailing slash.',
-    );
+    problems.push("PUBLIC_ORIGIN must be a bare origin such as https://example.com: no path and no trailing slash.");
   }
 
   let ward: WardClientOptions | undefined;
@@ -88,20 +86,20 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
 
   const wicketUrl = set(env.WICKET_URL);
   const wicketToken = set(env.WICKET_TOKEN);
-  if (wicketUrl && !/^https?:$/.test(URL.canParse(wicketUrl) ? new URL(wicketUrl).protocol : '')) {
-    problems.push('WICKET_URL must be Wicket\'s API base, such as https://example.com/wicket-api.');
+  if (wicketUrl && !/^https?:$/.test(URL.canParse(wicketUrl) ? new URL(wicketUrl).protocol : "")) {
+    problems.push("WICKET_URL must be Wicket's API base, such as https://example.com/wicket-api.");
   }
 
-  if (problems.length > 0) throw new ConfigError(problems.join('\n'));
+  if (problems.length > 0) throw new ConfigError(problems.join("\n"));
   return {
-    host: set(env.HOST) ?? '127.0.0.1',
+    host: set(env.HOST) ?? "127.0.0.1",
     port,
     publicOrigin,
     ward,
-    trustedProxies: (env.AUTH_TRUSTED_PROXIES ?? '')
-      .split(',')
+    trustedProxies: (env.AUTH_TRUSTED_PROXIES ?? "")
+      .split(",")
       .map((entry) => entry.trim())
-      .filter((entry) => entry !== ''),
+      .filter((entry) => entry !== ""),
     wicket: wicketUrl && wicketToken ? { url: wicketUrl, token: wicketToken } : undefined,
   };
 }

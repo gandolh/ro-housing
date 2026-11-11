@@ -1,17 +1,11 @@
-import * as cheerio from 'cheerio';
-import { createSession } from '../lib/fetch.ts';
-import {
-  cardPrice,
-  locationFromImobiliareUrl,
-  parseRooms,
-  parseSqm,
-  stripTrailingPrice,
-} from '../lib/normalize.ts';
-import type { Adapter, ScrapedListing } from './types.ts';
+import * as cheerio from "cheerio";
+import { createSession } from "../lib/fetch.ts";
+import { cardPrice, locationFromImobiliareUrl, parseRooms, parseSqm, stripTrailingPrice } from "../lib/normalize.ts";
+import type { Adapter, ScrapedListing } from "./types.ts";
 
 export const imobiliareAdapter: Adapter = {
-  id: 'imobiliare',
-  displayName: 'imobiliare.ro',
+  id: "imobiliare",
+  displayName: "imobiliare.ro",
   async scrape(searchUrl) {
     const session = createSession();
     const html = await session.get(searchUrl);
@@ -21,7 +15,7 @@ export const imobiliareAdapter: Adapter = {
     const out: ScrapedListing[] = [];
 
     $('a[href*="/oferta/"]').each((_, el) => {
-      const href = $(el).attr('href');
+      const href = $(el).attr("href");
       if (!href) return;
       const url = new URL(href, searchUrl).toString();
       const m = url.match(/\/oferta\/([^/?#]+)/);
@@ -33,8 +27,7 @@ export const imobiliareAdapter: Adapter = {
       const root = card.length ? card : $(el);
       const text = root.text();
 
-      const rawTitle =
-        $(el).attr('title') ?? root.find('h2, h3').first().text();
+      const rawTitle = $(el).attr("title") ?? root.find("h2, h3").first().text();
 
       out.push({
         sourceUid,
@@ -51,9 +44,7 @@ export const imobiliareAdapter: Adapter = {
         // count. Fall back to whatever loose match the card text might hold.
         location:
           locationFromImobiliareUrl(url) ??
-          stripTrailingPrice(
-            root.find('[class*="locat"], [class*="zona"]').first().text(),
-          ),
+          stripTrailingPrice(root.find('[class*="locat"], [class*="zona"]').first().text()),
         raw: { snippet: text.slice(0, 400) },
       });
     });

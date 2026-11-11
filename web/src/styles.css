@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   /* Terminal/retro palette. Paper-white ground, ink-black foreground, single
@@ -23,10 +23,8 @@
   /* Type system: monospace primary, single second face for headings reserved
      for future use. One ratio, 4 sizes. Vertical rhythm = 18px row,
      line-height keeps to multiples. */
-  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco,
-    Consolas, monospace;
-  --font-sans: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco,
-    Consolas, monospace;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Monaco, Consolas, monospace;
+  --font-sans: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Monaco, Consolas, monospace;
 
   --text-xs: 10px;
   --text-xs--line-height: 16px;

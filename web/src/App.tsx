@@ -1,28 +1,26 @@
-import { useState, type ReactNode } from 'react';
-import { ReportIssueButton } from './components/ReportIssueButton.tsx';
-import { Tabs, TabsList, TabsPanel, TabsTab } from './components/ui/Tabs.tsx';
-import { ListingsPage } from './pages/ListingsPage.tsx';
-import { SavedPage } from './pages/SavedPage.tsx';
-import { SourcesPage } from './pages/SourcesPage.tsx';
+import { useState, type ReactNode } from "react";
+import { ReportIssueButton } from "./components/ReportIssueButton.tsx";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "./components/ui/Tabs.tsx";
+import { ListingsPage } from "./pages/ListingsPage.tsx";
+import { SavedPage } from "./pages/SavedPage.tsx";
+import { SourcesPage } from "./pages/SourcesPage.tsx";
 
 /** `account`: the signed-in user's button in the header, from main.tsx; tests
  *  render the app without the sign-in gate and leave it out. */
 export function App({ account }: { account?: ReactNode } = {}) {
-  const [tab, setTab] = useState<string>('listings');
+  const [tab, setTab] = useState<string>("listings");
   // A listing's link handed from the Listings tab to the Saved tab's fetch.
   const [incomingLink, setIncomingLink] = useState<string | null>(null);
 
   const saveLink = (url: string) => {
     setIncomingLink(url);
-    setTab('saved');
+    setTab("saved");
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-30 flex h-9 items-center justify-between border-b border-ink bg-panel px-4">
-        <span className="text-xl font-bold uppercase tracking-tight">
-          ro-housing
-        </span>
+        <span className="text-xl font-bold uppercase tracking-tight">ro-housing</span>
         <div className="flex items-center gap-3">
           <ReportIssueButton />
           {account}
@@ -42,13 +40,10 @@ export function App({ account }: { account?: ReactNode } = {}) {
             <ListingsPage onSaveLink={saveLink} />
           </TabsPanel>
           <TabsPanel value="saved" keepMounted>
-            <SavedPage
-              incomingLink={incomingLink}
-              onIncomingTaken={() => setIncomingLink(null)}
-            />
+            <SavedPage incomingLink={incomingLink} onIncomingTaken={() => setIncomingLink(null)} />
           </TabsPanel>
           <TabsPanel value="sources" keepMounted>
-            <SourcesPage active={tab === 'sources'} />
+            <SourcesPage active={tab === "sources"} />
           </TabsPanel>
         </Tabs>
       </main>

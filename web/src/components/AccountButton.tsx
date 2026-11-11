@@ -4,11 +4,11 @@ import {
   useWardLink,
   useWardResult,
   useWardSignOut,
-} from '../../vendor/ward/ward-auth-react.js';
-import { accountMessage } from '../messages.ts';
-import { navigate, usePage } from '../route.ts';
-import { Button } from './ui/Button.tsx';
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/Dialog.tsx';
+} from "../../vendor/ward/ward-auth-react.js";
+import { accountMessage } from "../messages.ts";
+import { navigate, usePage } from "../route.ts";
+import { Button } from "./ui/Button.tsx";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/Dialog.tsx";
 
 /**
  * The signed-in user's name in the header, opening the account dialog: who is
@@ -19,23 +19,20 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/Dialog.t
  */
 export function AccountButton() {
   const session = useSession();
-  const open = usePage() === 'account';
+  const open = usePage() === "account";
   const link = useWardLink();
   const result = useWardResult();
   const logout = useLogout();
   const wardSignOut = useWardSignOut();
 
-  if (session.status !== 'signed_in') return null;
+  if (session.status !== "signed_in") return null;
   const { user, ward } = session;
-  const viaWard = session.session.origin === 'ward';
-  const linked = ward.linked || link.linked || result.result === 'linked';
+  const viaWard = session.session.origin === "ward";
+  const linked = ward.linked || link.linked || result.result === "linked";
   const failure = link.error ?? result.error ?? logout.error ?? wardSignOut.error;
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => navigate(next ? 'account' : 'app', { replace: !next })}
-    >
+    <Dialog open={open} onOpenChange={(next) => navigate(next ? "account" : "app", { replace: !next })}>
       <DialogTrigger
         render={(props) => (
           <Button {...props} variant="ghost" className="h-auto px-1 text-xs uppercase tracking-wide">
@@ -49,15 +46,15 @@ export function AccountButton() {
           <dt className="text-ink-dim">Signed in as</dt>
           <dd>{user.username}</dd>
           <dt className="text-ink-dim">Signed in with</dt>
-          <dd>{viaWard ? 'Ward' : 'your ro-housing password'}</dd>
+          <dd>{viaWard ? "Ward" : "your ro-housing password"}</dd>
           {ward.enabled && (
             <>
               <dt className="text-ink-dim">Ward</dt>
-              <dd>{linked ? 'Linked' : 'Not linked'}</dd>
+              <dd>{linked ? "Linked" : "Not linked"}</dd>
             </>
           )}
         </dl>
-        {result.result === 'linked' && (
+        {result.result === "linked" && (
           <p role="status" className="mt-3 text-xs text-ok">
             Ward is linked. You can sign in with it from now on.
           </p>
@@ -70,7 +67,7 @@ export function AccountButton() {
         <div className="mt-4 flex flex-wrap gap-2">
           {ward.enabled && !linked && (
             <Button disabled={link.pending} onClick={() => void link.link()}>
-              {link.pending ? 'Opening Ward…' : 'Link Ward'}
+              {link.pending ? "Opening Ward…" : "Link Ward"}
             </Button>
           )}
           <Button disabled={logout.pending} onClick={() => void logout.logout()}>

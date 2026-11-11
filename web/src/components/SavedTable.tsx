@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import type { SavedApartment } from '../api.ts';
-import { fmtFloor, fmtPrice, fmtPricePerSqm, fmtSqm } from '../lib/format.ts';
-import { VatMarker } from './VatMarker.tsx';
-import { Badge } from './ui/Badge.tsx';
-import { Button } from './ui/Button.tsx';
-import { Panel } from './ui/Panel.tsx';
+import { useState } from "react";
+import type { SavedApartment } from "../api.ts";
+import { fmtFloor, fmtPrice, fmtPricePerSqm, fmtSqm } from "../lib/format.ts";
+import { VatMarker } from "./VatMarker.tsx";
+import { Badge } from "./ui/Badge.tsx";
+import { Button } from "./ui/Button.tsx";
+import { Panel } from "./ui/Panel.tsx";
 
 interface Props {
   saved: SavedApartment[];
@@ -12,9 +12,8 @@ interface Props {
   onDelete: (s: SavedApartment) => Promise<void>;
 }
 
-const HEAD =
-  'border-b border-ink bg-panel-alt px-2 py-1.5 text-xs uppercase tracking-wide text-ink-dim text-left';
-const CELL = 'px-2 py-1.5 align-top';
+const HEAD = "border-b border-ink bg-panel-alt px-2 py-1.5 text-xs uppercase tracking-wide text-ink-dim text-left";
+const CELL = "px-2 py-1.5 align-top";
 const NUM = `${CELL} whitespace-nowrap`;
 
 export function SavedTable({ saved, onEdit, onDelete }: Props) {
@@ -78,9 +77,7 @@ export function SavedTable({ saved, onEdit, onDelete }: Props) {
                   <Badge>{s.site}</Badge>
                   {s.partitioning && <span>{s.partitioning}</span>}
                 </div>
-                {s.notes && (
-                  <p className="mt-0.5 line-clamp-2 text-xs text-ink-dim">{s.notes}</p>
-                )}
+                {s.notes && <p className="mt-0.5 line-clamp-2 text-xs text-ink-dim">{s.notes}</p>}
               </td>
               <td className={NUM}>
                 {fmtPrice(s.priceEur)}
@@ -91,10 +88,10 @@ export function SavedTable({ saved, onEdit, onDelete }: Props) {
                 <VatMarker show={s.pricePlusVat && s.priceEur !== null && s.sqm !== null} />
               </td>
               <td className={NUM}>{fmtSqm(s.sqm)}</td>
-              <td className={CELL}>{s.rooms ?? '—'}</td>
+              <td className={CELL}>{s.rooms ?? "—"}</td>
               <td className={NUM}>{fmtFloor(s.floor, s.floorsTotal)}</td>
-              <td className={CELL}>{s.yearBuilt ?? '—'}</td>
-              <td className={CELL}>{s.location ?? '—'}</td>
+              <td className={CELL}>{s.yearBuilt ?? "—"}</td>
+              <td className={CELL}>{s.location ?? "—"}</td>
               <td className={`${CELL} whitespace-nowrap text-right`}>
                 {confirming === s.id ? (
                   <>

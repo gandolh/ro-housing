@@ -1,6 +1,6 @@
-import * as cheerio from 'cheerio';
-import { cleanText } from '../lib/normalize.ts';
-import { textLines } from './extract.ts';
+import * as cheerio from "cheerio";
+import { cleanText } from "../lib/normalize.ts";
+import { textLines } from "./extract.ts";
 
 /** Each JSON script (JSON-LD, storia's `__NEXT_DATA__`) is cut to this. */
 const MAX_JSON = 6_000;
@@ -16,26 +16,26 @@ const MAX_VISIBLE = 12_000;
 export function pageText(html: string, url: string): string {
   const $ = cheerio.load(html);
   const parts = [`URL: ${url}`];
-  const title = cleanText($('title').first().text());
+  const title = cleanText($("title").first().text());
   if (title) parts.push(`Title: ${title}`);
 
   const tags: string[] = [];
   $('meta[property^="og:"], meta[name="description"], meta[property="description"]').each((_, el) => {
-    const key = $(el).attr('property') ?? $(el).attr('name');
-    const content = cleanText($(el).attr('content'));
+    const key = $(el).attr("property") ?? $(el).attr("name");
+    const content = cleanText($(el).attr("content"));
     if (key && content) tags.push(`${key}: ${content}`);
   });
-  if (tags.length) parts.push(tags.join('\n'));
+  if (tags.length) parts.push(tags.join("\n"));
 
   // Before textLines, which removes every script.
   $('script[type="application/ld+json"], script#__NEXT_DATA__').each((_, el) => {
     const json = $(el).text().trim();
-    if (json) parts.push(`${$(el).attr('id') ?? 'JSON-LD'}:\n${json.slice(0, MAX_JSON)}`);
+    if (json) parts.push(`${$(el).attr("id") ?? "JSON-LD"}:\n${json.slice(0, MAX_JSON)}`);
   });
 
-  const visible = textLines($).lines.join('\n').slice(0, MAX_VISIBLE);
+  const visible = textLines($).lines.join("\n").slice(0, MAX_VISIBLE);
   if (visible) parts.push(`Page text:\n${visible}`);
-  return parts.join('\n\n');
+  return parts.join("\n\n");
 }
 
 /** About an hour: long enough to read the draft and press the button, short
