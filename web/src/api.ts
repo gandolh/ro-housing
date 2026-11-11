@@ -155,7 +155,7 @@ function apiFetch(path: string, init?: RequestInit): Promise<Response> {
 async function jsonOrApiError<T>(res: Response): Promise<T> {
   if (res.ok) return (await res.json()) as T;
   if (res.status === 401) for (const listener of unauthorizedListeners) listener();
-  let payload: { error?: string } | null = null;
+  let payload: { error?: string } | null;
   try {
     payload = (await res.json()) as { error?: string };
   } catch {

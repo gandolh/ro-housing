@@ -45,9 +45,9 @@ describe("wicketClient", () => {
     const down = wicketClient({
       url: "https://w",
       token: "t",
-      fetch: (async () => {
+      fetch: async () => {
         throw new TypeError("fetch failed");
-      }) as typeof globalThis.fetch,
+      },
     });
     await expect(down.get("j1", 0)).rejects.toThrow(WicketError);
   });

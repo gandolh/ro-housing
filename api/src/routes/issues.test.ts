@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -56,7 +56,7 @@ describe("cap enforcement (10 issues max)", () => {
   it("counts only .md files in the directory", () => {
     const dir = freshIssuesDir();
     // Write a non-.md file — it should not count.
-    require("node:fs").writeFileSync(join(dir, "README.txt"), "ignore me");
+    writeFileSync(join(dir, "README.txt"), "ignore me");
     const count = readdirSync(dir).filter((f) => f.endsWith(".md")).length;
     expect(count).toBe(0);
   });
@@ -64,7 +64,7 @@ describe("cap enforcement (10 issues max)", () => {
   it("reaches the cap at exactly 10 .md files", () => {
     const dir = freshIssuesDir();
     for (let i = 0; i < 10; i++) {
-      require("node:fs").writeFileSync(join(dir, `${i}.md`), "---\n");
+      writeFileSync(join(dir, `${i}.md`), "---\n");
     }
     expect(readdirSync(dir).filter((f) => f.endsWith(".md")).length).toBe(10);
   });

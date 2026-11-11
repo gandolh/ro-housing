@@ -40,7 +40,7 @@ function authServer({ ward = false } = {}) {
     }
     return new Response(JSON.stringify({ error: "not_found" }), { status: 404 });
   });
-  configureAuth({ basePath: "/ro-housing-api/auth", fetch: fetchStub as unknown as typeof fetch });
+  configureAuth({ basePath: "/ro-housing-api/auth", fetch: fetchStub });
   return { calls };
 }
 

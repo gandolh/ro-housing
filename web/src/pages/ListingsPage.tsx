@@ -87,7 +87,7 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="primary" onClick={refresh} disabled={refreshing}>
+        <Button variant="primary" onClick={() => void refresh()} disabled={refreshing}>
           {refreshing ? "Refreshing…" : "Refresh"}
         </Button>
 

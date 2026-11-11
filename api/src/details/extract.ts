@@ -342,7 +342,7 @@ export function textLines($: cheerio.CheerioAPI): { lines: string[]; afterTitle?
     if (node === h1 && afterTitle === undefined) afterTitle = lines.length;
   };
   const body = $("body").get(0) ?? $.root().get(0);
-  if (body) walk(body as unknown as WalkNode);
+  if (body) walk(body);
   return { lines, afterTitle };
 }
 
@@ -353,11 +353,11 @@ function fromLabels(lines: string[]): Found {
   for (const rule of LABEL_RULES) {
     const re = new RegExp(`^(?:${rule.label.source})(?![a-z])\\s*:?\\s*(.*)$`);
     for (let i = 0; i < folded.length; i++) {
-      const line = folded[i]!;
+      const line = folded[i] ?? "";
       if (line.length > MAX_LABEL_LINE) continue;
       const m = line.match(re);
       if (!m) continue;
-      const original = originals[i]!;
+      const original = originals[i] ?? "";
       const rest = original.slice(original.length - (m[1] ?? "").length).trim();
       const value = rest || lines[i + 1] || "";
       if (value.length > MAX_LABEL_LINE) continue;

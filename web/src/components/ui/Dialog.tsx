@@ -6,9 +6,8 @@ export const Dialog = BaseDialog.Root;
 export const DialogTrigger = BaseDialog.Trigger;
 export const DialogClose = BaseDialog.Close;
 
-interface DialogContentProps extends ComponentPropsWithoutRef<typeof BaseDialog.Popup> {
-  // No extra props yet.
-}
+// No extra props yet.
+type DialogContentProps = ComponentPropsWithoutRef<typeof BaseDialog.Popup>;
 
 export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className, children, ...props }, ref) => (

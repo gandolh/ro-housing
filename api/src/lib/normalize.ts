@@ -67,7 +67,7 @@ export function extractPrice(text: string | null | undefined): { eur: number; pl
   // Every reading of a price, grouped by where it ends (at its currency sign).
   const readingsByEnd = new Map<number, { start: number; value: number }[]>();
   for (let i = 0; i < text.length; i++) {
-    if (!/\d/.test(text[i]!) || (i > 0 && /[\d.,]/.test(text[i - 1]!))) continue;
+    if (!/\d/.test(text[i] ?? "") || (i > 0 && /[\d.,]/.test(text[i - 1] ?? ""))) continue;
     PRICE_TOKEN.lastIndex = i;
     const m = PRICE_TOKEN.exec(text);
     if (!m || !m[1]) continue;
@@ -81,7 +81,7 @@ export function extractPrice(text: string | null | undefined): { eur: number; pl
   // Readings start left to right, so the last one in range is the shortest.
   const prices: { start: number; value: number; old: boolean; plusVat: boolean }[] = [];
   for (const end of [...readingsByEnd.keys()].sort((a, b) => a - b)) {
-    const inRange = readingsByEnd.get(end)!.filter((r) => r.value >= PRICE_MIN_EUR && r.value <= PRICE_MAX_EUR);
+    const inRange = (readingsByEnd.get(end) ?? []).filter((r) => r.value >= PRICE_MIN_EUR && r.value <= PRICE_MAX_EUR);
     const chosen = inRange[inRange.length - 1];
     if (!chosen) continue;
     const before = text.slice(Math.max(0, chosen.start - 24), chosen.start);

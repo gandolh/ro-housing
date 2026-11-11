@@ -1,4 +1,4 @@
-import { type HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { cn } from "../../lib/cn.ts";
 
 // A 1px-bordered white container used to enclose lists and tables.

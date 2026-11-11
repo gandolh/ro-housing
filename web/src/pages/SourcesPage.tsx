@@ -132,7 +132,7 @@ export function SourcesPage({ active = true }: Props) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-2">
-        <Button variant="primary" disabled={!hasChanges || saving} onClick={save}>
+        <Button variant="primary" disabled={!hasChanges || saving} onClick={() => void save()}>
           {saving ? "Saving…" : "Save"}
         </Button>
         <Button variant="default" disabled={!hasChanges || saving} onClick={discard}>

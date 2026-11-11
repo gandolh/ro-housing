@@ -90,7 +90,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     // The owner names accounts with the seed; nothing offers a rename.
     allowRename: false,
     isPublic: (request) => {
-      const path = request.url.split("?")[0]!;
+      const [path = ""] = request.url.split("?");
       // Under /api a session is needed; under /auth the plugin's own list decides.
       if (isUnder(path, "/api") || isUnder(path, AUTH_ROUTE_PREFIX)) return false;
       // Anything else is a 404, not a 401.

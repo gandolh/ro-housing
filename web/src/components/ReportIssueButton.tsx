@@ -68,7 +68,7 @@ export function ReportIssueButton() {
   const label = atCap ? `Report (${counter} — full)` : `Report (${counter})`;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => void handleOpenChange(next)}>
       <DialogTrigger
         render={(props) => (
           <Button {...props} variant="default" className="h-7 px-3 text-sm">
@@ -107,7 +107,7 @@ export function ReportIssueButton() {
               </Button>
             )}
           />
-          <Button variant="primary" onClick={submit} disabled={submitting || justSent || atCap}>
+          <Button variant="primary" onClick={() => void submit()} disabled={submitting || justSent || atCap}>
             {submitting ? "Sending…" : "Submit"}
           </Button>
         </div>

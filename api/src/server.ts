@@ -44,10 +44,12 @@ try {
 }
 
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
-  process.on(sig, async () => {
-    app.log.info(`received ${sig}, shutting down`);
-    await app.close();
-    await closeBrowser();
-    process.exit(0);
+  process.on(sig, () => {
+    void (async () => {
+      app.log.info(`received ${sig}, shutting down`);
+      await app.close();
+      await closeBrowser();
+      process.exit(0);
+    })();
   });
 }

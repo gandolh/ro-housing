@@ -98,9 +98,11 @@ export function SavedTable({ saved, onEdit, onDelete }: Props) {
                     <Button
                       variant="ghost"
                       className="px-1.5 text-bad"
-                      onClick={async () => {
-                        await onDelete(s);
-                        setConfirming(null);
+                      onClick={() => {
+                        void (async () => {
+                          await onDelete(s);
+                          setConfirming(null);
+                        })();
                       }}
                     >
                       Delete it

@@ -437,7 +437,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
               <Button variant="ghost" onClick={discard} disabled={busy}>
                 Discard
               </Button>
-              <Button variant="primary" onClick={saveDraft} disabled={busy}>
+              <Button variant="primary" onClick={() => void saveDraft()} disabled={busy}>
                 {busy ? "Saving…" : "Save"}
               </Button>
             </div>
@@ -502,7 +502,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
             <Button variant="ghost" onClick={() => setEditing(null)} disabled={busy}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={saveEdit} disabled={busy}>
+            <Button variant="primary" onClick={() => void saveEdit()} disabled={busy}>
               {busy ? "Saving…" : "Save changes"}
             </Button>
           </div>
