@@ -3,7 +3,7 @@ import { ApiErrorNotice } from "../components/ApiErrorNotice.tsx";
 import { ListingsTable } from "../components/ListingsTable.tsx";
 import { Badge } from "../components/ui/Badge.tsx";
 import { Button } from "../components/ui/Button.tsx";
-import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValueLabel } from "../components/ui/Select.tsx";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../components/ui/Select.tsx";
 import { ApiError, api, apiErrorMessage, type Listing, type RefreshResult, type Source } from "../api.ts";
 
 type Sort = "price" | "sqm" | "firstSeen" | "lastSeen";
@@ -91,9 +91,9 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
           {refreshing ? "Refreshing…" : "Refresh"}
         </Button>
 
-        <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(String(v))}>
+        <Select items={sourceLabels} value={sourceFilter} onValueChange={(v) => setSourceFilter(String(v))}>
           <SelectTrigger>
-            <SelectValueLabel labels={sourceLabels} placeholder="All sources" />
+            <SelectValue />
           </SelectTrigger>
           <SelectPopup>
             <SelectItem value="">All sources</SelectItem>
@@ -105,9 +105,9 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
           </SelectPopup>
         </Select>
 
-        <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
+        <Select items={SORT_LABELS} value={sort} onValueChange={(v) => setSort(v as Sort)}>
           <SelectTrigger>
-            <SelectValueLabel labels={SORT_LABELS} />
+            <SelectValue />
           </SelectTrigger>
           <SelectPopup>
             {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
@@ -118,9 +118,9 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
           </SelectPopup>
         </Select>
 
-        <Select value={order} onValueChange={(v) => setOrder(v as Order)}>
+        <Select items={ORDER_LABELS} value={order} onValueChange={(v) => setOrder(v as Order)}>
           <SelectTrigger className="min-w-[5rem]">
-            <SelectValueLabel labels={ORDER_LABELS} />
+            <SelectValue />
           </SelectTrigger>
           <SelectPopup>
             {(Object.keys(ORDER_LABELS) as Order[]).map((k) => (

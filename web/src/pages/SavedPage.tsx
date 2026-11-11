@@ -8,7 +8,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../components/ui/Dialog.tsx";
 import { Input } from "../components/ui/Input.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
-import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValueLabel } from "../components/ui/Select.tsx";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../components/ui/Select.tsx";
 import {
   formFromFields,
   formFromSaved,
@@ -446,9 +446,9 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
       </Panel>
 
       <div className="mt-4 flex items-center gap-2">
-        <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
+        <Select items={SORT_LABELS} value={sort} onValueChange={(v) => setSort(v as Sort)}>
           <SelectTrigger aria-label="Sort saved apartments">
-            <SelectValueLabel labels={SORT_LABELS} />
+            <SelectValue />
           </SelectTrigger>
           <SelectPopup>
             {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (

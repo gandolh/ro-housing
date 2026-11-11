@@ -1,8 +1,15 @@
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { forwardRef, type ComponentProps, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { cn } from "../../lib/cn.ts";
 
-export const Select = BaseSelect.Root;
+type SelectProps = Omit<ComponentProps<typeof BaseSelect.Root<string>>, "items" | "multiple"> & {
+  /** Every choice with the label the trigger shows for it (base-ui rule 10). */
+  items: Record<string, ReactNode>;
+};
+
+export function Select(props: SelectProps) {
+  return <BaseSelect.Root {...props} />;
+}
 
 export const SelectTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<typeof BaseSelect.Trigger>>(
   ({ className, children, ...props }, ref) => (
@@ -20,30 +27,15 @@ export const SelectTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithout
       )}
     >
       {children}
-      <BaseSelect.Icon className="text-ink-dim data-[popup-open]:text-paper">▾</BaseSelect.Icon>
+      <BaseSelect.Icon aria-hidden="true" className="text-ink-dim data-popup-open:text-paper">
+        ▾
+      </BaseSelect.Icon>
     </BaseSelect.Trigger>
   ),
 );
 SelectTrigger.displayName = "SelectTrigger";
 
 export const SelectValue = BaseSelect.Value;
-
-/** SelectValue paired with an explicit value-to-label lookup. Use this whenever
- *  the displayed label differs from the raw value (e.g. "Sort: price" vs "price"). */
-interface SelectValueLabelProps {
-  labels: Record<string, string>;
-  placeholder?: string;
-}
-export function SelectValueLabel({ labels, placeholder }: SelectValueLabelProps) {
-  return (
-    <BaseSelect.Value>
-      {(value) => {
-        const key = typeof value === "string" ? value : "";
-        return labels[key] ?? placeholder ?? key;
-      }}
-    </BaseSelect.Value>
-  );
-}
 
 interface SelectPopupProps {
   children: ReactNode;

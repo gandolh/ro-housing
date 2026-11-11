@@ -8,7 +8,7 @@ import { VatMarker } from "./VatMarker.tsx";
 import { Checkbox } from "./ui/Checkbox.tsx";
 import { Field, FieldError, FieldLabel } from "./ui/Field.tsx";
 import { Input } from "./ui/Input.tsx";
-import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValueLabel } from "./ui/Select.tsx";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "./ui/Select.tsx";
 import { Textarea } from "./ui/Textarea.tsx";
 
 const PARTITIONING_LABELS: Record<string, string> = {
@@ -126,12 +126,13 @@ export function ApartmentForm({ values, onChange, errors, page, showUrl, disable
           <Marker field="partitioning" values={values} page={page} />
         </span>
         <Select
+          items={PARTITIONING_LABELS}
           value={values.partitioning}
           onValueChange={(v) => onChange("partitioning", String(v ?? ""))}
           disabled={disabled}
         >
           <SelectTrigger className="w-full" aria-labelledby={partitioningLabelId}>
-            <SelectValueLabel labels={PARTITIONING_LABELS} />
+            <SelectValue />
           </SelectTrigger>
           <SelectPopup>
             {Object.entries(PARTITIONING_LABELS).map(([value, label]) => (
