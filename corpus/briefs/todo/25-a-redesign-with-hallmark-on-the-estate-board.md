@@ -80,3 +80,4 @@ A proposal stays inside those decisions unless the owner reopens one on the boar
 
 - Brief 23's wrappers, tokens and theme module are what this brief changes. It adds no new Base UI behaviour.
 - `docs/design.md` is rewritten here, so brief 22's `.claude/rules/web.md` points at it by name only.
+- **Contrast (added 2026-11-11).** Brief 23's `web/src/contrast.test.ts` holds every token pair to 4.5:1 in both themes, except two light-theme pairs it held to their current ratios: `accent` on `accent-soft` (3.9:1, a floor of 3.9) and `ink-faint`. The redesign picks new colours, so it raises both to 4.5:1 and removes the two exceptions from the test.
