@@ -1,19 +1,18 @@
 {
+  "extends": "../vendor/house-style/tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
+    // Vite bundles the app, so the module settings are the bundler's, not NodeNext's.
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    // The source imports `./App.tsx`: Vite and vitest resolve the real suffix.
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUncheckedIndexedAccess": true,
     "useDefineForClassFields": true
   },
   "include": ["src/**/*"],

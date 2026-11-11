@@ -1,18 +1,27 @@
 {
+  // The house flags, written out here and not extended from the vendored house-style copy: the Docker
+  // build stage copies only api/, so a base one folder up would not exist there. `npm run house-style:sync
+  // -- --check` does not see them, so when the house base changes, change this file by hand to match.
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "lib": ["ES2022"],
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
     "strict": true,
-    "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    // The source imports `./app.ts`, the form Node's type stripping and tsx resolve. The build config
+    // rewrites it to `./app.js` in dist/.
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUncheckedIndexedAccess": true,
     "rootDir": "src"
   },
   "include": ["src/**/*"],

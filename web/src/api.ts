@@ -110,11 +110,13 @@ export interface FillJob {
 }
 
 export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public payload: { error?: string } | null,
-  ) {
+  status: number;
+  payload: { error?: string } | null;
+
+  constructor(status: number, payload: { error?: string } | null) {
     super(payload?.error ?? `HTTP ${status}`);
+    this.status = status;
+    this.payload = payload;
   }
 }
 

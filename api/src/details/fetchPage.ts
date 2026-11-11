@@ -7,11 +7,11 @@ export type FetchVia = "fetch" | "browser";
 export type PageProblemKind = "blocked" | "not_found" | "unreachable";
 
 export class PageProblem extends Error {
-  constructor(
-    public kind: PageProblemKind,
-    message: string,
-  ) {
+  kind: PageProblemKind;
+
+  constructor(kind: PageProblemKind, message: string) {
     super(message);
+    this.kind = kind;
   }
 }
 

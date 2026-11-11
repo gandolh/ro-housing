@@ -10,7 +10,8 @@
     "seed": "tsx src/seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "playwright install chromium"
+    "postinstall": "playwright install chromium",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "better-sqlite3": "12.10.0",

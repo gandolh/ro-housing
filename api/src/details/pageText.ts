@@ -52,10 +52,13 @@ const MAX_PAGES = 50;
 export class PageTextCache {
   private readonly pages = new Map<string, { text: string; at: number }>();
 
-  constructor(
-    private readonly ttlMs = PAGE_TEXT_TTL_MS,
-    private readonly now: () => number = Date.now,
-  ) {}
+  private readonly ttlMs: number;
+  private readonly now: () => number;
+
+  constructor(ttlMs = PAGE_TEXT_TTL_MS, now: () => number = Date.now) {
+    this.ttlMs = ttlMs;
+    this.now = now;
+  }
 
   set(url: string, text: string): void {
     this.pages.delete(url);

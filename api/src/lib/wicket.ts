@@ -27,12 +27,12 @@ export interface WicketJob {
 
 /** Wicket refused the call or could not be reached. `code` is Wicket's own, when it gave one. */
 export class WicketError extends Error {
-  constructor(
-    message: string,
-    readonly code?: string,
-  ) {
+  readonly code?: string;
+
+  constructor(message: string, code?: string) {
     super(message);
     this.name = "WicketError";
+    this.code = code;
   }
 }
 
