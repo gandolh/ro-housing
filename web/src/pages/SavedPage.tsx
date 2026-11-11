@@ -476,7 +476,7 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
         )}
       </div>
 
-      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+      <Dialog disablePointerDismissal open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent className="w-[min(760px,94vw)]">
           <DialogTitle>Edit saved apartment</DialogTitle>
           <DialogDescription>

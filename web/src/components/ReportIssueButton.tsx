@@ -68,7 +68,7 @@ export function ReportIssueButton() {
   const label = atCap ? `Report (${counter} — full)` : `Report (${counter})`;
 
   return (
-    <Dialog open={open} onOpenChange={(next) => void handleOpenChange(next)}>
+    <Dialog disablePointerDismissal open={open} onOpenChange={(next) => void handleOpenChange(next)}>
       <DialogTrigger
         render={(props) => (
           <Button {...props} variant="default" className="h-7 px-3 text-sm">
@@ -86,7 +86,7 @@ export function ReportIssueButton() {
         </DialogDescription>
 
         <Textarea
-          autoFocus
+          data-autofocus
           value={body}
           onChange={(e) => setBody(e.target.value)}
           disabled={submitting || justSent}
