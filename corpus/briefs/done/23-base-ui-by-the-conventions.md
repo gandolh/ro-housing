@@ -100,3 +100,7 @@ One commit per step. After each, `npm run check` passes with `check-base-ui` in 
 - Brief 25 redesigns on top of the tokens and wrappers built here, in both themes.
 - Brief 22's `better-tailwindcss` rules can turn to errors once this brief is done.
 - (2026-11-11, brief 22) `check-base-ui` already runs strict in `npm run check:conventions`: it reports nothing today (its `"stylesheet": "styles.css"` is in `scripts/conventions.json`), so the "`--warn-only`" steps above need none. The class-order rule of `better-tailwindcss` is still off; this brief turns it on.
+
+## Outcome (2026-11-11)
+
+Built in five local commits (select items, dialog guards, tokens and layers, the theme, docs). Deviations: the theme control is a `RadioGroup` (the base-ui skill's rule 16 over the brief's ToggleGroup), so its arrow keys choose rather than only move focus; tokens are `light-dark()` pairs with `color-scheme` on `<html data-theme>`, so System follows the OS in CSS and `theme.ts` only reads, saves and applies the choice (no `matchMedia`); the `Dialog` kept its composed parts (`DialogContent` etc.) and gained the guard on the root and the focus order in the content, not a prop-based wrapper; `RadioGroup` has the list look only. Light `accent` on `accent-soft` is 3.9:1 (unchanged); the contrast test holds it at that floor. `Input` and `Textarea` use `text-base` so moving the stylesheet into `@layer base` left the look unchanged. `check-base-ui` strict reported 0 before and after.
