@@ -11,7 +11,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "playwright install chromium",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "knip": "knip",
+    "check": "npm run typecheck && npm run lint && npm run knip && npm test",
+    "check:fast": "npm run typecheck && node ../scripts/check-fast.mjs"
   },
   "dependencies": {
     "better-sqlite3": "12.10.0",

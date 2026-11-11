@@ -1,0 +1,7 @@
+{
+  "$schema": "../vendor/house-style/conventions.schema.json",
+  "web": ["web/src"],
+  "server": ["api/src"],
+  "shared": [],
+  "stylesheet": "styles.css"
+}

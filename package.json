@@ -8,8 +8,14 @@
     "node": ">=24"
   },
   "scripts": {
+    "typecheck": "npm run typecheck --prefix api && npm run typecheck --prefix web",
+    "lint": "eslint . && npm run lint --prefix api && npm run lint --prefix web",
+    "test": "npm test --prefix api && npm test --prefix web",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:conventions && npm test",
+    "check:fast": "npm run check:fast --prefix api && npm run check:fast --prefix web && node scripts/check-fast.mjs",
+    "check:conventions": "npm run knip --prefix api && npm run knip --prefix web && depcruise api/src web/src && node vendor/house-style/bin/check-base-ui.mjs && node vendor/house-style/bin/check-structure.mjs --warn-only",
     "house-style:sync": "node vendor/house-style/bin/sync.mjs"
   },
   "devDependencies": {
