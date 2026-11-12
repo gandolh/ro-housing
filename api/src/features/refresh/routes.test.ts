@@ -11,10 +11,10 @@ const gate = vi.hoisted(() => ({
   runs: [] as { id: string; ok: boolean; count: number | null | undefined }[],
 }));
 
-vi.mock("../db/index.ts", () => {
+vi.mock("../../db/index.ts", () => {
   throw new Error("the real database must not open in tests");
 });
-vi.mock("../features/sources/index.ts", () => ({
+vi.mock("../sources/index.ts", () => ({
   listSources: () => {
     if (gate.failNext) {
       gate.failNext = false;
@@ -26,10 +26,10 @@ vi.mock("../features/sources/index.ts", () => ({
     gate.runs.push({ id, ok, count });
   },
 }));
-vi.mock("../features/listings/index.ts", () => ({
+vi.mock("../listings/index.ts", () => ({
   upsertListingWithSnapshot: () => {},
 }));
-vi.mock("../adapters/index.ts", () => ({
+vi.mock("../../adapters/index.ts", () => ({
   ADAPTER_REGISTRY: {
     storia: {
       id: "storia",
@@ -44,7 +44,7 @@ vi.mock("../adapters/index.ts", () => ({
   },
 }));
 
-const { refreshRoutes } = await import("./refresh.ts");
+const { refreshRoutes } = await import("./routes.ts");
 
 describe("POST /api/refresh", () => {
   let app: FastifyInstance;

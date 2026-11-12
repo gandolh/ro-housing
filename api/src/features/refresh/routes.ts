@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { ADAPTER_REGISTRY } from "../adapters/index.ts";
-import { upsertListingWithSnapshot } from "../features/listings/index.ts";
-import { listSources, markSourceRun } from "../features/sources/index.ts";
+import { ADAPTER_REGISTRY } from "../../adapters/index.ts";
+import { upsertListingWithSnapshot } from "../listings/index.ts";
+import { listSources, markSourceRun } from "../sources/index.ts";
 
 // One Refresh at a time: a second one would hit the same sites in parallel,
 // which the sequential design exists to avoid (docs/decisions.md).

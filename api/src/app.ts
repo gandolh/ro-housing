@@ -10,7 +10,7 @@ import { healthRoutes } from "./features/health/index.ts";
 import { fillRoutes } from "./routes/fill.ts";
 import { issuesRoutes } from "./features/issues/index.ts";
 import { listingsRoutes } from "./features/listings/index.ts";
-import { refreshRoutes } from "./routes/refresh.ts";
+import { refreshRoutes } from "./features/refresh/index.ts";
 import { savedRoutes } from "./routes/saved.ts";
 import { sourcesRoutes } from "./features/sources/index.ts";
 
