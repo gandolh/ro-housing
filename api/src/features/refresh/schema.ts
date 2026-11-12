@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** What one source's run came to. `errorMsg` is on a failed run, `warning` on a run that found nothing. */
-export const sourceRunSchema = z.object({
+const sourceRunSchema = z.object({
   id: z.string(),
   ok: z.boolean(),
   count: z.number(),

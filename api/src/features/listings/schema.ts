@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const LISTING_SORTS = ["price", "sqm", "firstSeen", "lastSeen"] as const;
+const LISTING_SORTS = ["price", "sqm", "firstSeen", "lastSeen"] as const;
 
 /** `GET /api/listings?sort=&order=&source=`: every key is optional, and the Listings page sends only the ones it set. */
 export const listingQuerySchema = z.object({
@@ -10,7 +10,7 @@ export const listingQuerySchema = z.object({
 });
 
 /** One listing with its price history, as the Listings table reads it. */
-export const listingSchema = z.object({
+const listingSchema = z.object({
   id: z.number(),
   sourceId: z.string(),
   sourceUid: z.string(),

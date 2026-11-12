@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** One source as the web's Sources panel reads it. */
-export const sourceSchema = z.object({
+const sourceSchema = z.object({
   id: z.string(),
   displayName: z.string(),
   searchUrl: z.string().nullable(),

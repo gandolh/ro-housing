@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:conventions && npm test",
     "check:fast": "npm run check:fast --prefix api && npm run check:fast --prefix web && node scripts/check-fast.mjs",
-    "check:conventions": "npm run knip --prefix api && npm run knip --prefix web && depcruise api/src web/src && node vendor/house-style/bin/check-base-ui.mjs && node vendor/house-style/bin/check-structure.mjs --warn-only",
+    "check:conventions": "npm run knip --prefix api && npm run knip --prefix web && depcruise api/src web/src && node vendor/house-style/bin/check-base-ui.mjs && node vendor/house-style/bin/check-structure.mjs",
     "house-style:sync": "node vendor/house-style/bin/sync.mjs"
   },
   "devDependencies": {
