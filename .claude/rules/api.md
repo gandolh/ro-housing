@@ -14,4 +14,10 @@ paths:
   checks each hop ([docs/decisions.md](../../docs/decisions.md), "Every hop of a fetch is checked").
 - Parameter properties and enums are out (`erasableSyntaxOnly`): declare the field, use a string union.
 - `api/vendor/` is Ward's generated library. Never edit it.
-- `npm run check:conventions` runs `check-structure` over this folder, `--warn-only` for now.
+- The structure (code-structure skill): `server.ts` alone listens and `app.ts` builds; `plugins/` holds what every route
+  inherits, each in `fastify-plugin`; `features/<name>/` holds `routes.ts`, `schema.ts` and `store.ts`, and is used
+  through its `index.ts` only; `lib/` imports no Fastify. Every route declares its zod schemas and a response schema
+  for each status its handler sends; a handler never parses `request.body`, `.query` or `.params`.
+- Errors answer `{ error: string }` through the one handler in `plugins/errors.ts`; a thrown message is logged, never sent.
+- A feature is tested alone with `testApp()` (`src/testing/test-app.ts`) and `inject()`.
+- `npm run check:conventions` runs `check-structure` (strict) and dependency-cruiser over this folder.

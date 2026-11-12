@@ -83,7 +83,7 @@ These get filled in as adapters are built. Includes things worth remembering: th
 
 ## Single listing pages (the Saved tab)
 
-Separate from the search adapters: `api/src/details/` reads **one** listing page from **any** site into a draft. There is no per-site adapter to register. A site the extractor doesn't know still gets its title and photo from Open Graph, plus whatever its labels say.
+Separate from the search adapters: `api/src/features/saved/details/` reads **one** listing page from **any** site into a draft. There is no per-site adapter to register. A site the extractor doesn't know still gets its title and photo from Open Graph, plus whatever its labels say.
 
 The layers, most trusted first; a field keeps the first value found:
 
@@ -97,7 +97,7 @@ Values outside sane ranges are dropped (price under 1,000 €, year after next y
 
 Bot checks: a page with no `og:title` whose `<title>` names a challenge, or that loads `captcha-delivery.com`, or that has under 500 characters of text, counts as blocked. Not `/cdn-cgi/challenge-platform`: Cloudflare adds that script to normal pages too.
 
-When a field comes out wrong, add the page's block to a fixture in `api/src/details/fixtures/` (trimmed, no agent names or phones), write the failing test in `extract.test.ts`, then fix the rule.
+When a field comes out wrong, add the page's block to a fixture in `api/src/features/saved/details/fixtures/` (trimmed, no agent names or phones), write the failing test in `extract.test.ts`, then fix the rule.
 
 ## When a selector breaks
 

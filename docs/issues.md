@@ -41,5 +41,5 @@ I do *not* edit issue files, append "fixed in commit X" notes, or move them to a
 
 ## What lives outside this file
 
-- API code: `api/src/routes/issues.ts`
+- API code: `api/src/features/issues/`
 - UI button + modal: `web/src/components/ReportIssueButton.tsx`, referenced from `web/src/App.tsx`.

@@ -17,16 +17,16 @@ ro-housing/
 The browser sees one origin. The web app is at `/ro-housing/` (Vite's `base`); every API call goes
 to `/ro-housing-api/...`, which Vite's dev proxy (locally) or Caddy (on the VPS) forwards to the API
 with the prefix stripped; the API strips it too when reached directly (`stripApiPrefix` in
-`app.ts`). Locally the API is on `127.0.0.1:3000`; in the container it is `0.0.0.0:8809`, published
+`lib/api-prefix.ts`). Locally the API is on `127.0.0.1:3000`; in the container it is `0.0.0.0:8809`, published
 on the box's loopback only ([owner-setup.md](owner-setup.md)).
 
-Every request passes three guards before a route runs, in this order (`api/src/app.ts`):
+Every request passes three guards before a route runs, in this order (`api/src/app.ts`, which registers the error handler first, then these):
 
-1. **Host** (`lib/host.ts`): this machine's names, `HOST`, and `PUBLIC_ORIGIN`'s host, which Caddy
+1. **Host** (`plugins/host-guard.ts`): this machine's names, `HOST`, and `PUBLIC_ORIGIN`'s host, which Caddy
    passes through. Anything else is a rebound name: 403.
-2. **Origin** (`lib/origin.ts`): no `Origin`, the Vite dev origins (or `WEB_ORIGINS`) and
+2. **Origin** (`plugins/origin-guard.ts`): no `Origin`, the Vite dev origins (or `WEB_ORIGINS`) and
    `PUBLIC_ORIGIN`. Another website: 403.
-3. **Session** (the vendored ward-auth plugin): every `/api` route but `GET /api/health` needs the
+3. **Session** (`plugins/auth.ts`, the vendored ward-auth plugin): every `/api` route but `GET /api/health` needs the
    `ro_housing_session` cookie (HttpOnly, path `/ro-housing-api`); without it, 401. Sign-in is
    `POST /auth/login` with a local account made by `npm run seed`, or "Sign in with Ward" when the
    `WARD_OIDC_*` settings are set. No sign-up route, no rename. A session may write.
@@ -95,12 +95,12 @@ POST /api/saved → validate → INSERT into saved (raw_json = what the page sai
 ### Fill the gaps (only when `WICKET_URL` and `WICKET_TOKEN` are set)
 
 ```
-Fetch details also keeps the page text (details/pageText.ts), for about an hour, in memory
+Fetch details also keeps the page text (features/saved/details/pageText.ts), for about an hour, in memory
         │
 User clicks Fill the gaps on a draft with empty fields
         ▼
 POST /api/saved/fill { url, missing }        page text gone? → 409 "press Fetch details first"
-        │  fillMessages + fillSchema (details/fill.ts): the empty fields only, every one nullable
+        │  fillMessages + fillSchema (features/saved/details/fill.ts): the empty fields only, every one nullable
         ▼
 Wicket POST /v1/jobs { messages, format }    queue full → 503, shown on the form
         │  → 202 { id, ticket, nowServing, position, status }; ro-housing remembers the id
@@ -150,15 +150,17 @@ Each of these is a category of complexity the user explicitly opted out of in sc
 
 ## What lives where
 
-- `api/src/server.ts` — the entry point: loads `.env` (`env.ts`), reads the settings (`config.ts`, which names any bad variable), builds the app and listens. In development tsx runs it as TypeScript; `npm run build` compiles `src/` to `api/dist/` with `tsc -p tsconfig.build.json` (tests and fixtures left out, `db/schema.sql` copied), and the container runs `node dist/server.js`.
-- `api/src/app.ts` — the Fastify app: the prefix strip, the guards that refuse a `Host` other than this machine (`lib/host.ts`, against DNS rebinding) and other websites' origins (`lib/origin.ts`; there is no CORS), the ward-auth plugin, the health check, route registration.
-- `api/src/accounts.ts`, `api/src/seed.ts` — the accounts on the app's database, and the script that makes one. `api/src/paths.ts` — where the database and the issues folder are (`RO_HOUSING_DB`, `RO_HOUSING_ISSUES_DIR`).
+- `api/src/server.ts` — the process: loads `.env` (`loadEnvFile()` in `config.ts`), imports the app after it, reads the settings, builds the app, listens, and closes with `close-with-grace` (the app, then the browser). In development tsx runs it as TypeScript; `npm run build` compiles `src/` to `api/dist/` with `tsc -p tsconfig.build.json` (tests, `testing/` and fixtures left out, `db/schema.sql` copied), and the container runs `node dist/server.js`. Only this file listens.
+- `api/src/config.ts` — the one reader of the environment: `loadConfig()` names every bad variable, and `databasePath()`, `issuesDir()`, `loadSeedConfig()` and `loadEnvFile()` sit beside it.
+- `api/src/app.ts` — `buildApp(config, { wicket, server })`: the zod compilers, the plugins in order (errors, Host, Origin, sign-in), then the features. It never listens.
+- `api/src/plugins/` — what every route inherits, each in `fastify-plugin`: `errors.ts` (the one error handler, `{ error: string }`), `host-guard.ts` (DNS rebinding) and `origin-guard.ts` (other websites; there is no CORS), `auth.ts` (the vendored ward-auth plugin) and `accounts.ts` (the accounts on the app's database, which `seed.ts` also uses).
+- `api/src/seed.ts` — the script that makes a local account.
+- `api/src/features/<name>/` — one folder per part of the API, used through its `index.ts`: `health`, `sources`, `listings`, `issues`, `refresh` and `saved` (the Saved tab and Fill the gaps). Each holds `routes.ts` (thin handlers with their zod schemas), `schema.ts` (the request and response schemas), `store.ts` (the SQL or the files) and the tests; `saved/details/` reads one listing page: `fetchPage.ts` (plain HTTP, Chromium fallback, bot-check detection), `extract.ts` (the five layers), `pageText.ts`, `fill.ts`, with `fixtures/` holding trimmed real pages for the tests.
 - `api/vendor/ward/`, `web/vendor/ward/` — the vendored ward-auth library (a generated copy; upgrade it with the wzd_auth repo's vendoring script, never by hand).
-- `api/src/db/` — schema, connection, typed query helpers, `migrate.ts` (columns added after the first release). No ORM.
-- `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`.
-- `api/src/details/` — reading one listing page for the Saved tab: `url.ts` (normalize, site name, local-address guard), `fetchPage.ts` (plain HTTP, Chromium fallback, bot-check detection), `extract.ts` (the five layers). Site-independent; `fixtures/` holds trimmed real pages for its tests.
-- `api/src/lib/` — shared infrastructure: `fetch.ts` (cookie-aware HTTP over `node:http`/`node:https`: redirects followed by hand, every hop checked, a lookup that connects only to public addresses), `playwright.ts` (browser singleton, and the filter that keeps Chromium off local addresses), `normalize.ts` (Romanian price/rooms/m² parsers).
-- `api/src/routes/` — route handlers. Thin; business logic lives in adapters and db.
+- `api/src/db/` — schema, connection (opened when the module loads), `migrate.ts` (columns added after the first release). No ORM.
+- `api/src/adapters/` — one file per site, all exporting the same `Adapter` interface from `types.ts`. New site = new file + register in `index.ts`. Not a feature: `db/` seeds the sources from its registry and `refresh` runs it.
+- `api/src/lib/` — shared infrastructure that imports no Fastify: `fetch.ts` (cookie-aware HTTP over `node:http`/`node:https`: redirects followed by hand, every hop checked, a lookup that connects only to public addresses), `url.ts` (normalize, site name, local-address guard), `playwright.ts` (browser singleton, and the filter that keeps Chromium off local addresses), `normalize.ts` (Romanian price/rooms/m² parsers), `wicket.ts`, `api-prefix.ts`, `error-body.ts`.
+- `api/src/testing/test-app.ts` — a bare Fastify with the compilers and the error handler, for testing a feature alone.
 - `web/src/pages/` — `ListingsPage` (the unified table), `SavedPage` (add by link, the draft, the saved table, the edit dialog) and `SourcesPage` (per-source URL + enable toggle).
 - `web/src/lib/` — `format.ts` (price, m², €/m², floor formatting shared by both tables), `apartment.ts` (form strings ↔ saved record, floor input "P"/"D").
 - `web/src/components/` — `ListingsTable`, `PriceHistory` (inline-SVG sparkline), `ApartmentForm` (the draft and edit form), `SavedTable`, `ReportIssueButton`, `ApiErrorNotice` (the alert with Retry that a page shows in place of its list when the API fails, worded by `apiErrorMessage` in `api.ts`), `AccountButton` (the user's name in the header and the account dialog).
