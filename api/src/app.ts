@@ -1,5 +1,5 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
-import type { Config } from "./config.ts";
+import { issuesDir, type Config } from "./config.ts";
 import { stripApiPrefix } from "./lib/api-prefix.ts";
 import type { WicketClient } from "./lib/wicket.ts";
 import { auth } from "./plugins/auth.ts";
@@ -8,7 +8,7 @@ import { allowedHostnames, hostGuard } from "./plugins/host-guard.ts";
 import { originGuard, webOrigins } from "./plugins/origin-guard.ts";
 import { healthRoutes } from "./features/health/index.ts";
 import { fillRoutes } from "./routes/fill.ts";
-import { issuesRoutes } from "./routes/issues.ts";
+import { issuesRoutes } from "./features/issues/index.ts";
 import { listingsRoutes } from "./features/listings/index.ts";
 import { refreshRoutes } from "./routes/refresh.ts";
 import { savedRoutes } from "./routes/saved.ts";
@@ -58,7 +58,7 @@ export async function buildApp(config: Config, options: BuildAppOptions = {}): P
   await app.register(sourcesRoutes);
   await app.register(listingsRoutes);
   await app.register(refreshRoutes);
-  await app.register(issuesRoutes);
+  await app.register(issuesRoutes, { dir: issuesDir() });
   await app.register(savedRoutes, { fillable: options.wicket !== undefined });
   if (options.wicket) await app.register(fillRoutes, { wicket: options.wicket });
   return app;
