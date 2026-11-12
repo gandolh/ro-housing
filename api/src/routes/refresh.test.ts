@@ -26,7 +26,7 @@ vi.mock("../features/sources/index.ts", () => ({
     gate.runs.push({ id, ok, count });
   },
 }));
-vi.mock("../db/queries.ts", () => ({
+vi.mock("../features/listings/index.ts", () => ({
   upsertListingWithSnapshot: () => {},
 }));
 vi.mock("../adapters/index.ts", () => ({

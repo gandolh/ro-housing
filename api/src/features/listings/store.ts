@@ -1,5 +1,5 @@
-import { db } from "./index.ts";
-import type { ScrapedListing } from "../adapters/types.ts";
+import type { ScrapedListing } from "../../adapters/types.ts";
+import { db } from "../../db/index.ts";
 
 export interface ListingRow {
   id: number;

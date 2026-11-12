@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { listListings } from "../db/queries.ts";
+import { listListings } from "./store.ts";
 
 type Sort = "price" | "sqm" | "firstSeen" | "lastSeen";
 type Order = "asc" | "desc";

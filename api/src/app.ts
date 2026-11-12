@@ -9,7 +9,7 @@ import { originGuard, webOrigins } from "./plugins/origin-guard.ts";
 import { healthRoutes } from "./features/health/index.ts";
 import { fillRoutes } from "./routes/fill.ts";
 import { issuesRoutes } from "./routes/issues.ts";
-import { listingsRoutes } from "./routes/listings.ts";
+import { listingsRoutes } from "./features/listings/index.ts";
 import { refreshRoutes } from "./routes/refresh.ts";
 import { savedRoutes } from "./routes/saved.ts";
 import { sourcesRoutes } from "./features/sources/index.ts";
