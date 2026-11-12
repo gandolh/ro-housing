@@ -82,8 +82,8 @@ describe("closeBrowser", () => {
 describe("launchArgs", () => {
   it("moves Chromium off /dev/shm only when the container asks", async () => {
     const { launchArgs } = await import("./playwright.ts");
-    expect(launchArgs({})).toEqual([]);
-    expect(launchArgs({ CHROMIUM_DISABLE_DEV_SHM: "1" })).toEqual(["--disable-dev-shm-usage"]);
+    expect(launchArgs(false)).toEqual([]);
+    expect(launchArgs(true)).toEqual(["--disable-dev-shm-usage"]);
   });
 });
 

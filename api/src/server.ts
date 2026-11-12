@@ -1,16 +1,15 @@
-// First: fills the environment from the repo root's .env before the database
-// module reads RO_HOUSING_DB.
-import "./env.ts";
-import { buildApp } from "./app.ts";
-import { ConfigError, loadConfig, type Config } from "./config.ts";
-import { DB_PATH } from "./db/index.ts";
-import { closeBrowser } from "./lib/playwright.ts";
-import { wicketClient } from "./lib/wicket.ts";
-import { issuesDir } from "./paths.ts";
+import { ConfigError, databasePath, issuesDir, loadConfig, loadEnvFile, type Config } from "./config.ts";
+
+// First: fills the environment from the repo root's .env. The app is imported after it, because the
+// database module reads RO_HOUSING_DB when it loads.
+loadEnvFile();
+const { buildApp } = await import("./app.ts");
+const { closeBrowser, configureBrowser } = await import("./lib/playwright.ts");
+const { wicketClient } = await import("./lib/wicket.ts");
 
 let config: Config;
 try {
-  config = loadConfig(process.env);
+  config = loadConfig();
 } catch (err) {
   if (!(err instanceof ConfigError)) throw err;
   console.error(`ro-housing cannot start:\n${err.message}`);
@@ -21,12 +20,13 @@ const app = await buildApp({
   publicOrigin: config.publicOrigin,
   ward: config.ward,
   trustedProxies: config.trustedProxies,
-  bindHost: process.env.HOST,
-  webOriginsEnv: process.env.WEB_ORIGINS,
+  bindHost: config.host,
+  webOriginsEnv: config.webOrigins,
   wicket: config.wicket && wicketClient(config.wicket),
   logger: true,
 });
-app.log.info(`database: ${DB_PATH}; issues: ${issuesDir()}; public origin: ${config.publicOrigin}`);
+configureBrowser({ disableDevShm: config.chromiumDisableDevShm });
+app.log.info(`database: ${databasePath()}; issues: ${issuesDir()}; public origin: ${config.publicOrigin}`);
 app.log.info(
   config.ward ? "Sign in with Ward is on" : "WARD_OIDC_ISSUER is not set: local accounts only, no Sign in with Ward",
 );

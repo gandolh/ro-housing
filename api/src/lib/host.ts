@@ -15,7 +15,7 @@ function normalizeHostname(name: string): string {
  *  another address (one on the LAN), so that address keeps working, plus the
  *  host of the app's public origin. Behind Caddy the browser's own `Host`
  *  comes through, so on the VPS that is the name every request carries. */
-export function allowedHostnames(bindHost: string | undefined = process.env.HOST, publicOrigin?: string): Set<string> {
+export function allowedHostnames(bindHost: string | undefined, publicOrigin?: string): Set<string> {
   const names = new Set(DEFAULT_HOSTNAMES);
   if (bindHost && bindHost.trim().length > 0) names.add(normalizeHostname(bindHost));
   if (publicOrigin && URL.canParse(publicOrigin)) {
@@ -45,7 +45,10 @@ export function hostAllowed(host: string | undefined, allowed: ReadonlySet<strin
  *  127.0.0.1 makes same-origin requests, which carry no Origin header and pass
  *  `refuseOtherOrigins`, but its Host header still names the hostile site.
  *  Call this on the root instance before the routes are registered. */
-export function refuseOtherHosts(app: FastifyInstance, allowed: ReadonlySet<string> = allowedHostnames()): void {
+export function refuseOtherHosts(
+  app: FastifyInstance,
+  allowed: ReadonlySet<string> = allowedHostnames(undefined),
+): void {
   app.addHook("onRequest", async (req, reply) => {
     if (hostAllowed(req.headers.host, allowed)) return;
     req.log.warn({ host: req.headers.host, url: req.url }, "refused another host");

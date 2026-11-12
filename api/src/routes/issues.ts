@@ -1,10 +1,10 @@
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { FastifyInstance } from "fastify";
-import { issuesDir } from "../paths.ts";
+import { issuesDir } from "../config.ts";
 
 const MAX_ISSUES = 10;
-/** `RO_HOUSING_ISSUES_DIR`, else `issues/` at the repo root (paths.ts). */
+/** `RO_HOUSING_ISSUES_DIR`, else `issues/` at the repo root (config.ts). */
 const ISSUES_DIR = issuesDir();
 
 mkdirSync(ISSUES_DIR, { recursive: true });

@@ -11,12 +11,4 @@ export default [
     console: ["src/seed.ts", "src/server.ts"],
     ignores: ["src/details/fixtures/**"],
   }),
-  {
-    // A warning for now (2026-11-11): these files still read the environment themselves. When the
-    // server takes its settings from config.ts, this block goes and the rule is an error again.
-    name: "ro-housing-api/process-env-warns",
-    files: ["src/**"],
-    ignores: ["**/*.test.ts"],
-    rules: { "n/no-process-env": "warn" },
-  },
 ];

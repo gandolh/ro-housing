@@ -3,12 +3,12 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ADAPTER_REGISTRY } from "../adapters/index.ts";
-import { databasePath } from "../paths.ts";
+import { databasePath } from "../config.ts";
 import { addMissingColumns } from "./migrate.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-/** `RO_HOUSING_DB`, else `data/ro-housing.db` at the repo root (paths.ts). */
-export const DB_PATH = databasePath();
+/** `RO_HOUSING_DB`, else `data/ro-housing.db` at the repo root (config.ts). */
+const DB_PATH = databasePath();
 const SCHEMA_PATH = join(__dirname, "schema.sql");
 
 if (DB_PATH !== ":memory:") mkdirSync(dirname(DB_PATH), { recursive: true });

@@ -1,4 +1,11 @@
+import { isAbsolute, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { wardClientOptionsFromEnv, type WardClientOptions } from "../vendor/ward/ward-auth.js";
+
+/** The repository's root: `api/src/` and `api/dist/` are both two levels below it. */
+export const REPO_ROOT = fileURLToPath(new URL("../../", import.meta.url));
+/** The repository's git-ignored `.env`, found from this file and never from the working directory. */
+export const ENV_FILE = `${REPO_ROOT}.env`;
 
 /** The API's prefix as the browser sees it. Caddy (and the Vite dev proxy)
  *  strip it before the request reaches the server, and the server strips it
@@ -18,12 +25,20 @@ export const DEFAULT_PUBLIC_ORIGIN = "http://127.0.0.1:5173";
 export const DEFAULT_PORT = 3000;
 
 /** The server's settings, read once at start from the environment (and the
- *  repo root's `.env`, see env.ts). The database and the issues folder are
- *  read where they are opened (paths.ts). */
+ *  repo root's `.env`, see `loadEnvFile`). This file is the only reader of the
+ *  environment. The database and the issues folder are read where they are
+ *  opened (`databasePath`, `issuesDir`), because the database opens when its
+ *  module is imported. */
 export interface Config {
   /** `HOST`: the address to listen on. `0.0.0.0` in the container. */
   host: string;
   port: number;
+  /** `WEB_ORIGINS` as given (comma-separated), or undefined: the web app's own
+   *  origins, which the Origin check lets through besides the public one. */
+  webOrigins: string | undefined;
+  /** `CHROMIUM_DISABLE_DEV_SHM=1`: the container's Chromium writes the memory
+   *  it would put in `/dev/shm` (Docker's 64 MB default) to `/tmp`. */
+  chromiumDisableDevShm: boolean;
   /** `PUBLIC_ORIGIN`: the app's origin as the browser sees it, bare. The
    *  sign-in routes refuse a POST whose Origin is not this one; the Host and
    *  Origin guards let it through. */
@@ -56,7 +71,7 @@ const set = (value: string | undefined): string | undefined => {
 
 /** The settings from `env`, or a `ConfigError` naming every bad variable.
  *  Nothing here talks to Ward, so the API starts while Ward is down. */
-export function loadConfig(env: NodeJS.ProcessEnv): Config {
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const problems: string[] = [];
 
   const portText = set(env.PORT);
@@ -94,6 +109,8 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
   return {
     host: set(env.HOST) ?? "127.0.0.1",
     port,
+    webOrigins: set(env.WEB_ORIGINS),
+    chromiumDisableDevShm: env.CHROMIUM_DISABLE_DEV_SHM === "1",
     publicOrigin,
     ward,
     trustedProxies: (env.AUTH_TRUSTED_PROXIES ?? "")
@@ -102,4 +119,48 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
       .filter((entry) => entry !== ""),
     wicket: wicketUrl && wicketToken ? { url: wicketUrl, token: wicketToken } : undefined,
   };
+}
+
+/** A path from the environment, resolved against the repo root when relative;
+ *  the default when unset or empty. `:memory:` passes through for tests. */
+function pathFrom(value: string | undefined, fallback: string): string {
+  const v = value?.trim();
+  if (!v) return fallback;
+  if (v === ":memory:" || isAbsolute(v)) return v;
+  return resolve(REPO_ROOT, v);
+}
+
+/** The SQLite file: `RO_HOUSING_DB`, else `data/ro-housing.db` at the repo
+ *  root. In the container it is `/data/ro-housing.db`, on the volume. */
+export function databasePath(env: NodeJS.ProcessEnv = process.env): string {
+  return pathFrom(env.RO_HOUSING_DB, join(REPO_ROOT, "data", "ro-housing.db"));
+}
+
+/** Where the Report button writes its files: `RO_HOUSING_ISSUES_DIR`, else
+ *  `issues/` at the repo root (docs/issues.md). In the container it is
+ *  `/data/issues`, on the volume. */
+export function issuesDir(env: NodeJS.ProcessEnv = process.env): string {
+  return pathFrom(env.RO_HOUSING_ISSUES_DIR, join(REPO_ROOT, "issues"));
+}
+
+/** What the seed command was given in the environment; either may be undefined,
+ *  and the command then asks on the terminal. The password is taken as typed,
+ *  spaces and all. */
+export function loadSeedConfig(env: NodeJS.ProcessEnv = process.env): {
+  username: string | undefined;
+  password: string | undefined;
+} {
+  return { username: set(env.SEED_USERNAME), password: env.SEED_PASSWORD || undefined };
+}
+
+/** Fills in what the environment leaves unset from the repo root's `.env`
+ *  (git-ignored), which Ward's local seed writes its `WARD_OIDC_*` values
+ *  into. Call it before anything reads the settings, and before the database
+ *  module is imported. No `.env` is fine; any other error is thrown. */
+export function loadEnvFile(path: string = ENV_FILE): void {
+  try {
+    process.loadEnvFile(path);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+  }
 }

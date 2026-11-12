@@ -11,13 +11,21 @@ let browserPromise: Promise<Browser> | null = null;
  *  too small for a heavy page; the image sets `CHROMIUM_DISABLE_DEV_SHM=1` and
  *  Chromium writes that memory to `/tmp` instead. (Playwright already turns
  *  the sandbox off, which a root user in a container needs.) */
-export function launchArgs(env: NodeJS.ProcessEnv = process.env): string[] {
-  return env.CHROMIUM_DISABLE_DEV_SHM === "1" ? ["--disable-dev-shm-usage"] : [];
+export function launchArgs(disableDevShm: boolean): string[] {
+  return disableDevShm ? ["--disable-dev-shm-usage"] : [];
+}
+
+let disableDevShm = false;
+
+/** Sets the launch flags from the settings (`chromiumDisableDevShm`). The
+ *  entry calls it once, before the first page is read. */
+export function configureBrowser(settings: { disableDevShm: boolean }): void {
+  disableDevShm = settings.disableDevShm;
 }
 
 export function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
-    const launching: Promise<Browser> = chromium.launch({ headless: true, args: launchArgs() }).then(
+    const launching: Promise<Browser> = chromium.launch({ headless: true, args: launchArgs(disableDevShm) }).then(
       (browser) => {
         browser.on("disconnected", () => {
           if (browserPromise === launching) browserPromise = null;

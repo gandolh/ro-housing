@@ -9,7 +9,7 @@ export const DEFAULT_WEB_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5
  *  defaults, plus the app's public origin (`PUBLIC_ORIGIN`), where the built
  *  app is served on the VPS. A trailing slash is dropped, since browsers never
  *  send one. */
-export function webOrigins(env: string | undefined = process.env.WEB_ORIGINS, publicOrigin?: string): Set<string> {
+export function webOrigins(env: string | undefined, publicOrigin?: string): Set<string> {
   const list = env
     ?.split(",")
     .map((o) => o.trim().replace(/\/+$/, ""))
@@ -29,7 +29,7 @@ export function originAllowed(origin: string | undefined, allowed: ReadonlySet<s
  *  runs. A form post from another page needs no CORS preflight, so leaving out
  *  the CORS headers alone would not stop it. Call this on the root instance
  *  before the routes are registered, so every route inherits the hook. */
-export function refuseOtherOrigins(app: FastifyInstance, allowed: ReadonlySet<string> = webOrigins()): void {
+export function refuseOtherOrigins(app: FastifyInstance, allowed: ReadonlySet<string> = webOrigins(undefined)): void {
   app.addHook("onRequest", async (req, reply) => {
     if (originAllowed(req.headers.origin, allowed)) return;
     req.log.warn({ origin: req.headers.origin, url: req.url }, "refused another origin");

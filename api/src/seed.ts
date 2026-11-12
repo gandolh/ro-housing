@@ -1,10 +1,12 @@
-// First: fills the environment from the repo root's .env before the database
-// module reads RO_HOUSING_DB.
-import "./env.ts";
 import { createInterface } from "node:readline/promises";
 import { Writable } from "node:stream";
 import { openAccounts, seedUser } from "./accounts.ts";
-import { DB_PATH, db } from "./db/index.ts";
+import { databasePath, loadEnvFile, loadSeedConfig } from "./config.ts";
+
+// First: fills the environment from the repo root's .env. The database is imported after it, because
+// the module reads RO_HOUSING_DB when it loads.
+loadEnvFile();
+const { db } = await import("./db/index.ts");
 
 /**
  * Creates one local account. There is no sign-up page: this is how the owner
@@ -44,14 +46,15 @@ async function ask(question: string, secret = false): Promise<string> {
 }
 
 async function main(): Promise<void> {
-  const username = process.env.SEED_USERNAME?.trim() || (await ask("Username: "));
-  const password = process.env.SEED_PASSWORD || (await ask("Password: ", true));
+  const given = loadSeedConfig();
+  const username = given.username ?? (await ask("Username: "));
+  const password = given.password ?? (await ask("Password: ", true));
   if (username === "" || password === "") {
     throw new Error("Set SEED_USERNAME and SEED_PASSWORD in the environment, or run this in a terminal to be asked.");
   }
   try {
     const created = await seedUser(openAccounts(db), { username, password });
-    console.log(created ? `Created ${username} in ${DB_PATH}.` : `${username} already exists; left as it was.`);
+    console.log(created ? `Created ${username} in ${databasePath()}.` : `${username} already exists; left as it was.`);
   } finally {
     db.close();
   }
