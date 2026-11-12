@@ -1,7 +1,10 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
+import type { FastifyBaseLogger } from "fastify";
 import { ADAPTER_REGISTRY } from "../../adapters/index.ts";
+import { errorSchema } from "../../lib/error-body.ts";
 import { upsertListingWithSnapshot } from "../listings/index.ts";
 import { listSources, markSourceRun } from "../sources/index.ts";
+import { refreshResultSchema } from "./schema.ts";
 
 // One Refresh at a time: a second one would hit the same sites in parallel,
 // which the sequential design exists to avoid (docs/decisions.md).
@@ -11,22 +14,26 @@ let running = false;
  *  markup usually makes its adapter return an empty list, not throw. */
 export const EMPTY_RUN_WARNING = "no listings found";
 
-export async function refreshRoutes(app: FastifyInstance): Promise<void> {
-  app.post("/api/refresh", async (_req, reply) => {
-    if (running) {
-      return reply.code(409).send({ error: "a refresh is already running" });
-    }
-    running = true;
-    try {
-      return await refreshAll(app);
-    } finally {
-      running = false;
-    }
-  });
-}
+export const refreshRoutes: FastifyPluginAsyncZod = async (app) => {
+  app.post(
+    "/api/refresh",
+    { schema: { response: { 200: refreshResultSchema, 409: errorSchema } } },
+    async (_req, reply) => {
+      if (running) {
+        return reply.code(409).send({ error: "a refresh is already running" });
+      }
+      running = true;
+      try {
+        return await refreshAll(app.log);
+      } finally {
+        running = false;
+      }
+    },
+  );
+};
 
 /** Runs every enabled source with a search URL, one after another. */
-async function refreshAll(app: FastifyInstance) {
+async function refreshAll(log: FastifyBaseLogger) {
   const sources = listSources();
   const results: {
     id: string;
@@ -63,7 +70,7 @@ async function refreshAll(app: FastifyInstance) {
         ...(scraped.length === 0 ? { warning: EMPTY_RUN_WARNING } : {}),
       });
     } catch (err) {
-      app.log.error({ err, sourceId: src.id }, "adapter failed");
+      log.error({ err, sourceId: src.id }, "adapter failed");
       markSourceRun(src.id, false);
       results.push({
         id: src.id,
