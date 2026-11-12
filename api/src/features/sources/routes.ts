@@ -1,8 +1,10 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
+import { errorSchema } from "../../lib/error-body.ts";
+import { sourceListSchema, sourceParamsSchema, sourceSavedSchema, sourceUpdateSchema } from "./schema.ts";
 import { getSource, listSources, updateSource } from "./store.ts";
 
-export async function sourcesRoutes(app: FastifyInstance): Promise<void> {
-  app.get("/api/sources", async () => {
+export const sourcesRoutes: FastifyPluginAsyncZod = async (app) => {
+  app.get("/api/sources", { schema: { response: { 200: sourceListSchema } } }, async () => {
     return listSources().map((s) => ({
       id: s.id,
       displayName: s.display_name,
@@ -14,15 +16,22 @@ export async function sourcesRoutes(app: FastifyInstance): Promise<void> {
     }));
   });
 
-  app.put<{
-    Params: { id: string };
-    Body: { searchUrl?: string | null; enabled?: boolean };
-  }>("/api/sources/:id", async (req, reply) => {
-    const existing = getSource(req.params.id);
-    if (!existing) {
-      return reply.code(404).send({ error: "unknown source" });
-    }
-    updateSource(req.params.id, req.body);
-    return { ok: true };
-  });
-}
+  app.put(
+    "/api/sources/:id",
+    {
+      schema: {
+        params: sourceParamsSchema,
+        body: sourceUpdateSchema,
+        response: { 200: sourceSavedSchema, 400: errorSchema, 404: errorSchema },
+      },
+    },
+    async (req, reply) => {
+      const existing = getSource(req.params.id);
+      if (!existing) {
+        return reply.code(404).send({ error: "unknown source" });
+      }
+      updateSource(req.params.id, req.body);
+      return { ok: true as const };
+    },
+  );
+};
