@@ -6,6 +6,7 @@ import { auth } from "./plugins/auth.ts";
 import { errors } from "./plugins/errors.ts";
 import { allowedHostnames, hostGuard } from "./plugins/host-guard.ts";
 import { originGuard, webOrigins } from "./plugins/origin-guard.ts";
+import { healthRoutes } from "./features/health/index.ts";
 import { fillRoutes } from "./routes/fill.ts";
 import { issuesRoutes } from "./routes/issues.ts";
 import { listingsRoutes } from "./routes/listings.ts";
@@ -53,7 +54,7 @@ export async function buildApp(config: Config, options: BuildAppOptions = {}): P
     trustedProxies: config.trustedProxies,
   });
 
-  app.get("/api/health", async () => ({ ok: true }));
+  await app.register(healthRoutes);
   await app.register(sourcesRoutes);
   await app.register(listingsRoutes);
   await app.register(refreshRoutes);
