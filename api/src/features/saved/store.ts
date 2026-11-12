@@ -1,5 +1,5 @@
 import { db } from "../../db/index.ts";
-import type { SavedInput } from "./input.ts";
+import type { SavedInput } from "./schema.ts";
 
 export interface SavedRow {
   id: number;

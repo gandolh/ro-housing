@@ -1,8 +1,9 @@
-import Fastify, { type FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { WicketClient, WicketJob } from "../../lib/wicket.ts";
+import { testApp } from "../../testing/test-app.ts";
 
-// routes/saved.ts opens the database: a throwaway one, set before it loads.
+// the saved routes open the database: a throwaway one, set before it loads.
 process.env.RO_HOUSING_DB = ":memory:";
 const { fillRoutes } = await import("./fill-routes.ts");
 const { pageTexts } = await import("./details/pageText.ts");
@@ -41,8 +42,9 @@ describe("Fill the gaps routes", () => {
 
   beforeEach(async () => {
     wicket = stubWicket();
-    app = Fastify();
-    await app.register(fillRoutes, { wicket: wicket.client });
+    app = await testApp(async (a) => {
+      await a.register(fillRoutes, { wicket: wicket.client });
+    });
     pageTexts.set(URL_A, "URL: page text");
   });
   afterEach(() => app.close());
@@ -150,5 +152,91 @@ describe("Fill the gaps routes", () => {
     const res = await app.inject({ method: "DELETE", url: "/api/saved/fill/w1" });
     expect(res.json()).toMatchObject({ status: "cancelled", error: "cancelled by the caller" });
     expect(wicket.calls.at(-1)).toEqual({ op: "cancel", args: ["w1"] });
+  });
+
+  it("answers a request that fails its schema with 400 and the form's one sentence, before Wicket is asked", async () => {
+    const sentence = "Send the draft's link and the empty fields to fill.";
+    for (const payload of [
+      {},
+      { url: URL_A },
+      { url: 5, missing: ["rooms"] },
+      { url: URL_A, missing: "rooms" },
+      { url: URL_A, missing: [] },
+      { url: URL_A, missing: ["rooms", "pricePlusVat"] },
+      { url: "ftp://example.com/a", missing: ["rooms"] },
+    ]) {
+      const res = await app.inject({ method: "POST", url: "/api/saved/fill", payload });
+      expect(res.statusCode, JSON.stringify(payload)).toBe(400);
+      expect(res.json()).toEqual({ error: sentence });
+    }
+    expect((await app.inject({ method: "POST", url: "/api/saved/fill" })).statusCode).toBe(400);
+    expect(wicket.calls).toEqual([]);
+  });
+
+  it("answers with the keys the form reads, for each state of a job", async () => {
+    const started = await start();
+    expect(Object.keys(started.json())).toEqual(["id", "ticket", "nowServing", "position", "status"]);
+    expect(Object.keys((await app.inject({ url: "/api/saved/fill/w1" })).json())).toEqual([
+      "id",
+      "ticket",
+      "nowServing",
+      "position",
+      "status",
+    ]);
+    wicket.state.get = async () => queued({ status: "failed", error: "boom" });
+    expect(Object.keys((await app.inject({ url: "/api/saved/fill/w1" })).json())).toEqual([
+      "id",
+      "ticket",
+      "nowServing",
+      "position",
+      "status",
+      "error",
+    ]);
+    await start();
+    wicket.state.get = async () =>
+      queued({ status: "done", result: { text: JSON.stringify({ floorsTotal: 4 }), model: "m1" } });
+    expect(Object.keys((await app.inject({ url: "/api/saved/fill/w1" })).json())).toEqual([
+      "id",
+      "ticket",
+      "nowServing",
+      "position",
+      "status",
+      "values",
+      "model",
+    ]);
+    await start();
+    wicket.state.get = async () => undefined;
+    expect(Object.keys((await app.inject({ url: "/api/saved/fill/w1" })).json())).toEqual(["id", "status", "error"]);
+    await start();
+    expect(Object.keys((await app.inject({ method: "DELETE", url: "/api/saved/fill/w1" })).json())).toEqual([
+      "id",
+      "ticket",
+      "nowServing",
+      "position",
+      "status",
+      "error",
+    ]);
+  });
+
+  it("answers 502 with Wicket's message when it cannot be reached, on every route that asks it", async () => {
+    await start();
+    const down = async () => {
+      throw new WicketError("Could not reach Wicket.");
+    };
+    wicket.state.submit = down;
+    expect((await start()).json()).toEqual({ error: "Could not reach Wicket." });
+    expect((await start()).statusCode).toBe(502);
+    wicket.state.get = down;
+    const poll = await app.inject({ url: "/api/saved/fill/w1" });
+    expect(poll.statusCode).toBe(502);
+    wicket.state.cancel = down;
+    const cancel = await app.inject({ method: "DELETE", url: "/api/saved/fill/w1" });
+    expect(cancel.statusCode).toBe(502);
+  });
+
+  it("reads a wait that is not a number as 0 rather than refusing it", async () => {
+    await start();
+    expect((await app.inject({ url: "/api/saved/fill/w1?wait=abc" })).statusCode).toBe(200);
+    expect(wicket.calls.at(-1)).toEqual({ op: "get", args: ["w1", 0] });
   });
 });

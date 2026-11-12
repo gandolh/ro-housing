@@ -1,10 +1,20 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
+import { z } from "zod";
+import { errorSchema } from "../../lib/error-body.ts";
 import { deleteSaved, getSavedByUrl, insertSaved, listSaved, updateSaved, type SavedRow } from "./store.ts";
 import { DETAIL_FIELDS, extractDetails, type DetailFields } from "./details/extract.ts";
 import { fetchListingPage, PageProblem } from "./details/fetchPage.ts";
 import { pageText, pageTexts } from "./details/pageText.ts";
 import { assertPublicHost, normalizeListingUrl, siteOf } from "../../lib/url.ts";
-import { parseSavedInput } from "./input.ts";
+import {
+  savedInputSchema,
+  savedListSchema,
+  savedParamsSchema,
+  savedSchema,
+  SCRAPE_LINK,
+  scrapeInputSchema,
+  scrapeResultSchema,
+} from "./schema.ts";
 
 function toApi(r: SavedRow) {
   return {
@@ -65,106 +75,121 @@ function isUniqueViolation(err: unknown): boolean {
   return (err as { code?: string } | null)?.code === "SQLITE_CONSTRAINT_UNIQUE";
 }
 
-function parseId(raw: string, reply: FastifyReply): number | undefined {
-  const id = Number(raw);
-  if (Number.isInteger(id) && id > 0) return id;
-  void reply.code(400).send({ error: "bad id" });
-  return undefined;
+/** What this feature takes from `buildApp`. */
+export interface SavedOptions {
+  /** Whether "Fill the gaps" is on: the draft's button shows only then. */
+  fillable?: boolean;
 }
 
-export async function savedRoutes(app: FastifyInstance, opts: { fillable?: boolean } = {}): Promise<void> {
-  // Whether "Fill the gaps" is on: the draft's button shows only then.
-  const fillable = opts.fillable === true;
+export const savedRoutes: FastifyPluginAsyncZod<SavedOptions> = async (app, { fillable = false }) => {
   // Reads one listing page into a draft. Saves nothing: the user confirms or
   // edits the draft and POSTs it to /api/saved.
-  app.post<{ Body: { url?: string } }>("/api/saved/scrape", async (req, reply) => {
-    const url = normalizeListingUrl(req.body?.url ?? "");
-    if (!url) {
-      return reply.code(400).send({ error: "Paste a full link, starting with http:// or https://" });
-    }
-    const site = siteOf(url);
-    const existing = getSavedByUrl(url);
-    const base = { url, site, existing: existing ? toApi(existing) : null, fillable };
-    if (existing) {
-      return { ...base, draft: null, found: [], via: null, problem: null };
-    }
-
-    try {
-      await assertPublicHost(url);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("local addresses")) {
-        return reply.code(400).send({ error: "That link points to a local address." });
+  app.post(
+    "/api/saved/scrape",
+    { schema: { body: scrapeInputSchema, response: { 200: scrapeResultSchema, 400: errorSchema } } },
+    async (req, reply) => {
+      const url = normalizeListingUrl(req.body?.url ?? "");
+      if (!url) {
+        return reply.code(400).send({ error: SCRAPE_LINK });
       }
-      return {
-        ...base,
-        draft: EMPTY_DRAFT,
-        found: [],
-        via: null,
-        problem: { kind: "unreachable", message: `Could not find the site (${msg}).` },
-      };
-    }
-
-    try {
-      const page = await fetchListingPage(url);
-      const ex = extractDetails(page.html, url);
-      const fetchedAt = Date.now();
-      // Kept for "Fill the gaps", which never fetches the page again.
-      if (fillable) pageTexts.set(url, pageText(page.html, url));
-      remember(url, { via: page.via, fields: ex.fields, sources: ex.sources, description: ex.description }, fetchedAt);
-      return { ...base, draft: ex.fields, found: ex.found, via: page.via, problem: null };
-    } catch (err) {
-      if (!(err instanceof PageProblem)) throw err;
-      req.log.warn({ url, kind: err.kind, msg: err.message }, "listing page not read");
-      return {
-        ...base,
-        draft: EMPTY_DRAFT,
-        found: [],
-        via: null,
-        problem: { kind: err.kind, message: err.message },
-      };
-    }
-  });
-
-  app.get("/api/saved", async () => listSaved().map(toApi));
-
-  app.post("/api/saved", async (req, reply) => {
-    const parsed = parseSavedInput(req.body);
-    if (!parsed.ok) return reply.code(400).send({ error: parsed.error });
-    const input = parsed.value;
-    try {
-      const row = insertSaved(input, siteOf(input.url), recentScrapes.get(input.url), Date.now());
-      recentScrapes.delete(input.url);
-      return reply.code(201).send(toApi(row));
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        return reply.code(409).send({ error: "This link is already saved." });
+      const site = siteOf(url);
+      const existing = getSavedByUrl(url);
+      const base = { url, site, existing: existing ? toApi(existing) : null, fillable };
+      if (existing) {
+        return { ...base, draft: null, found: [], via: null, problem: null };
       }
-      throw err;
-    }
-  });
 
-  app.put<{ Params: { id: string } }>("/api/saved/:id", async (req, reply) => {
-    const id = parseId(req.params.id, reply);
-    if (id === undefined) return reply;
-    const parsed = parseSavedInput(req.body);
-    if (!parsed.ok) return reply.code(400).send({ error: parsed.error });
-    try {
-      const row = updateSaved(id, parsed.value, siteOf(parsed.value.url), Date.now());
-      if (!row) return reply.code(404).send({ error: "not found" });
-      return toApi(row);
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        return reply.code(409).send({ error: "Another saved apartment has this link." });
+      try {
+        await assertPublicHost(url);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("local addresses")) {
+          return reply.code(400).send({ error: "That link points to a local address." });
+        }
+        return {
+          ...base,
+          draft: EMPTY_DRAFT,
+          found: [],
+          via: null,
+          problem: { kind: "unreachable", message: `Could not find the site (${msg}).` },
+        };
       }
-      throw err;
-    }
-  });
 
-  app.delete<{ Params: { id: string } }>("/api/saved/:id", async (req, reply) => {
-    const id = parseId(req.params.id, reply);
-    if (id === undefined) return reply;
-    if (!deleteSaved(id)) return reply.code(404).send({ error: "not found" });
-    return reply.code(204).send();
-  });
-}
+      try {
+        const page = await fetchListingPage(url);
+        const ex = extractDetails(page.html, url);
+        const fetchedAt = Date.now();
+        // Kept for "Fill the gaps", which never fetches the page again.
+        if (fillable) pageTexts.set(url, pageText(page.html, url));
+        remember(
+          url,
+          { via: page.via, fields: ex.fields, sources: ex.sources, description: ex.description },
+          fetchedAt,
+        );
+        return { ...base, draft: ex.fields, found: ex.found, via: page.via, problem: null };
+      } catch (err) {
+        if (!(err instanceof PageProblem)) throw err;
+        req.log.warn({ url, kind: err.kind, msg: err.message }, "listing page not read");
+        return {
+          ...base,
+          draft: EMPTY_DRAFT,
+          found: [],
+          via: null,
+          problem: { kind: err.kind, message: err.message },
+        };
+      }
+    },
+  );
+
+  app.get("/api/saved", { schema: { response: { 200: savedListSchema } } }, async () => listSaved().map(toApi));
+
+  app.post(
+    "/api/saved",
+    { schema: { body: savedInputSchema, response: { 201: savedSchema, 400: errorSchema, 409: errorSchema } } },
+    async (req, reply) => {
+      const input = req.body;
+      try {
+        const row = insertSaved(input, siteOf(input.url), recentScrapes.get(input.url), Date.now());
+        recentScrapes.delete(input.url);
+        return reply.code(201).send(toApi(row));
+      } catch (err) {
+        if (isUniqueViolation(err)) {
+          return reply.code(409).send({ error: "This link is already saved." });
+        }
+        throw err;
+      }
+    },
+  );
+
+  app.put(
+    "/api/saved/:id",
+    {
+      schema: {
+        params: savedParamsSchema,
+        body: savedInputSchema,
+        response: { 200: savedSchema, 400: errorSchema, 404: errorSchema, 409: errorSchema },
+      },
+    },
+    async (req, reply) => {
+      try {
+        const row = updateSaved(req.params.id, req.body, siteOf(req.body.url), Date.now());
+        if (!row) return reply.code(404).send({ error: "not found" });
+        return toApi(row);
+      } catch (err) {
+        if (isUniqueViolation(err)) {
+          return reply.code(409).send({ error: "Another saved apartment has this link." });
+        }
+        throw err;
+      }
+    },
+  );
+
+  app.delete(
+    "/api/saved/:id",
+    { schema: { params: savedParamsSchema, response: { 204: z.null(), 400: errorSchema, 404: errorSchema } } },
+    async (req, reply) => {
+      if (!deleteSaved(req.params.id)) return reply.code(404).send({ error: "not found" });
+      return reply.code(204).send(null);
+    },
+  );
+};
