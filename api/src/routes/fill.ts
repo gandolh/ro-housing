@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import type { DetailField } from "../details/extract.ts";
 import { FillAnswerError, fillMessages, fillSchema, isDetailField, mergeFill } from "../details/fill.ts";
 import { pageTexts } from "../details/pageText.ts";
-import { normalizeListingUrl } from "../details/url.ts";
+import { normalizeListingUrl } from "../lib/url.ts";
 import { MAX_WAIT_SECONDS, WicketError, type WicketClient, type WicketJob } from "../lib/wicket.ts";
 import { recordAiFill } from "./saved.ts";
 

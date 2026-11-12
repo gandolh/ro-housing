@@ -3,7 +3,7 @@ import http from "node:http";
 import https from "node:https";
 import { isIP, type LookupFunction } from "node:net";
 import zlib from "node:zlib";
-import { isPrivateAddress } from "../details/url.ts";
+import { isPrivateAddress } from "./url.ts";
 
 /**
  * Every page the API reads with plain HTTP goes through `createSession()`: the
@@ -70,7 +70,7 @@ export class CookieJar {
 }
 
 /** A host that is, or resolves to, a local address. The message is the one
- *  `assertPublicHost` (details/url.ts) throws, so both read the same. */
+ *  `assertPublicHost` (lib/url.ts) throws, so both read the same. */
 export class LocalAddressError extends Error {
   constructor() {
     super("local addresses are not allowed");

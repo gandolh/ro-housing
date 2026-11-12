@@ -3,7 +3,7 @@ import { deleteSaved, getSavedByUrl, insertSaved, listSaved, updateSaved, type S
 import { DETAIL_FIELDS, extractDetails, type DetailFields } from "../details/extract.ts";
 import { fetchListingPage, PageProblem } from "../details/fetchPage.ts";
 import { pageText, pageTexts } from "../details/pageText.ts";
-import { assertPublicHost, normalizeListingUrl, siteOf } from "../details/url.ts";
+import { assertPublicHost, normalizeListingUrl, siteOf } from "../lib/url.ts";
 import { parseSavedInput } from "./saved-input.ts";
 
 function toApi(r: SavedRow) {
