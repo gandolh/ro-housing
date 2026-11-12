@@ -1,4 +1,5 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 
 /** The names this machine answers to. A page that rebinds its own name to
  *  127.0.0.1 still sends that name in Host, so it is not among them. */
@@ -55,3 +56,16 @@ export function refuseOtherHosts(
     return reply.code(403).send({ error: "requests for other host names are refused" });
   });
 }
+
+export interface HostGuardOptions {
+  /** The names this machine answers to (`allowedHostnames`). */
+  allowed: ReadonlySet<string>;
+}
+
+/** The Host check as a plugin on the root instance, so every route inherits it. Register it before the
+ *  routes, and before the session check. */
+const guard: FastifyPluginAsync<HostGuardOptions> = async (app, { allowed }) => {
+  refuseOtherHosts(app, allowed);
+};
+
+export const hostGuard = fp(guard, { name: "host-guard" });

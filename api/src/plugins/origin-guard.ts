@@ -1,4 +1,5 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 
 /** The web app's own origins: Vite on its fixed port, under either name the
  *  owner might type. Requests from the app arrive through Vite's proxy, which
@@ -36,3 +37,16 @@ export function refuseOtherOrigins(app: FastifyInstance, allowed: ReadonlySet<st
     return reply.code(403).send({ error: "requests from other websites are refused" });
   });
 }
+
+export interface OriginGuardOptions {
+  /** The origins that may send a request (`webOrigins`). */
+  allowed: ReadonlySet<string>;
+}
+
+/** The Origin check as a plugin on the root instance, so every route inherits it. Register it after the
+ *  Host check and before the session check. */
+const guard: FastifyPluginAsync<OriginGuardOptions> = async (app, { allowed }) => {
+  refuseOtherOrigins(app, allowed);
+};
+
+export const originGuard = fp(guard, { name: "origin-guard" });

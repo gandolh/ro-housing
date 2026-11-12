@@ -1,6 +1,6 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_WEB_ORIGINS, originAllowed, refuseOtherOrigins, webOrigins } from "./origin.ts";
+import { DEFAULT_WEB_ORIGINS, originAllowed, refuseOtherOrigins, webOrigins } from "./origin-guard.ts";
 
 describe("webOrigins", () => {
   it("defaults to the Vite dev origin under both names", () => {

@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import { createAccounts, createSqliteStore, seedUsers, type Accounts } from "../vendor/ward/ward-auth.js";
+import { createAccounts, createSqliteStore, seedUsers, type Accounts } from "../../vendor/ward/ward-auth.js";
 
 /** Every signed-in user can do everything in the app, so there is one role and
  *  nothing checks it; a user made by a first "Sign in with Ward" gets it too. */

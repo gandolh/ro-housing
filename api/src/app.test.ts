@@ -9,28 +9,20 @@ const issues = mkdtempSync(join(tmpdir(), "ro-housing-app-test-"));
 process.env.RO_HOUSING_DB = ":memory:";
 process.env.RO_HOUSING_ISSUES_DIR = issues;
 
-const { buildApp, stripApiPrefix } = await import("./app.ts");
-const { seedUser } = await import("./accounts.ts");
+const { buildApp } = await import("./app.ts");
+const { loadConfig } = await import("./config.ts");
+const { db } = await import("./db/index.ts");
+const { openAccounts, seedUser } = await import("./plugins/accounts.ts");
 
 const PUBLIC = "https://example.com";
-
-describe("stripApiPrefix", () => {
-  it("takes /ro-housing-api off the front, and nothing else", () => {
-    expect(stripApiPrefix("/ro-housing-api/api/health")).toBe("/api/health");
-    expect(stripApiPrefix("/ro-housing-api")).toBe("/");
-    expect(stripApiPrefix("/ro-housing-api?x=1")).toBe("/?x=1");
-    expect(stripApiPrefix("/ro-housing-apix/api")).toBe("/ro-housing-apix/api");
-    expect(stripApiPrefix("/api/health")).toBe("/api/health");
-  });
-});
 
 describe("the API behind sign-in", () => {
   let app: FastifyInstance;
   let cookie = "";
 
   beforeAll(async () => {
-    app = await buildApp({ publicOrigin: PUBLIC, ward: undefined, trustedProxies: [], bindHost: "0.0.0.0" });
-    await seedUser(app.accounts, { username: "owner", password: "a long test passphrase" });
+    app = await buildApp(loadConfig({ PUBLIC_ORIGIN: PUBLIC, HOST: "0.0.0.0" }));
+    await seedUser(openAccounts(db), { username: "owner", password: "a long test passphrase" });
   });
   afterAll(async () => {
     await app.close();

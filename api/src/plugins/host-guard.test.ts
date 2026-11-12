@@ -1,7 +1,7 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { connect } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
-import { DEFAULT_HOSTNAMES, allowedHostnames, hostAllowed, hostnameOf, refuseOtherHosts } from "./host.ts";
+import { DEFAULT_HOSTNAMES, allowedHostnames, hostAllowed, hostnameOf, refuseOtherHosts } from "./host-guard.ts";
 
 describe("allowedHostnames", () => {
   it("defaults to this machine’s names", () => {

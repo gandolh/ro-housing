@@ -1,6 +1,6 @@
 import { createInterface } from "node:readline/promises";
 import { Writable } from "node:stream";
-import { openAccounts, seedUser } from "./accounts.ts";
+import { openAccounts, seedUser } from "./plugins/accounts.ts";
 import { databasePath, loadEnvFile, loadSeedConfig } from "./config.ts";
 
 // First: fills the environment from the repo root's .env. The database is imported after it, because
