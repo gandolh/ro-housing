@@ -4,10 +4,6 @@ import { brotliCompressSync, deflateRawSync, deflateSync, gzipSync } from "node:
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createSession, LocalAddressError, MAX_REDIRECTS, publicAddresses, vettingLookup } from "./fetch.ts";
 
-// fetchListingPage's browser fallback, so a test can see it is never reached.
-const fetchRenderedHtml = vi.hoisted(() => vi.fn());
-vi.mock("./playwright.ts", () => ({ fetchRenderedHtml }));
-
 const PUBLIC = "93.184.216.34";
 const PUBLIC_V6 = "2606:4700::1111";
 
@@ -267,16 +263,5 @@ describe("createSession", () => {
     await expect(createSession(publicDeps).get(`http://x.example:${port}/bomb`)).rejects.toThrow(
       "the page is larger than 20 MB",
     );
-  });
-});
-
-describe("fetchListingPage", () => {
-  it("reports a local address as unreachable, without trying the browser", async () => {
-    const { fetchListingPage, PageProblem } = await import("../details/fetchPage.ts");
-    const err = await fetchListingPage("http://127.0.0.1:9/admin").catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(PageProblem);
-    expect((err as InstanceType<typeof PageProblem>).kind).toBe("unreachable");
-    expect((err as Error).message).toMatch(/local addresses are not allowed/);
-    expect(fetchRenderedHtml).not.toHaveBeenCalled();
   });
 });

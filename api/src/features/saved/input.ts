@@ -1,5 +1,5 @@
-import { PARTITIONINGS, type Partitioning } from "../details/extract.ts";
-import { normalizeListingUrl } from "../lib/url.ts";
+import { PARTITIONINGS, type Partitioning } from "./details/extract.ts";
+import { normalizeListingUrl } from "../../lib/url.ts";
 
 /** A saved apartment as the user confirmed it. Only `url` is required: a
  *  blocked page still gets saved, with whatever the user typed in. */

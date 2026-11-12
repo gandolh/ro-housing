@@ -1,12 +1,12 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { WicketClient, WicketJob } from "../lib/wicket.ts";
+import type { WicketClient, WicketJob } from "../../lib/wicket.ts";
 
 // routes/saved.ts opens the database: a throwaway one, set before it loads.
 process.env.RO_HOUSING_DB = ":memory:";
-const { fillRoutes } = await import("./fill.ts");
-const { pageTexts } = await import("../details/pageText.ts");
-const { WicketError } = await import("../lib/wicket.ts");
+const { fillRoutes } = await import("./fill-routes.ts");
+const { pageTexts } = await import("./details/pageText.ts");
+const { WicketError } = await import("../../lib/wicket.ts");
 
 const URL_A = "https://www.storia.ro/ro/oferta/apartament-3-camere-ID1";
 const queued = (over: Partial<WicketJob> = {}): WicketJob => ({

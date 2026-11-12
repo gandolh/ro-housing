@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../lib/wicket.ts";
+import type { ChatMessage } from "../../../lib/wicket.ts";
 import { DETAIL_FIELDS, PARTITIONINGS, sane, type DetailField, type DetailFields } from "./extract.ts";
 
 /**

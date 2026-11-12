@@ -9,6 +9,6 @@ export default [
     server: "src",
     // The seed CLI talks to the person running it, and the server entry logs before its logger exists.
     console: ["src/seed.ts", "src/server.ts"],
-    ignores: ["src/details/fixtures/**"],
+    ignores: ["src/features/saved/details/fixtures/**"],
   }),
 ];

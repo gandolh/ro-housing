@@ -7,11 +7,10 @@ import { errors } from "./plugins/errors.ts";
 import { allowedHostnames, hostGuard } from "./plugins/host-guard.ts";
 import { originGuard, webOrigins } from "./plugins/origin-guard.ts";
 import { healthRoutes } from "./features/health/index.ts";
-import { fillRoutes } from "./routes/fill.ts";
 import { issuesRoutes } from "./features/issues/index.ts";
 import { listingsRoutes } from "./features/listings/index.ts";
 import { refreshRoutes } from "./features/refresh/index.ts";
-import { savedRoutes } from "./routes/saved.ts";
+import { fillRoutes, savedRoutes } from "./features/saved/index.ts";
 import { sourcesRoutes } from "./features/sources/index.ts";
 
 /** Fastify's options that belong to the process: server.ts sets them, a test leaves them out. */

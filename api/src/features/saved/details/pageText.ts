@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { cleanText } from "../lib/normalize.ts";
+import { cleanText } from "../../../lib/normalize.ts";
 import { textLines } from "./extract.ts";
 
 /** Each JSON script (JSON-LD, storia's `__NEXT_DATA__`) is cut to this. */

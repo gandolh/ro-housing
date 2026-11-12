@@ -9,5 +9,5 @@
     // The source imports `./app.ts`; the output must import `./app.js`.
     "rewriteRelativeImportExtensions": true
   },
-  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/details/fixtures"]
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/features/saved/details/fixtures"]
 }

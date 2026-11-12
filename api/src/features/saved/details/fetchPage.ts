@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
-import { createSession } from "../lib/fetch.ts";
-import { fetchRenderedHtml } from "../lib/playwright.ts";
+import { createSession } from "../../../lib/fetch.ts";
+import { fetchRenderedHtml } from "../../../lib/playwright.ts";
 
 export type FetchVia = "fetch" | "browser";
 

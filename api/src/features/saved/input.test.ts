@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSavedInput } from "./saved-input.ts";
+import { parseSavedInput } from "./input.ts";
 
 describe("parseSavedInput", () => {
   it("accepts a URL alone, everything else null", () => {

@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { cleanText, isPlusVat, parsePriceEur, parseRooms, parseSqm } from "../lib/normalize.ts";
+import { cleanText, isPlusVat, parsePriceEur, parseRooms, parseSqm } from "../../../lib/normalize.ts";
 
 export const PARTITIONINGS = ["decomandat", "semidecomandat", "nedecomandat", "circular"] as const;
 export type Partitioning = (typeof PARTITIONINGS)[number];
