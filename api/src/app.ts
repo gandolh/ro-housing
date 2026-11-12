@@ -12,7 +12,7 @@ import { issuesRoutes } from "./routes/issues.ts";
 import { listingsRoutes } from "./routes/listings.ts";
 import { refreshRoutes } from "./routes/refresh.ts";
 import { savedRoutes } from "./routes/saved.ts";
-import { sourcesRoutes } from "./routes/sources.ts";
+import { sourcesRoutes } from "./features/sources/index.ts";
 
 /** Fastify's options that belong to the process: server.ts sets them, a test leaves them out. */
 type ServerOptions = Pick<FastifyServerOptions, "logger" | "keepAliveTimeout">;

@@ -14,7 +14,7 @@ const gate = vi.hoisted(() => ({
 vi.mock("../db/index.ts", () => {
   throw new Error("the real database must not open in tests");
 });
-vi.mock("../db/queries.ts", () => ({
+vi.mock("../features/sources/index.ts", () => ({
   listSources: () => {
     if (gate.failNext) {
       gate.failNext = false;
@@ -25,6 +25,8 @@ vi.mock("../db/queries.ts", () => ({
   markSourceRun: (id: string, ok: boolean, count?: number | null) => {
     gate.runs.push({ id, ok, count });
   },
+}));
+vi.mock("../db/queries.ts", () => ({
   upsertListingWithSnapshot: () => {},
 }));
 vi.mock("../adapters/index.ts", () => ({

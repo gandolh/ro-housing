@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { getSource, listSources, updateSource } from "../db/queries.ts";
+import { getSource, listSources, updateSource } from "./store.ts";
 
 export async function sourcesRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/sources", async () => {
