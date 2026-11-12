@@ -1,3 +1,4 @@
+import { serializerCompiler, validatorCompiler } from "@fastify/type-provider-zod";
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import { issuesDir, type Config } from "./config.ts";
 import { stripApiPrefix } from "./lib/api-prefix.ts";
@@ -43,6 +44,10 @@ export async function buildApp(config: Config, options: BuildAppOptions = {}): P
     ...options.server,
     rewriteUrl: (request) => stripApiPrefix(request.url ?? "/"),
   });
+
+  // Zod checks every request and encodes every reply, in every plugin registered below.
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
 
   await app.register(errors);
   await app.register(hostGuard, { allowed: allowedHostnames(config.host, config.publicOrigin) });
