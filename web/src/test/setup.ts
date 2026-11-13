@@ -8,3 +8,19 @@ import { afterEach } from "vitest";
 afterEach(() => {
   cleanup();
 });
+
+// A 1280 px wide window: Listings and Saved draw their tables (lib/useLayout.ts). A test that wants the cards
+// changes `window.matchMedia` itself.
+window.matchMedia = (query: string): MediaQueryList => {
+  const min = /min-width:\s*(\d+)px/.exec(query);
+  return {
+    matches: min ? 1280 >= Number(min[1]) : false,
+    media: query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  };
+};

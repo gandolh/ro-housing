@@ -7,7 +7,7 @@ import { SavedTable } from "../components/SavedTable.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../components/ui/Dialog.tsx";
 import { Input } from "../components/ui/Input.tsx";
-import { Panel } from "../components/ui/Panel.tsx";
+import { Island, IslandHead } from "../components/ui/Panel.tsx";
 import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../components/ui/Select.tsx";
 import {
   formFromFields,
@@ -17,6 +17,7 @@ import {
   type FormField,
   type FormValues,
 } from "../lib/apartment.ts";
+import { cn } from "../lib/cn.ts";
 import { pricePerSqm } from "../lib/format.ts";
 
 type Sort = "saved" | "price" | "perSqm" | "sqm" | "year";
@@ -332,149 +333,166 @@ export function SavedPage({ incomingLink, onIncomingTaken }: Props) {
       />
     ) : null;
 
+  const hasStatus = pendingLink !== null || notice !== null || stage.kind === "existing" || stage.kind === "draft";
+
   return (
     <div>
-      <Panel className="px-3 py-3">
-        <form onSubmit={onSubmitLink} className="flex gap-2">
-          <Input
-            aria-label="Listing link"
-            placeholder="Paste a listing link: storia.ro, an agency site, imobiliare.ro…"
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            disabled={stage.kind === "fetching"}
-          />
-          <Button
-            type="submit"
-            variant={hasDraft ? "default" : "primary"}
-            disabled={stage.kind === "fetching"}
-            className="shrink-0"
+      <Island aria-label="Saved">
+        <IslandHead className="flex-col items-stretch gap-2 px-4 py-2.5 max-[820px]:p-3">
+          <form
+            onSubmit={onSubmitLink}
+            className="flex w-full items-center gap-3 max-[820px]:flex-col max-[820px]:items-stretch"
           >
-            {stage.kind === "fetching" ? "Reading the page…" : "Fetch details"}
-          </Button>
-        </form>
-        {pendingLink !== null && (
-          <div
-            role="alert"
-            className="mt-2 flex flex-wrap items-center gap-2 border border-accent bg-accent-soft px-2 py-1.5 text-xs"
-          >
-            <span className="flex-1">
-              Fetching again replaces the open draft.
-              {edits.length > 0 && ` Your edits to it are lost: ${edits.map((f) => FIELD_NAMES[f]).join(", ")}.`}
-            </span>
-            <Button variant="default" onClick={() => void fetchDetails(pendingLink)}>
-              Replace draft
+            <Input
+              aria-label="Listing link"
+              placeholder="Paste a listing link: storia.ro, an agency site, imobiliare.ro…"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              disabled={stage.kind === "fetching"}
+              className="min-w-0 flex-1 max-[820px]:h-12 max-[820px]:flex-none"
+            />
+            <Button
+              type="submit"
+              variant={hasDraft ? "default" : "primary"}
+              disabled={stage.kind === "fetching"}
+              className="shrink-0 max-[820px]:h-12 max-[820px]:text-lg"
+            >
+              {stage.kind === "fetching" ? "Reading the page…" : "Fetch details"}
             </Button>
-            <Button variant="ghost" onClick={() => setPendingLink(null)}>
-              Keep editing
-            </Button>
+          </form>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 max-[820px]:grid max-[820px]:grid-cols-[minmax(0,1fr)_auto]">
+            {stage.kind === "idle" && !notice ? (
+              <p className="m-0 min-w-0 flex-1 text-xs text-ink-dim max-[820px]:col-span-2 max-[820px]:text-sm">
+                Reads what it can from the page. You check every field before anything is saved.
+              </p>
+            ) : (
+              <span className="flex-1" />
+            )}
+            <Select items={SORT_LABELS} value={sort} onValueChange={(v) => setSort(v as Sort)}>
+              <SelectTrigger aria-label="Sort saved apartments" className="h-8 max-[820px]:h-12 max-[820px]:w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectPopup>
+                {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {SORT_LABELS[k]}
+                  </SelectItem>
+                ))}
+              </SelectPopup>
+            </Select>
+            {!loadError && <span className="whitespace-nowrap font-medium text-ink-dim">{saved.length} saved</span>}
           </div>
-        )}
-        {notice && (
-          <p
-            role={notice.tone === "bad" ? "alert" : "status"}
-            className={notice.tone === "bad" ? "mt-2 text-xs text-bad" : "mt-2 text-xs text-ok"}
-          >
-            {notice.text}
-          </p>
-        )}
-        {stage.kind === "idle" && !notice && (
-          <p className="mt-2 text-xs text-ink-dim">
-            Reads what it can from the page. You check every field before anything is saved.
-          </p>
-        )}
+        </IslandHead>
 
-        {stage.kind === "existing" && (
-          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-rule-soft pt-3 text-sm">
-            <span>
-              Already saved on {fmtDate(stage.existing.savedAt)}
-              {stage.existing.title ? `: ${stage.existing.title}` : ""}.
-            </span>
-            <Button variant="default" onClick={() => startEdit(stage.existing)}>
-              Edit it
-            </Button>
-            <Button variant="ghost" onClick={discard}>
-              Clear
-            </Button>
-          </div>
-        )}
-
-        {stage.kind === "draft" && (
-          <div className="mt-3 border-t border-rule-soft pt-3">
-            <div className="mb-3 flex flex-wrap items-start gap-2">
-              {stage.result.problem ? (
-                <p role="alert" className="flex-1 border border-bad bg-bad-soft px-2 py-1.5 text-xs text-bad">
-                  {stage.result.problem.message} Nothing was read from {stage.result.site}. Fill in what you know; the
-                  link is saved with it.
-                </p>
-              ) : (
-                <p className="flex-1 text-xs text-ink-dim">
-                  Read {stage.result.found.length} of {TOTAL_FIELDS} fields from {stage.result.site}
-                  {stage.result.via === "browser" ? " (through a browser)" : ""}. Check them, fill the gaps, then save.
-                </p>
-              )}
-              {fill}
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {stage.values.imageUrl && (
-                <img
-                  src={stage.values.imageUrl}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  className="h-28 w-40 shrink-0 border border-ink object-cover"
-                />
-              )}
-              <div className="flex-1">
-                <ApartmentForm
-                  values={stage.values}
-                  onChange={setDraftField}
-                  errors={errors}
-                  page={stage.page}
-                  disabled={busy}
-                />
+        {hasStatus && (
+          <div className="border-b border-rule px-4 py-3 max-[820px]:px-3">
+            {pendingLink !== null && (
+              <div
+                role="alert"
+                className="flex flex-wrap items-center gap-2 border border-accent bg-accent-soft px-3 py-2 text-xs"
+              >
+                <span className="flex-1">
+                  Fetching again replaces the open draft.
+                  {edits.length > 0 && ` Your edits to it are lost: ${edits.map((f) => FIELD_NAMES[f]).join(", ")}.`}
+                </span>
+                <Button variant="default" onClick={() => void fetchDetails(pendingLink)}>
+                  Replace draft
+                </Button>
+                <Button variant="ghost" onClick={() => setPendingLink(null)}>
+                  Keep editing
+                </Button>
               </div>
-            </div>
-            <div className="mt-3 flex justify-end gap-2">
-              <Button variant="ghost" onClick={discard} disabled={busy}>
-                Discard
-              </Button>
-              <Button variant="primary" onClick={() => void saveDraft()} disabled={busy}>
-                {busy ? "Saving…" : "Save"}
-              </Button>
-            </div>
+            )}
+            {notice && (
+              <p
+                role={notice.tone === "bad" ? "alert" : "status"}
+                className={cn(
+                  "m-0 border px-3 py-2 text-xs",
+                  notice.tone === "bad" ? "border-bad bg-bad-soft text-bad" : "border-ok bg-ok-soft text-ok",
+                  pendingLink !== null && "mt-2",
+                )}
+              >
+                {notice.text}
+              </p>
+            )}
+
+            {stage.kind === "existing" && (
+              <div className="flex flex-wrap items-center gap-2 text-base">
+                <span>
+                  Already saved on {fmtDate(stage.existing.savedAt)}
+                  {stage.existing.title ? `: ${stage.existing.title}` : ""}.
+                </span>
+                <Button variant="default" onClick={() => startEdit(stage.existing)}>
+                  Edit it
+                </Button>
+                <Button variant="ghost" onClick={discard}>
+                  Clear
+                </Button>
+              </div>
+            )}
+
+            {stage.kind === "draft" && (
+              <div className={cn((pendingLink !== null || notice !== null) && "mt-3")}>
+                <div className="mb-3 flex flex-wrap items-start gap-2">
+                  {stage.result.problem ? (
+                    <p role="alert" className="m-0 flex-1 border border-bad bg-bad-soft px-3 py-2 text-xs text-bad">
+                      {stage.result.problem.message} Nothing was read from {stage.result.site}. Fill in what you know;
+                      the link is saved with it.
+                    </p>
+                  ) : (
+                    <p className="m-0 flex-1 text-xs text-ink-dim">
+                      Read {stage.result.found.length} of {TOTAL_FIELDS} fields from {stage.result.site}
+                      {stage.result.via === "browser" ? " (through a browser)" : ""}. Check them, fill the gaps, then
+                      save.
+                    </p>
+                  )}
+                  {fill}
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  {stage.values.imageUrl && (
+                    <img
+                      src={stage.values.imageUrl}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className="h-28 w-40 shrink-0 border border-rule object-cover"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <ApartmentForm
+                      values={stage.values}
+                      onChange={setDraftField}
+                      errors={errors}
+                      page={stage.page}
+                      disabled={busy}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button variant="ghost" onClick={discard} disabled={busy}>
+                    Discard
+                  </Button>
+                  <Button variant="primary" onClick={() => void saveDraft()} disabled={busy}>
+                    {busy ? "Saving…" : "Save"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
-      </Panel>
 
-      <div className="mt-4 flex items-center gap-2">
-        <Select items={SORT_LABELS} value={sort} onValueChange={(v) => setSort(v as Sort)}>
-          <SelectTrigger aria-label="Sort saved apartments">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectPopup>
-            {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
-              <SelectItem key={k} value={k}>
-                {SORT_LABELS[k]}
-              </SelectItem>
-            ))}
-          </SelectPopup>
-        </Select>
-        {!loadError && (
-          <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">{saved.length} saved</span>
-        )}
-      </div>
-
-      <div className="mt-3">
         {loadError ? (
-          <ApiErrorNotice
-            action="Couldn't load the saved apartments"
-            error={loadError.error}
-            onRetry={() => void load()}
-            busy={loading}
-          />
+          <div className="p-3">
+            <ApiErrorNotice
+              action="Couldn't load the saved apartments"
+              error={loadError.error}
+              onRetry={() => void load()}
+              busy={loading}
+            />
+          </div>
         ) : (
           <SavedTable saved={sorted} onEdit={startEdit} onDelete={remove} />
         )}
-      </div>
+      </Island>
 
       <Dialog disablePointerDismissal open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent className="w-[min(760px,94vw)]">
