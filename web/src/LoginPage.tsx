@@ -55,18 +55,18 @@ export function LoginPage() {
 
   return (
     <main className="grid min-h-screen place-items-center px-4" aria-busy={pending || ward.pending || undefined}>
-      <Panel className="w-full max-w-sm px-5 py-4">
+      <Panel className="w-full max-w-sm px-5 py-5 shadow-island dark:shadow-none">
         <h1 className="text-xl font-bold uppercase tracking-tight">ro-housing</h1>
-        <p className="mt-1 text-sm text-ink-dim">Sign in to see the listings and your shortlist.</p>
+        <p className="mt-1 text-base text-ink-dim">Sign in to see the listings and your shortlist.</p>
         {notice !== null && (
-          <p role="status" className="mt-3 border border-ink bg-panel-alt px-2 py-1.5 text-xs">
+          <p role="status" className="mt-3 border border-rule bg-panel-alt px-2 py-1.5 text-xs">
             {notice}
           </p>
         )}
 
         <form className="mt-4 flex flex-col gap-3" onSubmit={submit} noValidate aria-label="Sign in">
           <label className="block">
-            <span className="mb-1 block text-xs uppercase tracking-wide text-ink-dim">Username</span>
+            <span className="mb-1 block text-xs font-medium text-ink-dim">Username</span>
             <Input
               ref={usernameRef}
               name="username"
@@ -85,7 +85,7 @@ export function LoginPage() {
             {missing === "username" && <span className="mt-1 block text-xs text-bad">Enter your username.</span>}
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs uppercase tracking-wide text-ink-dim">Password</span>
+            <span className="mb-1 block text-xs font-medium text-ink-dim">Password</span>
             <Input
               ref={passwordRef}
               name="password"
@@ -112,7 +112,7 @@ export function LoginPage() {
 
         {signedOut?.ward.enabled && (
           <div className="mt-3 flex flex-col gap-3">
-            <p className="text-center text-xs uppercase tracking-wide text-ink-faint" aria-hidden="true">
+            <p className="text-center text-xs text-ink-dim" aria-hidden="true">
               or
             </p>
             <Button disabled={ward.pending} onClick={() => void ward.signIn({ returnTo: appBase() })}>

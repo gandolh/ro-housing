@@ -67,13 +67,7 @@
   --shadow-island: 3px 3px 0 var(--color-rule);
   --shadow-popup: 3px 3px 0 var(--color-rule);
 
-  /* Kept until the last control that uses them is restyled. */
-  --color-bevel: light-dark(rgb(255 255 255 / 0.65), rgb(0 0 0 / 0.35));
-  --shadow-knob: inset 0 1px 0 0 var(--color-bevel);
-  --shadow-knob-pressed: inset 0 -1px 0 0 var(--color-bevel);
-
   --tracking-tight: -0.02em;
-  --tracking-wide: 0.05em;
 }
 
 @layer base {

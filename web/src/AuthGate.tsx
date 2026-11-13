@@ -22,15 +22,15 @@ export function AuthGate({ children }: { children: ReactNode }) {
     case "loading":
       return (
         <main className="grid min-h-screen place-items-center" aria-busy="true">
-          <p className="text-sm text-ink-dim">Loading…</p>
+          <p className="text-base text-ink-dim">Loading…</p>
         </main>
       );
     case "error":
       return (
         <main className="grid min-h-screen place-items-center px-4">
-          <Panel className="w-full max-w-sm px-5 py-4">
+          <Panel className="w-full max-w-sm px-5 py-5 shadow-island dark:shadow-none">
             <h1 className="text-xl font-bold uppercase tracking-tight">ro-housing</h1>
-            <p role="alert" className="mt-3 text-sm text-bad">
+            <p role="alert" className="mt-3 text-base text-bad">
               ro-housing can&apos;t be reached. Check your connection and try again.
             </p>
             <Button className="mt-3" onClick={() => void session.refresh()}>

@@ -28,8 +28,8 @@ export function App({ account }: { account?: ReactNode } = {}) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1168px] flex-1 px-6 pb-10 pt-4 max-[820px]:px-0 max-[820px]:pb-0 max-[820px]:pt-0">
-        <Tabs value={tab} onValueChange={(v) => setTab(String(v))} className="flex flex-col">
+      <main className="mx-auto flex w-full max-w-[1168px] flex-1 px-6 pb-10 pt-4 max-[820px]:px-0 max-[820px]:pb-0 max-[820px]:pt-0">
+        <Tabs value={tab} onValueChange={(v) => setTab(String(v))} className="flex min-w-0 flex-1 flex-col">
           <TabsList>
             <TabsTab value="listings">
               <Icon name="list" className="hidden shrink-0 max-[820px]:block" />
@@ -46,13 +46,13 @@ export function App({ account }: { account?: ReactNode } = {}) {
           </TabsList>
           {/* keepMounted: a hidden page keeps its open draft, sort, filter and
               running Refresh instead of starting over when its tab comes back. */}
-          <TabsPanel value="listings" keepMounted className="max-[820px]:px-4 max-[820px]:pt-4">
+          <TabsPanel value="listings" keepMounted className="max-[820px]:px-4 max-[820px]:py-4">
             <ListingsPage onSaveLink={saveLink} />
           </TabsPanel>
-          <TabsPanel value="saved" keepMounted className="max-[820px]:px-4 max-[820px]:pt-4">
+          <TabsPanel value="saved" keepMounted className="max-[820px]:px-4 max-[820px]:py-4">
             <SavedPage incomingLink={incomingLink} onIncomingTaken={() => setIncomingLink(null)} />
           </TabsPanel>
-          <TabsPanel value="sources" keepMounted className="max-[820px]:px-4 max-[820px]:pt-4">
+          <TabsPanel value="sources" keepMounted className="max-[820px]:px-4 max-[820px]:py-4">
             <SourcesPage active={tab === "sources"} />
           </TabsPanel>
         </Tabs>

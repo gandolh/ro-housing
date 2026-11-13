@@ -111,8 +111,8 @@ export function ApartmentForm({ values, onChange, errors, page, showUrl, disable
       {text("rooms", "Rooms", { inputMode: "numeric" })}
       {text("sqm", "Usable m²", { inputMode: "decimal" })}
       <div>
-        <span className="mb-1 block text-xs uppercase tracking-wide text-ink-dim">€/m²</span>
-        <div className="flex h-7 items-center border border-rule-soft bg-panel-alt px-2 text-sm text-ink-dim">
+        <span className="mb-1 block text-xs font-medium text-ink-dim">€/m²</span>
+        <div className="flex h-10 items-center border border-rule-soft bg-panel-alt px-3 text-base text-ink-dim">
           {perSqm}
           <VatMarker show={plusVat && perSqm !== "—"} />
         </div>
@@ -121,7 +121,7 @@ export function ApartmentForm({ values, onChange, errors, page, showUrl, disable
       {text("floorsTotal", "Top floor", { inputMode: "numeric" })}
       {text("yearBuilt", "Year built", { inputMode: "numeric" })}
       <div>
-        <span id={partitioningLabelId} className="mb-1 block text-xs uppercase tracking-wide text-ink-dim">
+        <span id={partitioningLabelId} className="mb-1 block text-xs font-medium text-ink-dim">
           Partitioning
           <Marker field="partitioning" values={values} page={page} />
         </span>

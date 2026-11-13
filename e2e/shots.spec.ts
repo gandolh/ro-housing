@@ -62,6 +62,7 @@ for (const size of [...SIZES, { w: 360, h: 800 }, { w: 1024, h: 800 }, { w: 768,
     await page.setViewportSize({ width: size.w, height: size.h });
     for (const screen of SCREENS) {
       await openTab(page, screen);
+      await page.waitForTimeout(400); // Sources re-reads its runs when it opens
       const rows = await firstScreenRows(page, size.h);
       const gap = await tightestCellGap(page);
       console.log(
@@ -90,5 +91,84 @@ test.describe("screenshots", () => {
         }
       });
     }
+  }
+});
+
+// The screens the board never drew, once per width in the light theme: sign-in, the dialogs, the draft and the
+// empty, error and refreshing states.
+test.describe("undrawn screens", () => {
+  test.skip(!DIR, "set SHOTS_DIR");
+  for (const size of SIZES) {
+    const shoot = async (page: Page, name: string) => {
+      await page.waitForTimeout(200);
+      await page.screenshot({ path: join(DIR ?? ".", `${name}-light-${size.w}.png`), fullPage: true });
+    };
+
+    test(`sign-in ${size.w}`, async ({ page }) => {
+      mkdirSync(DIR ?? ".", { recursive: true });
+      await page.setViewportSize({ width: size.w, height: size.h });
+      await page.goto("");
+      await page.getByLabel("Username").waitFor();
+      await shoot(page, "signin");
+    });
+
+    test(`dialogs and states ${size.w}`, async ({ app: page }) => {
+      await page.setViewportSize({ width: size.w, height: size.h });
+      await setTheme(page, "light");
+
+      await page.getByRole("button", { name: /shotuser/ }).click();
+      await shoot(page, "account");
+      await page.keyboard.press("Escape");
+
+      await page.getByRole("button", { name: /Report/ }).click();
+      await shoot(page, "report");
+      await page.keyboard.press("Escape");
+
+      await openTab(page, "Saved");
+      await page
+        .getByRole("button", { name: /^Edit / })
+        .first()
+        .click();
+      await shoot(page, "edit");
+      await page.keyboard.press("Escape");
+
+      await page.getByLabel("Listing link").fill("https://example.com/storia/stub");
+      await page.getByRole("button", { name: "Fetch details" }).click();
+      await page.getByText(/Read 4 of 10 fields/).waitFor();
+      await shoot(page, "draft");
+      await page.getByRole("button", { name: "Fill the gaps" }).click();
+      await page.waitForTimeout(300);
+      await shoot(page, "fill-gaps");
+      await page.getByRole("button", { name: "Discard" }).first().click();
+
+      await openTab(page, "Listings");
+      await page.route("**/api/refresh", () => undefined);
+      await page.getByRole("button", { name: "Refresh" }).click();
+      await shoot(page, "refreshing");
+    });
+
+    test(`empty and error states ${size.w}`, async ({ app: page }) => {
+      await page.setViewportSize({ width: size.w, height: size.h });
+      await page.route("**/api/listings**", (route) => route.fulfill({ json: [] }));
+      await page.route("**/api/saved", (route) =>
+        route.request().method() === "GET" ? route.fulfill({ json: [] }) : route.continue(),
+      );
+      await page.reload();
+      await page.getByRole("tab", { name: /Listings/ }).waitFor();
+      await shoot(page, "listings-empty");
+      await openTab(page, "Saved");
+      await shoot(page, "saved-empty");
+
+      await page.route("**/api/listings**", (route) => route.abort());
+      await page.route("**/api/saved", (route) => route.fulfill({ status: 500, json: { error: "boom" } }));
+      await page.route("**/api/sources", (route) => route.abort());
+      await page.reload();
+      await page.getByRole("tab", { name: /Listings/ }).waitFor();
+      await shoot(page, "listings-error");
+      await openTab(page, "Saved");
+      await shoot(page, "saved-error");
+      await openTab(page, "Sources");
+      await shoot(page, "sources-error");
+    });
   }
 });

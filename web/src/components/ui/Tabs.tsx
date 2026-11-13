@@ -13,7 +13,7 @@ export const TabsList = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<type
       {...props}
       className={cn(
         "relative z-10 flex items-end",
-        "max-[820px]:sticky max-[820px]:bottom-0 max-[820px]:z-bar max-[820px]:order-last max-[820px]:mt-6 max-[820px]:grid max-[820px]:h-16 max-[820px]:grid-cols-3 max-[820px]:items-stretch max-[820px]:border-t max-[820px]:border-rule max-[820px]:bg-panel",
+        "max-[820px]:sticky max-[820px]:bottom-0 max-[820px]:z-bar max-[820px]:order-last max-[820px]:mt-auto max-[820px]:grid max-[820px]:h-16 max-[820px]:grid-cols-3 max-[820px]:items-stretch max-[820px]:border-t max-[820px]:border-rule max-[820px]:bg-panel",
         className,
       )}
     />
