@@ -15,60 +15,75 @@
 }
 
 @theme {
-  /* Terminal/retro palette. Paper-white ground, ink-black foreground, single
-     muted accent. OKLCH-ish neutrals with a faint warm tint so it doesn't read
-     as dead pixel-gray on screen. */
-  --color-paper: light-dark(#f9f9f9, #121212);
-  --color-ink: light-dark(#0a0a0a, #ececec);
-  --color-ink-dim: light-dark(#5c5c5c, #a9a9a9);
-  --color-ink-faint: light-dark(#9a9a9a, #7d7d7d);
-  --color-panel: light-dark(#ffffff, #1b1b1b);
-  --color-panel-alt: light-dark(#f3f3f1, #242422);
-  --color-rule: light-dark(#0a0a0a, #ececec);
-  --color-rule-soft: light-dark(#d8d8d4, #3b3b38);
-  --color-accent: light-dark(#b25a00, #e8913a);
-  --color-accent-soft: light-dark(#f5e6d3, #3d2a14);
-  --color-ok: light-dark(#1f6b2a, #74d17f);
+  /* The console, re-ruled: warm paper, ink rules and one burnt-ochre accent.
+     Each colour is light-dark(light, dark); color-scheme on :root picks one. */
+  --color-paper: light-dark(#f3f2ee, #11110f);
+  --color-panel: light-dark(#fefdfb, #23221e);
+  --color-panel-alt: light-dark(#efede6, #2c2b26);
+  --color-ink: light-dark(#15140f, #edebe4);
+  --color-ink-dim: light-dark(#58554c, #b1ada3);
+  --color-ink-faint: light-dark(#6f6b62, #9a968c);
+  --color-rule: light-dark(#15140f, #8a867b);
+  --color-rule-soft: light-dark(#d6d3c9, #3d3b35);
+  --color-accent: light-dark(#a35100, #eb9a4a);
+  --color-accent-soft: light-dark(#f8ecdc, #3e2c17);
+  --color-on-accent: light-dark(#fffdf9, #1a1206);
+  --color-ok: light-dark(#1f6b2a, #7fd08a);
   --color-ok-soft: light-dark(#e3efd8, #1e3321);
-  --color-bad: light-dark(#a51a1a, #ff8080);
+  --color-bad: light-dark(#a51a1a, #ff8a80);
   --color-bad-soft: light-dark(#f7dcdc, #3c1a1a);
-  --color-warn: light-dark(#8a5a00, #e6ae45);
+  --color-warn: light-dark(#7f5300, #e8b04e);
+  --color-focus: light-dark(#15140f, #edebe4);
+  --color-scrim: light-dark(rgb(21 20 15 / 0.3), rgb(0 0 0 / 0.6));
 
-  /* Type system: monospace primary, single second face for headings reserved
-     for future use. One ratio, 4 sizes. Vertical rhythm = 18px row,
-     line-height keeps to multiples. */
-  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Monaco, Consolas, monospace;
-  --font-sans: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Monaco, Consolas, monospace;
+  /* Type: Source Code Pro (self-hosted, main.tsx), one face. Sizes 12 14 16 18 20, nothing under 12. */
+  --font-mono: "Source Code Pro Variable", ui-monospace, "Cascadia Code", Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-mono);
 
-  --text-xs: 10px;
+  --text-xs: 12px;
   --text-xs--line-height: 16px;
   --text-sm: 12px;
-  --text-sm--line-height: 18px;
-  --text-base: 13px;
-  --text-base--line-height: 18px;
-  --text-lg: 14px;
-  --text-lg--line-height: 20px;
+  --text-sm--line-height: 16px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-lg: 16px;
+  --text-lg--line-height: 24px;
   --text-xl: 18px;
   --text-xl--line-height: 24px;
+  --text-2xl: 20px;
+  --text-2xl--line-height: 28px;
 
-  --text-mark: 11px;
+  --text-mark: 12px;
   --text-mark--line-height: 1;
 
-  /* The stacking order: sticky header, then the dialog's backdrop, then the dialog. */
+  /* The stacking order: sticky header and the phone's bottom bar, then the dialog's backdrop, then the dialog. */
   --z-index-header: 30;
+  --z-index-bar: 30;
   --z-index-overlay: 40;
   --z-index-dialog: 50;
 
-  /* Industrial-knob depth for primary buttons and select triggers: the 2px ink
-     border defines the shape, the inset top highlight suggests a raised key,
-     and on press the highlight flips to the bottom edge. */
+  /* Depth: hard offsets, never a blur. The island's is light only (see the blocks below). */
+  --shadow-island: 3px 3px 0 var(--color-rule);
+  --shadow-popup: 3px 3px 0 var(--color-rule);
+
+  /* Kept until the last control that uses them is restyled. */
   --color-bevel: light-dark(rgb(255 255 255 / 0.65), rgb(0 0 0 / 0.35));
-  --color-scrim: light-dark(rgb(10 10 10 / 0.3), rgb(0 0 0 / 0.6));
   --shadow-knob: inset 0 1px 0 0 var(--color-bevel);
   --shadow-knob-pressed: inset 0 -1px 0 0 var(--color-bevel);
 
   --tracking-tight: -0.02em;
   --tracking-wide: 0.05em;
+}
+
+/* Dark: no island shadow; the panel steps up by lightness and keeps its rule edge. color-scheme cannot
+   switch a shadow, so these follow the theme attribute. */
+:root[data-theme="dark"] {
+  --shadow-island: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --shadow-island: none;
+  }
 }
 
 @layer base {
@@ -83,7 +98,12 @@
     color-scheme: light dark;
   }
 
-  /* Force sharp corners across everything. The retro look depends on this. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Force sharp corners across everything. The console look depends on this. */
   *,
   *::before,
   *::after {
@@ -100,8 +120,8 @@
     background: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-mono);
-    font-size: 13px;
-    line-height: 18px;
+    font-size: 14px;
+    line-height: 20px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

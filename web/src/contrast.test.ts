@@ -33,10 +33,6 @@ const pick = (name: string, theme: 0 | 1): string => {
   return pair[theme];
 };
 
-// The light theme's accent on accent-soft was 3.9:1 before this test existed, and the light look stays as it
-// was. It may not drop further; the dark theme meets 4.5:1.
-const LIGHT_FLOOR: Record<string, number> = { "accent/accent-soft": 3.9 };
-
 // [text token, surface token]: every pair the app draws body text with.
 const BODY: [string, string][] = [
   ["ink", "paper"],
@@ -47,32 +43,42 @@ const BODY: [string, string][] = [
   ["ink-dim", "panel-alt"],
   ["accent", "paper"],
   ["accent", "panel"],
-  ["accent", "accent-soft"], // 3.9:1 in light; see LIGHT_FLOOR
+  ["accent", "panel-alt"],
+  ["accent", "accent-soft"],
   ["ok", "panel"],
   ["ok", "ok-soft"],
   ["bad", "panel"],
   ["bad", "bad-soft"],
   ["warn", "panel"],
+  ["warn", "panel-alt"],
+  ["ink-faint", "paper"],
+  ["ink-faint", "panel"],
+  ["ink-faint", "panel-alt"],
+  ["on-accent", "accent"],
+  ["bad", "panel-alt"],
+  ["ok", "panel-alt"],
   // Inverted controls: paper on an ink fill (primary buttons, highlighted rows).
   ["paper", "ink"],
+];
+
+// [edge token, surface token]: borders and icons, which need 3:1.
+const PARTS: [string, string][] = [
+  ["rule", "paper"],
+  ["rule", "panel"],
+  ["rule", "panel-alt"],
+  ["focus", "paper"],
+  ["focus", "panel"],
 ];
 
 describe.each([
   [0, "light"],
   [1, "dark"],
 ] as const)("contrast in the %s theme", (theme, name) => {
-  it.each(BODY)(`${name}: %s on %s meets its floor (4.5:1 for body text)`, (text, surface) => {
-    const min = theme === 0 ? (LIGHT_FLOOR[`${text}/${surface}`] ?? 4.5) : 4.5;
-    expect(ratio(pick(text, theme), pick(surface, theme))).toBeGreaterThanOrEqual(min);
+  it.each(BODY)(`${name}: %s on %s meets 4.5:1`, (text, surface) => {
+    expect(ratio(pick(text, theme), pick(surface, theme))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it(`${name}: faint text (placeholders, the footer) stays as legible as the light theme's`, () => {
-    // ink-faint is decorative; the light theme sets the floor.
-    const floor = Math.min(
-      ratio(pick("ink-faint", 0), pick("paper", 0)),
-      ratio(pick("ink-faint", 0), pick("panel", 0)),
-    );
-    expect(ratio(pick("ink-faint", theme), pick("paper", theme))).toBeGreaterThanOrEqual(floor);
-    expect(ratio(pick("ink-faint", theme), pick("panel", theme))).toBeGreaterThanOrEqual(floor);
+  it.each(PARTS)(`${name}: %s on %s meets 3:1`, (edge, surface) => {
+    expect(ratio(pick(edge, theme), pick(surface, theme))).toBeGreaterThanOrEqual(3);
   });
 });

@@ -11,7 +11,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ classN
       className={cn(
         "block w-full resize-y border border-ink bg-panel px-2 py-1.5 text-base",
         "placeholder:text-ink-faint",
-        "focus:outline-none focus:bg-paper",
+        "focus:bg-paper",
         "disabled:opacity-50",
         className,
       )}

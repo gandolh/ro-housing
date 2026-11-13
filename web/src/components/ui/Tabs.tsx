@@ -44,8 +44,6 @@ export const TabsTab = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<ty
 TabsTab.displayName = "TabsTab";
 
 export const TabsPanel = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof BaseTabs.Panel>>(
-  ({ className, ...props }, ref) => (
-    <BaseTabs.Panel ref={ref} {...props} className={cn("focus:outline-none", className)} />
-  ),
+  ({ className, ...props }, ref) => <BaseTabs.Panel ref={ref} {...props} className={cn(className)} />,
 );
 TabsPanel.displayName = "TabsPanel";
