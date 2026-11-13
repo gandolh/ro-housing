@@ -1,0 +1,10 @@
+{
+  "extends": "./vendor/house-style/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["e2e/**/*", "playwright.config.ts"]
+}

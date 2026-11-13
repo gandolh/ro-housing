@@ -5,5 +5,6 @@ import { houseStyle } from "./vendor/house-style/eslint.config.js";
 export default houseStyle({
   root: import.meta.dirname,
   scripts: ["scripts", "docs/images"],
+  playwright: ["e2e/**"],
   ignores: ["api/**", "web/**", "data/**"],
 });
