@@ -36,9 +36,10 @@ vi.mock("../../adapters/index.ts", () => ({
     storia: {
       id: "storia",
       displayName: "storia.ro",
-      scrape: () => {
+      scrape: (_url: string, signal?: AbortSignal) => {
         gate.started++;
         return new Promise((resolve, reject) => {
+          signal?.addEventListener("abort", () => reject(signal.reason));
           gate.release = (rows: unknown[] = []) => resolve(rows);
           gate.fail = (err: Error) => reject(err);
         });
@@ -147,5 +148,17 @@ describe("POST /api/refresh", () => {
     await vi.waitFor(() => expect(gate.started).toBe(1));
     gate.release();
     expect((await run).statusCode).toBe(200);
+  });
+
+  it("aborts a refresh in flight when the app closes: 503, close prompt, the source's last run untouched", async () => {
+    const run = app.inject({ method: "POST", url: "/api/refresh" });
+    await vi.waitFor(() => expect(gate.started).toBe(1));
+    const began = Date.now();
+    await app.close();
+    const res = await run;
+    expect(Date.now() - began).toBeLessThan(1000);
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toEqual({ error: "The server is restarting; try again in a moment." });
+    expect(gate.runs).toEqual([]);
   });
 });

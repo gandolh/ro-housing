@@ -55,7 +55,7 @@ export const imobiliareFeedAdapter: Adapter = {
   id: "imobiliare-feed",
   displayName: "imobiliare.ro (RSS)",
   defaultSearchUrl: FEED_URL,
-  async scrape(searchUrl) {
+  async scrape(searchUrl, signal) {
     // The Sources page lets the URL be edited; this source reads the feed and
     // nothing else, so an edited URL can't point it at a listing page.
     if (searchUrl.trim() !== FEED_URL) {
@@ -67,7 +67,7 @@ export const imobiliareFeedAdapter: Adapter = {
         "User-Agent": USER_AGENT,
         Accept: "application/rss+xml, application/xml, text/xml;q=0.9",
       },
-      signal: AbortSignal.timeout(30_000),
+      signal: signal ? AbortSignal.any([AbortSignal.timeout(30_000), signal]) : AbortSignal.timeout(30_000),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} for ${FEED_URL}`);
     const xml = await res.text();

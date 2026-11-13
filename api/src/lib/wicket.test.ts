@@ -35,6 +35,18 @@ describe("wicketClient", () => {
     expect(await client.cancel("gone")).toBeUndefined();
   });
 
+  it("aborts a long poll when the signal does, with no wait for Wicket", async () => {
+    const fetch = ((_url: string | URL | Request, init: RequestInit = {}) =>
+      new Promise((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+      })) as typeof globalThis.fetch;
+    const client = wicketClient({ url: "https://w", token: "t", fetch });
+    const controller = new AbortController();
+    const poll = client.get("j1", 25, controller.signal);
+    controller.abort(new Error("shutting down"));
+    await expect(poll).rejects.toBeInstanceOf(WicketError);
+  });
+
   it("keeps Wicket's error code, and names an unreachable Wicket", async () => {
     const full = wicketClient({
       url: "https://w",

@@ -231,6 +231,16 @@ describe("createSession", () => {
     await expect(createSession(publicDeps).get(`http://x.example:${port}/`)).rejects.toThrow(/not an http\(s\) link/);
   });
 
+  it("stops a request the server never answers when the caller's signal aborts, with the caller's reason", async () => {
+    handle = () => {}; // never answers
+    const controller = new AbortController();
+    const pending = createSession(publicDeps).get(`http://slow.example:${port}/`, controller.signal);
+    await vi.waitFor(() => expect(hits).toHaveLength(1));
+    const reason = new Error("shutting down");
+    controller.abort(reason);
+    await expect(pending).rejects.toBe(reason);
+  });
+
   it("throws HTTP <status> for a non-2xx answer", async () => {
     handle = (_req, res) => {
       res.writeHead(404);

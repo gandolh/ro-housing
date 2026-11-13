@@ -1,6 +1,7 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { errorSchema } from "../../lib/error-body.ts";
 import { normalizeListingUrl } from "../../lib/url.ts";
+import { RESTARTING } from "../../plugins/shutdown.ts";
 import { MAX_WAIT_SECONDS, WicketError, type WicketClient, type WicketJob } from "../../lib/wicket.ts";
 import type { DetailField } from "./details/extract.ts";
 import { FillAnswerError, fillMessages, fillSchema, mergeFill } from "./details/fill.ts";
@@ -113,8 +114,10 @@ export const fillRoutes: FastifyPluginAsyncZod<FillOptions> = async (app, { wick
 
       let job: WicketJob | undefined;
       try {
-        job = await wicket.get(id, wait);
+        job = await wicket.get(id, wait, app.shutdownSignal);
       } catch (err) {
+        // The shutdown cut the poll; Wicket still has the job, and the form polls again once the app is back.
+        if (app.shutdownSignal.aborted) return reply.code(503).send({ error: RESTARTING });
         if (!(err instanceof WicketError)) throw err;
         const { status, error } = refusal(err);
         return reply.code(status).send({ error });

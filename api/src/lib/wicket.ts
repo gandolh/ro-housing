@@ -40,7 +40,7 @@ export interface WicketClient {
   /** Joins the queue. The body is exactly `{ messages, format }`: Wicket answers 400 to any other field. */
   submit(messages: ChatMessage[], format: unknown): Promise<WicketJob>;
   /** The job, after up to `waitSeconds` (at most 25) for a change; undefined once Wicket has forgotten it. */
-  get(id: string, waitSeconds: number): Promise<WicketJob | undefined>;
+  get(id: string, waitSeconds: number, signal?: AbortSignal): Promise<WicketJob | undefined>;
   /** Cancels a job this app started; undefined once Wicket has forgotten it. */
   cancel(id: string): Promise<WicketJob | undefined>;
 }
@@ -62,7 +62,13 @@ export function wicketClient({
 }): WicketClient {
   const base = url.replace(/\/+$/, "");
 
-  async function call(method: string, path: string, timeoutMs: number, body?: unknown): Promise<Response> {
+  async function call(
+    method: string,
+    path: string,
+    timeoutMs: number,
+    body?: unknown,
+    outer?: AbortSignal,
+  ): Promise<Response> {
     try {
       return await fetch(`${base}${path}`, {
         method,
@@ -71,7 +77,7 @@ export function wicketClient({
           ...(body === undefined ? {} : { "content-type": "application/json" }),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: outer ? AbortSignal.any([AbortSignal.timeout(timeoutMs), outer]) : AbortSignal.timeout(timeoutMs),
       });
     } catch (err) {
       const timedOut = err instanceof Error && err.name === "TimeoutError";
@@ -92,9 +98,15 @@ export function wicketClient({
       if (res.status !== 202) throw await refusal(res);
       return (await res.json()) as WicketJob;
     },
-    async get(id, waitSeconds) {
+    async get(id, waitSeconds, signal) {
       const wait = Math.max(0, Math.min(MAX_WAIT_SECONDS, Math.floor(waitSeconds)));
-      const res = await call("GET", `${jobPath(id)}${wait > 0 ? `?wait=${wait}` : ""}`, wait * 1000 + SLACK_MS);
+      const res = await call(
+        "GET",
+        `${jobPath(id)}${wait > 0 ? `?wait=${wait}` : ""}`,
+        wait * 1000 + SLACK_MS,
+        undefined,
+        signal,
+      );
       if (res.status === 404) return undefined;
       if (!res.ok) throw await refusal(res);
       return (await res.json()) as WicketJob;

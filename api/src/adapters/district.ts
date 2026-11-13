@@ -6,9 +6,9 @@ import type { Adapter, ScrapedListing } from "./types.ts";
 export const districtAdapter: Adapter = {
   id: "district",
   displayName: "districtestate.ro",
-  async scrape(searchUrl) {
+  async scrape(searchUrl, signal) {
     const session = createSession();
-    const html = await session.get(searchUrl);
+    const html = await session.get(searchUrl, signal);
     const $ = cheerio.load(html);
 
     const seen = new Set<string>();

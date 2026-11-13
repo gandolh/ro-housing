@@ -6,8 +6,8 @@ import type { Adapter, ScrapedListing } from "./types.ts";
 export const storiaAdapter: Adapter = {
   id: "storia",
   displayName: "storia.ro",
-  async scrape(searchUrl) {
-    const html = await fetchRenderedHtml(searchUrl, 'a[href*="/oferta/"], [data-cy="search.listing"]');
+  async scrape(searchUrl, signal) {
+    const html = await fetchRenderedHtml(searchUrl, 'a[href*="/oferta/"], [data-cy="search.listing"]', signal);
     const $ = cheerio.load(html);
 
     const seen = new Set<string>();

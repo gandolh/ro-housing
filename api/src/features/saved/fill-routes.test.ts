@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WicketClient, WicketJob } from "../../lib/wicket.ts";
 import { testApp } from "../../testing/test-app.ts";
 
@@ -24,13 +24,13 @@ function stubWicket() {
   const calls: { op: string; args: unknown[] }[] = [];
   const state = {
     submit: async (): Promise<WicketJob> => queued(),
-    get: async (): Promise<WicketJob | undefined> => queued(),
+    get: async (_signal?: AbortSignal): Promise<WicketJob | undefined> => queued(),
     cancel: async (): Promise<WicketJob | undefined> =>
       queued({ status: "cancelled", error: "cancelled by the caller" }),
   };
   const client: WicketClient = {
     submit: (...args) => (calls.push({ op: "submit", args }), state.submit()),
-    get: (...args) => (calls.push({ op: "get", args }), state.get()),
+    get: (...args) => (calls.push({ op: "get", args }), state.get(args[2])),
     cancel: (...args) => (calls.push({ op: "cancel", args }), state.cancel()),
   };
   return { client, calls, state };
@@ -86,7 +86,7 @@ describe("Fill the gaps routes", () => {
   it("passes the long poll through, never above 25 seconds: queued, then running", async () => {
     await start();
     expect((await app.inject({ url: "/api/saved/fill/w1?wait=90" })).json().status).toBe("queued");
-    expect(wicket.calls[1]).toEqual({ op: "get", args: ["w1", 25] });
+    expect(wicket.calls[1]).toEqual({ op: "get", args: ["w1", 25, expect.any(AbortSignal)] });
     wicket.state.get = async () => queued({ status: "running", position: 0, nowServing: 14 });
     expect((await app.inject({ url: "/api/saved/fill/w1?wait=25" })).json()).toMatchObject({
       status: "running",
@@ -237,6 +237,23 @@ describe("Fill the gaps routes", () => {
   it("reads a wait that is not a number as 0 rather than refusing it", async () => {
     await start();
     expect((await app.inject({ url: "/api/saved/fill/w1?wait=abc" })).statusCode).toBe(200);
-    expect(wicket.calls.at(-1)).toEqual({ op: "get", args: ["w1", 0] });
+    expect(wicket.calls.at(-1)).toEqual({ op: "get", args: ["w1", 0, expect.any(AbortSignal)] });
+  });
+
+  it("aborts a held poll when the app closes, and the close does not wait for Wicket", async () => {
+    await start();
+    // A Wicket that never answers, until the signal it was given aborts.
+    wicket.state.get = (signal) =>
+      new Promise((_resolve, reject) => {
+        signal?.addEventListener("abort", () => reject(new WicketError("Could not reach Wicket.")));
+      });
+    const poll = app.inject({ url: "/api/saved/fill/w1?wait=25" });
+    await vi.waitFor(() => expect(wicket.calls.filter((c) => c.op === "get")).toHaveLength(1));
+    const began = Date.now();
+    await app.close();
+    const res = await poll;
+    expect(Date.now() - began).toBeLessThan(1000);
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toEqual({ error: "The server is restarting; try again in a moment." });
   });
 });

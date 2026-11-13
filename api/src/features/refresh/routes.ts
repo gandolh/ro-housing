@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import type { FastifyBaseLogger } from "fastify";
 import { ADAPTER_REGISTRY } from "../../adapters/index.ts";
 import { errorSchema } from "../../lib/error-body.ts";
+import { RESTARTING } from "../../plugins/shutdown.ts";
 import { upsertListingWithSnapshot } from "../listings/index.ts";
 import { listSources, markSourceRun } from "../sources/index.ts";
 import { refreshResultSchema } from "./schema.ts";
@@ -17,14 +18,18 @@ export const EMPTY_RUN_WARNING = "no listings found";
 export const refreshRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     "/api/refresh",
-    { schema: { response: { 200: refreshResultSchema, 409: errorSchema } } },
+    { schema: { response: { 200: refreshResultSchema, 409: errorSchema, 503: errorSchema } } },
     async (_req, reply) => {
       if (running) {
         return reply.code(409).send({ error: "a refresh is already running" });
       }
       running = true;
       try {
-        return await refreshAll(app.log);
+        return await refreshAll(app.log, app.shutdownSignal);
+      } catch (err) {
+        // The shutdown cut the run: the sources before it are saved, the rest wait for the next press.
+        if (!app.shutdownSignal.aborted) throw err;
+        return reply.code(503).send({ error: RESTARTING });
       } finally {
         running = false;
       }
@@ -32,8 +37,9 @@ export const refreshRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 };
 
-/** Runs every enabled source with a search URL, one after another. */
-async function refreshAll(log: FastifyBaseLogger) {
+/** Runs every enabled source with a search URL, one after another. When `signal` aborts it stops, between
+ *  sources or inside one, and throws: a source the shutdown cut is not recorded as a failed run. */
+async function refreshAll(log: FastifyBaseLogger, signal: AbortSignal) {
   const sources = listSources();
   const results: {
     id: string;
@@ -44,6 +50,7 @@ async function refreshAll(log: FastifyBaseLogger) {
   }[] = [];
 
   for (const src of sources) {
+    signal.throwIfAborted();
     if (src.enabled !== 1 || !src.search_url) continue;
     const adapter = ADAPTER_REGISTRY[src.id];
     if (!adapter) {
@@ -57,7 +64,7 @@ async function refreshAll(log: FastifyBaseLogger) {
       continue;
     }
     try {
-      const scraped = await adapter.scrape(src.search_url);
+      const scraped = await adapter.scrape(src.search_url, signal);
       const now = Date.now();
       for (const row of scraped) {
         upsertListingWithSnapshot(src.id, row, now);
@@ -70,6 +77,7 @@ async function refreshAll(log: FastifyBaseLogger) {
         ...(scraped.length === 0 ? { warning: EMPTY_RUN_WARNING } : {}),
       });
     } catch (err) {
+      signal.throwIfAborted();
       log.error({ err, sourceId: src.id }, "adapter failed");
       markSourceRun(src.id, false);
       results.push({

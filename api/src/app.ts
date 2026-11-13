@@ -7,6 +7,7 @@ import { auth } from "./plugins/auth.ts";
 import { errors } from "./plugins/errors.ts";
 import { allowedHostnames, hostGuard } from "./plugins/host-guard.ts";
 import { originGuard, webOrigins } from "./plugins/origin-guard.ts";
+import { shutdown } from "./plugins/shutdown.ts";
 import { healthRoutes } from "./features/health/index.ts";
 import { issuesRoutes } from "./features/issues/index.ts";
 import { listingsRoutes } from "./features/listings/index.ts";
@@ -29,7 +30,8 @@ export interface BuildAppOptions {
  * The API, ready and not listening. It registers in a fixed order: the error handler, then three guards
  * before any route runs, then the routes.
  *
- * 1. the error handler (plugins/errors.ts), first, so every plugin below answers through it;
+ * 1. the error handler (plugins/errors.ts), first, so every plugin below answers through it, and the shutdown
+ *    signal (plugins/shutdown.ts), aborted in `preClose` so a refresh or a Wicket poll never holds the close;
  * 2. the `Host` check (plugins/host-guard.ts): this machine's names, `HOST` and the public origin's
  *    host; anything else is a rebound name and gets 403;
  * 3. the `Origin` check (plugins/origin-guard.ts): no `Origin`, the Vite dev origins (or `WEB_ORIGINS`)
@@ -50,6 +52,7 @@ export async function buildApp(config: Config, options: BuildAppOptions = {}): P
   app.setSerializerCompiler(serializerCompiler);
 
   await app.register(errors);
+  await app.register(shutdown);
   await app.register(hostGuard, { allowed: allowedHostnames(config.host, config.publicOrigin) });
   await app.register(originGuard, { allowed: webOrigins(config.webOrigins, config.publicOrigin) });
   await app.register(auth, {

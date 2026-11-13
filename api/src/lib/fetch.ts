@@ -245,7 +245,8 @@ function request(
 }
 
 export interface FetchSession {
-  get(url: string): Promise<string>;
+  /** `signal` aborts the whole chain, as the 20 s timeout does. */
+  get(url: string, signal?: AbortSignal): Promise<string>;
 }
 
 export interface SessionDeps {
@@ -268,8 +269,9 @@ export function createSession(deps: SessionDeps = {}): FetchSession {
   const jar = new CookieJar();
   const lookup = vettingLookup(deps.resolve, deps.connectTo);
   return {
-    async get(url: string): Promise<string> {
-      const signal = AbortSignal.timeout(TIMEOUT_MS);
+    async get(url: string, outer?: AbortSignal): Promise<string> {
+      const timeout = AbortSignal.timeout(TIMEOUT_MS);
+      const signal = outer ? AbortSignal.any([timeout, outer]) : timeout;
       try {
         let next = url;
         for (let hop = 0; ; hop += 1) {
@@ -308,7 +310,7 @@ export function createSession(deps: SessionDeps = {}): FetchSession {
           return await reply.text();
         }
       } catch (err) {
-        // The timeout reads as `fetch`'s did, not as a reset socket.
+        // The timeout, or the outer abort, reads as `fetch`'s did, not as a reset socket.
         if (signal.aborted) throw signal.reason;
         throw err;
       }

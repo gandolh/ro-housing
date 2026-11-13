@@ -131,8 +131,10 @@ export async function guardPage(
 /** The page at `url` as Chromium renders it, for sites that refuse plain
  *  requests or build the page in JavaScript. A link to a local address, or a
  *  redirect to one, throws `LocalAddressError` as the plain session does. */
-export async function fetchRenderedHtml(url: string, waitForSelector?: string): Promise<string> {
+export async function fetchRenderedHtml(url: string, waitForSelector?: string, signal?: AbortSignal): Promise<string> {
+  signal?.throwIfAborted();
   const browser = await getBrowser();
+  signal?.throwIfAborted();
   const ctx = await browser.newContext({
     userAgent:
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -140,6 +142,9 @@ export async function fetchRenderedHtml(url: string, waitForSelector?: string): 
     // Requests a service worker makes are not seen by route handlers.
     serviceWorkers: "block",
   });
+  // An abort closes the context, which fails whatever the page is waiting for.
+  const abort = () => void ctx.close().catch(() => {});
+  signal?.addEventListener("abort", abort, { once: true });
   try {
     const page = await ctx.newPage();
     await guardPage(ctx, page, browserFilter());
@@ -157,7 +162,11 @@ export async function fetchRenderedHtml(url: string, waitForSelector?: string): 
       await page.waitForSelector(waitForSelector, { timeout: 20_000 });
     }
     return await page.content();
+  } catch (err) {
+    if (signal?.aborted) throw signal.reason;
+    throw err;
   } finally {
-    await ctx.close();
+    signal?.removeEventListener("abort", abort);
+    await ctx.close().catch(() => {});
   }
 }
