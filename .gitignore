@@ -159,5 +159,8 @@ issues/
 # images committed inside docs/ or web/public still work.
 /*.png
 /*.jpeg
-/*.jpgtest-results/
+/*.jpg
+
+# Playwright output
+test-results/
 playwright-report/
