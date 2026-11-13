@@ -71,7 +71,7 @@ export function ReportIssueButton() {
     <Dialog disablePointerDismissal open={open} onOpenChange={(next) => void handleOpenChange(next)}>
       <DialogTrigger
         render={(props) => (
-          <Button {...props} variant="default" className="h-7 px-3 text-sm">
+          <Button {...props} variant="default" className="h-8 px-3 max-[820px]:h-11">
             {label}
           </Button>
         )}

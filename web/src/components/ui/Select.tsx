@@ -1,6 +1,7 @@
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { forwardRef, type ComponentProps, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { cn } from "../../lib/cn.ts";
+import { Icon } from "../Icon.tsx";
 
 type SelectProps = Omit<ComponentProps<typeof BaseSelect.Root<string>>, "items" | "multiple"> & {
   /** Every choice with the label the trigger shows for it (base-ui rule 10). */
@@ -17,18 +18,15 @@ export const SelectTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithout
       ref={ref}
       {...props}
       className={cn(
-        // Industrial-knob depth: 2px ink border + top-inset highlight (the shadow-knob tokens).
-        // Inverts on open: ink fill, paper text, highlight flips to the bottom edge.
-        "inline-flex h-7 min-w-[8rem] items-center justify-between gap-2 border-2 border-ink shadow-knob data-pressed:shadow-knob-pressed data-popup-open:shadow-knob-pressed active:shadow-knob-pressed bg-panel px-2 text-sm",
-        "hover:bg-paper",
-        "data-popup-open:bg-ink data-popup-open:text-paper",
-        "data-disabled:opacity-50",
+        "inline-flex h-9 min-w-[8rem] items-center justify-between gap-2 border border-rule bg-panel pl-3 pr-2.5 text-base font-medium text-ink",
+        "hover:bg-panel-alt data-popup-open:bg-panel-alt",
+        "data-disabled:border-rule-soft data-disabled:text-ink-faint",
         className,
       )}
     >
       {children}
-      <BaseSelect.Icon aria-hidden="true" className="text-ink-dim data-popup-open:text-paper">
-        ▾
+      <BaseSelect.Icon aria-hidden="true" className="text-ink">
+        <Icon name="chevron" />
       </BaseSelect.Icon>
     </BaseSelect.Trigger>
   ),
@@ -47,10 +45,7 @@ export function SelectPopup({ children, className }: SelectPopupProps) {
     <BaseSelect.Portal>
       <BaseSelect.Positioner sideOffset={4}>
         <BaseSelect.Popup
-          className={cn(
-            "min-w-[var(--anchor-width)] border-2 border-ink bg-panel py-1 shadow-[2px_2px_0_0_var(--color-ink)]",
-            className,
-          )}
+          className={cn("min-w-[var(--anchor-width)] border border-rule bg-panel py-1 shadow-popup", className)}
         >
           {children}
         </BaseSelect.Popup>
@@ -59,18 +54,24 @@ export function SelectPopup({ children, className }: SelectPopupProps) {
   );
 }
 
-export const SelectItem = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof BaseSelect.Item>>(
-  ({ className, children, ...props }, ref) => (
+type SelectItemProps = ComponentPropsWithoutRef<typeof BaseSelect.Item> & {
+  /** A second line under the label (a source's last run); the trigger still shows only the label. */
+  detail?: ReactNode;
+};
+
+export const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
+  ({ className, children, detail, ...props }, ref) => (
     <BaseSelect.Item
       ref={ref}
       {...props}
       className={cn(
-        "flex h-7 cursor-pointer items-center px-2 text-sm",
-        "data-highlighted:bg-ink data-highlighted:text-paper",
+        "flex min-h-9 cursor-pointer flex-col justify-center px-3 py-1 text-base",
+        "data-highlighted:bg-panel-alt data-selected:bg-accent-soft",
         className,
       )}
     >
       <BaseSelect.ItemText>{children}</BaseSelect.ItemText>
+      {detail}
     </BaseSelect.Item>
   ),
 );

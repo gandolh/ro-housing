@@ -10,5 +10,7 @@ const classByStatus: Record<Status, string> = {
 };
 
 export function StatusDot({ status, className }: { status: Status; className?: string }) {
-  return <span aria-hidden className={cn("inline-block size-2 border border-ink", classByStatus[status], className)} />;
+  return (
+    <span aria-hidden className={cn("inline-block size-2 border border-rule", classByStatus[status], className)} />
+  );
 }

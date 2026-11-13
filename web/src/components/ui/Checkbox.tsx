@@ -10,7 +10,7 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(({ classNam
       ref={ref}
       {...props}
       className={cn(
-        "inline-flex size-4 shrink-0 items-center justify-center border border-ink bg-panel",
+        "inline-flex size-4 shrink-0 items-center justify-center border border-rule bg-panel",
         "data-checked:bg-ink data-checked:text-paper",
         "data-disabled:opacity-40",
         className,

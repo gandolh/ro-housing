@@ -7,6 +7,7 @@ import {
 } from "../../vendor/ward/ward-auth-react.js";
 import { accountMessage } from "../messages.ts";
 import { navigate, usePage } from "../route.ts";
+import { Icon } from "./Icon.tsx";
 import { ThemeSwitch } from "./ThemeSwitch.tsx";
 import { Button } from "./ui/Button.tsx";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/Dialog.tsx";
@@ -36,14 +37,15 @@ export function AccountButton() {
     <Dialog open={open} onOpenChange={(next) => navigate(next ? "account" : "app", { replace: !next })}>
       <DialogTrigger
         render={(props) => (
-          <Button {...props} variant="ghost" className="h-auto px-1 text-xs uppercase tracking-wide">
+          <Button {...props} variant="ghost" className="max-[820px]:h-11">
+            <Icon name="user" />
             {user.username}
           </Button>
         )}
       />
       <DialogContent>
         <DialogTitle>Account</DialogTitle>
-        <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+        <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-base">
           <dt className="text-ink-dim">Signed in as</dt>
           <dd>{user.username}</dd>
           <dt className="text-ink-dim">Signed in with</dt>

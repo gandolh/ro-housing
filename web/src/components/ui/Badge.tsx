@@ -8,19 +8,20 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const toneClass: Record<Tone, string> = {
-  default: "border-ink text-ink bg-panel",
+  default: "border-rule text-ink",
   ok: "border-ok text-ok bg-ok-soft",
   bad: "border-bad text-bad bg-bad-soft",
-  warn: "border-warn text-warn bg-panel",
-  accent: "border-accent text-accent bg-accent-soft",
+  warn: "border-warn text-warn",
+  accent: "border-accent bg-accent text-on-accent",
 };
 
+/** A square chip: a source key, a run result. Sentence case, never tracked capitals. */
 export function Badge({ tone = "default", className, children, ...props }: BadgeProps) {
   return (
     <span
       {...props}
       className={cn(
-        "inline-flex items-center border px-1.5 text-xs uppercase tracking-wide leading-4",
+        "inline-flex items-center whitespace-nowrap border px-[7px] py-px text-xs font-medium",
         toneClass[tone],
         className,
       )}

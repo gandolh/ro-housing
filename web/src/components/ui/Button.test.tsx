@@ -11,11 +11,11 @@ describe("<Button>", () => {
 
   it("applies variant classes (default / primary / ghost)", () => {
     const { rerender } = render(<Button>x</Button>);
-    expect(screen.getByRole("button")).toHaveClass("border-ink");
+    expect(screen.getByRole("button")).toHaveClass("border-rule");
 
     rerender(<Button variant="primary">x</Button>);
-    // Primary carries the knob bevel (the shadow-knob token)
-    expect(screen.getByRole("button")).toHaveClass("shadow-knob");
+    // Primary is the solid ink button.
+    expect(screen.getByRole("button")).toHaveClass("bg-ink");
 
     rerender(<Button variant="ghost">x</Button>);
     expect(screen.getByRole("button")).toHaveClass("border-transparent");

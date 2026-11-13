@@ -6,11 +6,7 @@ export const Field = BaseField.Root;
 
 export const FieldLabel = forwardRef<HTMLLabelElement, ComponentPropsWithoutRef<typeof BaseField.Label>>(
   ({ className, ...props }, ref) => (
-    <BaseField.Label
-      ref={ref}
-      {...props}
-      className={cn("block text-xs uppercase tracking-wide text-ink-dim mb-1", className)}
-    />
+    <BaseField.Label ref={ref} {...props} className={cn("mb-1 block text-xs font-medium text-ink-dim", className)} />
   ),
 );
 FieldLabel.displayName = "FieldLabel";

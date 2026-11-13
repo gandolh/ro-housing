@@ -22,7 +22,7 @@ export function RadioGroup<Value extends string>({ label, options, value, onValu
   const labelId = useId();
   return (
     <div className="flex flex-col gap-1.5">
-      <div id={labelId} className="text-xs uppercase tracking-wide text-ink-dim">
+      <div id={labelId} className="text-xs font-medium text-ink-dim">
         {label}
       </div>
       <BaseRadioGroup<Value>
@@ -32,10 +32,10 @@ export function RadioGroup<Value extends string>({ label, options, value, onValu
         className="flex flex-wrap gap-x-4 gap-y-1"
       >
         {options.map((option) => (
-          <label key={option.value} className="flex cursor-pointer items-center gap-2 text-sm">
+          <label key={option.value} className="flex cursor-pointer items-center gap-2 text-base">
             <Radio.Root
               value={option.value}
-              className="flex size-4 shrink-0 cursor-pointer items-center justify-center border border-ink bg-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              className="flex size-4 shrink-0 cursor-pointer items-center justify-center border border-rule bg-panel"
             >
               <Radio.Indicator className="size-2 bg-ink" />
             </Radio.Root>

@@ -53,7 +53,7 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
           {...props}
           className={cn(
             "fixed left-1/2 top-1/2 z-dialog -translate-x-1/2 -translate-y-1/2",
-            "w-[min(560px,92vw)] border border-ink bg-panel p-4 shadow-[4px_4px_0_0_var(--color-ink)]",
+            "w-[min(560px,92vw)] border border-rule bg-panel p-5 shadow-popup",
             "data-starting-style:opacity-0 data-ending-style:opacity-0 motion-safe:transition-opacity motion-safe:duration-150",
             "focus:outline-none",
             className,
@@ -69,11 +69,7 @@ DialogContent.displayName = "DialogContent";
 
 export const DialogTitle = forwardRef<HTMLHeadingElement, ComponentPropsWithoutRef<typeof BaseDialog.Title>>(
   ({ className, ...props }, ref) => (
-    <BaseDialog.Title
-      ref={ref}
-      {...props}
-      className={cn("text-sm font-bold uppercase tracking-tight text-ink", className)}
-    />
+    <BaseDialog.Title ref={ref} {...props} className={cn("text-2xl font-bold text-ink", className)} />
   ),
 );
 DialogTitle.displayName = "DialogTitle";
@@ -82,6 +78,6 @@ export const DialogDescription = forwardRef<
   HTMLParagraphElement,
   ComponentPropsWithoutRef<typeof BaseDialog.Description>
 >(({ className, ...props }, ref) => (
-  <BaseDialog.Description ref={ref} {...props} className={cn("mt-1 text-xs text-ink-dim", className)} />
+  <BaseDialog.Description ref={ref} {...props} className={cn("mt-1 text-base text-ink-dim", className)} />
 ));
 DialogDescription.displayName = "DialogDescription";

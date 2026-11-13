@@ -9,15 +9,15 @@ interface ButtonProps extends ComponentPropsWithoutRef<typeof BaseButton> {
 }
 
 const variantClass: Record<Variant, string> = {
-  // Default: 2px ink border on white, no bevel. Sits between ghost and primary in hierarchy.
+  // Secondary: the quiet button, a 1px rule on the panel. Refresh, Discard.
   default:
-    "h-7 px-3 border-2 border-ink bg-panel text-ink hover:bg-paper active:bg-rule-soft data-disabled:opacity-40 data-disabled:hover:bg-panel",
-  // Primary: solid ink with industrial-knob bevel. The dominant action on a screen.
+    "h-9 gap-2 px-4 border border-rule bg-panel font-medium text-ink hover:bg-panel-alt data-disabled:border-rule-soft data-disabled:bg-transparent data-disabled:text-ink-faint data-disabled:hover:bg-transparent",
+  // Primary: solid ink, flat. One per screen where there is an action (Fetch details, Save).
   primary:
-    "h-7 px-3 border-2 border-ink shadow-knob data-pressed:shadow-knob-pressed data-popup-open:shadow-knob-pressed active:shadow-knob-pressed bg-ink text-paper hover:bg-ink-dim active:bg-ink data-disabled:opacity-40 data-disabled:hover:bg-ink",
-  // Ghost: flat, no chrome. Used inline (tabs, table actions).
+    "h-9 gap-2 px-5 border border-ink bg-ink font-bold text-paper hover:border-ink-dim hover:bg-ink-dim data-disabled:border-rule-soft data-disabled:bg-transparent data-disabled:text-ink-faint data-disabled:hover:bg-transparent",
+  // Ghost: no chrome until the pointer is over it. Save, Edit, Delete, Cancel.
   ghost:
-    "h-7 px-3 border border-transparent text-ink hover:underline underline-offset-2 data-disabled:opacity-40 data-disabled:hover:no-underline",
+    "h-8 gap-1.5 px-2 border border-transparent font-medium text-ink hover:border-rule-soft hover:bg-panel-alt data-disabled:text-ink-faint data-disabled:hover:border-transparent data-disabled:hover:bg-transparent",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -27,7 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
         className={cn(
-          "inline-flex items-center justify-center text-sm transition-colors select-none",
+          "inline-flex items-center justify-center whitespace-nowrap text-base select-none motion-safe:transition-colors",
           variantClass[variant],
           className,
         )}
