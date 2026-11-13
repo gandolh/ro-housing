@@ -15,7 +15,7 @@ export function PriceHistory({ history, width = 80, height = 18 }: Props) {
   if (points.length === 1) {
     return (
       <svg width={width} height={height} aria-hidden>
-        <rect x={width / 2 - 1} y={height / 2 - 1} width={2} height={2} fill="var(--color-ink)" />
+        <rect x={width / 2 - 1} y={height / 2 - 1} width={2} height={2} fill="currentColor" />
       </svg>
     );
   }
@@ -30,14 +30,8 @@ export function PriceHistory({ history, width = 80, height = 18 }: Props) {
     .join(" ");
   return (
     <svg width={width} height={height} aria-hidden>
-      <path d={d} fill="none" stroke="var(--color-ink)" strokeWidth={1} shapeRendering="crispEdges" />
-      <rect
-        x={xFor(last.observedAt) - 1.5}
-        y={yFor(last.priceEur) - 1.5}
-        width={3}
-        height={3}
-        fill="var(--color-ink)"
-      />
+      <path d={d} fill="none" stroke="currentColor" strokeWidth={1} shapeRendering="crispEdges" />
+      <rect x={xFor(last.observedAt) - 1.5} y={yFor(last.priceEur) - 1.5} width={3} height={3} fill="currentColor" />
     </svg>
   );
 }

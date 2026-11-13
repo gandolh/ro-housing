@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiErrorNotice } from "../components/ApiErrorNotice.tsx";
 import { ListingsTable } from "../components/ListingsTable.tsx";
+import { Icon } from "../components/Icon.tsx";
+import { LastRun } from "../components/RunStatus.tsx";
+import { Island, IslandHead } from "../components/ui/Panel.tsx";
 import { Badge } from "../components/ui/Badge.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../components/ui/Select.tsx";
@@ -84,72 +87,95 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
     await reload();
   };
 
+  const failed = sources.filter((s) => s.enabled && s.lastRunOk === false).map((s) => s.displayName);
+
   return (
-    <div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="primary" onClick={() => void refresh()} disabled={refreshing}>
+    <Island aria-label="Listings">
+      <IslandHead className="max-[820px]:grid max-[820px]:grid-cols-[auto_1fr_auto] max-[820px]:gap-2 max-[820px]:p-3">
+        <Button
+          onClick={() => void refresh()}
+          disabled={refreshing}
+          className="max-[820px]:col-start-1 max-[820px]:row-start-1 max-[820px]:h-12 max-[820px]:px-3 max-[820px]:text-lg"
+        >
+          <Icon name="refresh" />
           {refreshing ? "Refreshing…" : "Refresh"}
         </Button>
 
         <Select items={sourceLabels} value={sourceFilter} onValueChange={(v) => setSourceFilter(String(v))}>
-          <SelectTrigger>
+          <SelectTrigger
+            aria-label="Source"
+            className="w-56 max-[820px]:col-span-2 max-[820px]:col-start-2 max-[820px]:row-start-1 max-[820px]:h-12 max-[820px]:w-full"
+          >
             <SelectValue />
           </SelectTrigger>
-          <SelectPopup>
+          <SelectPopup className="min-w-72">
             <SelectItem value="">All sources</SelectItem>
             {sources.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
+              <SelectItem key={s.id} value={s.id} detail={<LastRun source={s} />}>
                 {s.displayName}
               </SelectItem>
             ))}
           </SelectPopup>
         </Select>
 
-        <Select items={SORT_LABELS} value={sort} onValueChange={(v) => setSort(v as Sort)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectPopup>
-            {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
-              <SelectItem key={k} value={k}>
-                {SORT_LABELS[k]}
-              </SelectItem>
-            ))}
-          </SelectPopup>
-        </Select>
+        <div className="contents max-[820px]:col-span-3 max-[820px]:row-start-2 max-[820px]:grid max-[820px]:grid-cols-[minmax(0,1fr)_96px] max-[820px]:gap-2">
+          <Select items={SORT_LABELS} value={sort} onValueChange={(v) => setSort(v as Sort)}>
+            <SelectTrigger aria-label="Sort by" className="max-[820px]:h-12 max-[820px]:w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup>
+              {(Object.keys(SORT_LABELS) as Sort[]).map((k) => (
+                <SelectItem key={k} value={k}>
+                  {SORT_LABELS[k]}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
 
-        <Select items={ORDER_LABELS} value={order} onValueChange={(v) => setOrder(v as Order)}>
-          <SelectTrigger className="min-w-[5rem]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectPopup>
-            {(Object.keys(ORDER_LABELS) as Order[]).map((k) => (
-              <SelectItem key={k} value={k}>
-                {ORDER_LABELS[k]}
-              </SelectItem>
-            ))}
-          </SelectPopup>
-        </Select>
+          <Select items={ORDER_LABELS} value={order} onValueChange={(v) => setOrder(v as Order)}>
+            <SelectTrigger aria-label="Order" className="min-w-[5rem] max-[820px]:h-12 max-[820px]:w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup>
+              {(Object.keys(ORDER_LABELS) as Order[]).map((k) => (
+                <SelectItem key={k} value={k}>
+                  {ORDER_LABELS[k]}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+        </div>
+
+        {failed.length > 0 && (
+          <p className="m-0 inline-flex items-center gap-2 text-xs font-bold text-warn max-[820px]:col-span-2 max-[820px]:row-start-3">
+            <Icon name="warn" />
+            {failed.join(", ")} failed on its last run
+          </p>
+        )}
 
         {!loadError && (
-          <span className="ml-auto text-xs uppercase tracking-wide text-ink-dim">{listings.length} listings</span>
+          <span className="ml-auto whitespace-nowrap font-medium text-ink-dim max-[820px]:col-start-3 max-[820px]:row-start-3 max-[820px]:ml-0 max-[820px]:justify-self-end">
+            {listings.length} listings
+          </span>
         )}
-      </div>
+      </IslandHead>
 
       {refreshError && (
-        <p role="alert" className="mt-3 border border-bad bg-bad-soft px-2 py-1.5 text-xs text-bad">
+        <p role="alert" className="m-3 border border-bad bg-bad-soft px-3 py-2 text-xs text-bad">
           {refreshError}
         </p>
       )}
 
       {lastResult && (
-        <div className="mt-3 border border-ink bg-panel px-3 py-2 text-xs">
+        <div className="m-3 border border-rule bg-panel px-3 py-2 text-xs">
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             {lastResult.perSource.map((p) => {
               const empty = p.ok && p.count === 0;
               return (
                 <span key={p.id} className="inline-flex items-center gap-1.5">
-                  <Badge tone={!p.ok ? "bad" : empty ? "warn" : "ok"}>{!p.ok ? "FAIL" : empty ? "EMPTY" : "OK"}</Badge>
+                  <Badge tone={!p.ok ? "bad" : empty ? "warn" : "ok"}>
+                    {!p.ok ? "failed" : empty ? "empty" : "ok"}
+                  </Badge>
                   <span className="text-ink-dim">{p.id}:</span>
                   <span>{p.ok ? p.count : (p.errorMsg ?? "failed")}</span>
                 </span>
@@ -165,18 +191,18 @@ export function ListingsPage({ onSaveLink }: { onSaveLink: (url: string) => void
         </div>
       )}
 
-      <div className="mt-4">
-        {loadError ? (
+      {loadError ? (
+        <div className="p-3">
           <ApiErrorNotice
             action="Couldn't load the listings"
             error={loadError.error}
             onRetry={() => void reload()}
             busy={loading}
           />
-        ) : (
-          <ListingsTable listings={listings} sources={sources} onSave={(l) => onSaveLink(l.url)} />
-        )}
-      </div>
-    </div>
+        </div>
+      ) : (
+        <ListingsTable listings={listings} sources={sources} onSave={(l) => onSaveLink(l.url)} />
+      )}
+    </Island>
   );
 }

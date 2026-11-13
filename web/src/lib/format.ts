@@ -31,3 +31,32 @@ export function fmtFloor(floor: number | null, total: number | null): string {
   const f = floor === null ? "—" : floorLabel(floor);
   return total === null ? f : `${f}/${total}`;
 }
+
+/** "never", "just now", "5m ago", "3h ago", "2d ago": how long ago a source last ran. */
+export function fmtWhen(ts: number | null): string {
+  if (ts === null) return "never";
+  const mins = Math.floor((Date.now() - ts) / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+const DAY_MS = 86_400_000;
+
+/** Whole days since a listing was first seen. */
+function ageDays(firstSeen: number): number {
+  return Math.floor((Date.now() - firstSeen) / DAY_MS);
+}
+
+/** "today", "1d", "20d". */
+export function fmtAge(firstSeen: number): string {
+  const days = ageDays(firstSeen);
+  return days === 0 ? "today" : `${days}d`;
+}
+
+/** A listing is new when it was first seen two days ago or less: the same day count the Age column shows. */
+export function isNew(firstSeen: number): boolean {
+  return ageDays(firstSeen) <= 2;
+}

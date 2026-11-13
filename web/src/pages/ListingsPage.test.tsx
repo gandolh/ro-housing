@@ -179,8 +179,8 @@ describe("<ListingsPage> a Refresh that finds nothing", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       "storia.ro found no listings. The search URL or the site's page may have changed",
     );
-    expect(screen.getByText("EMPTY")).toBeInTheDocument();
-    expect(screen.getByText("FAIL")).toBeInTheDocument();
+    expect(screen.getByText("empty")).toBeInTheDocument();
+    expect(screen.getByText("failed")).toBeInTheDocument();
     await vi.waitFor(() => expect(row(/Seen in the last run/)).not.toHaveAttribute("data-stale"));
     expect(row(/Gone since three days/)).toHaveAttribute("data-stale");
   });
@@ -197,7 +197,7 @@ describe("<ListingsPage> a Refresh that finds nothing", () => {
 
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
-    expect(await screen.findByText("OK")).toBeInTheDocument();
+    expect(await screen.findByText("ok")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });
