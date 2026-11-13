@@ -10,7 +10,7 @@ Start with the [main README](../README.md). This folder holds what it links to, 
 | [worklog.md](worklog.md) | What each session built, what broke and what's next. Read it after a pause |
 | [architecture.md](architecture.md) | Repo layout, the Refresh and the save-by-link flows, the data model, what lives where |
 | [adapters.md](adapters.md) | The search-scraper contract, cheerio vs Playwright, per-site notes, and how a single listing page is read |
-| [design.md](design.md) | The terminal-style design system: palette, type scale, the shared UI components, anti-goals |
+| [design.md](design.md) | The console design system: palette, type scale, the island and its head band, the shared UI components, anti-goals |
 | [testing.md](testing.md) | The Vitest setup in both packages, what each test file covers, how to add one |
 | [decisions.md](decisions.md) | Append-only log of design choices and their trade-offs. Read it before changing a rule |
 | [research-firecrawl-ollama.md](research-firecrawl-ollama.md) | The research on self-hosted Firecrawl and Ollama for finding and reading listings, done 2026-11-04: the runs, the scores, why Firecrawl is left out (and what it would take on a bigger machine), and what the owner chose |

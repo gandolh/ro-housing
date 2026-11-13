@@ -1,150 +1,132 @@
-# Design system — ro-housing
+# Design system: ro-housing
 
-Direction: **terminal-retro, simplistic, monospace-driven.** Sharp 90° corners, single-pixel ink-black borders, paper-white ground, no shadows on standard elements. Think TUI rendered in a browser, or an 80s admin console.
+Direction: **the console, re-ruled.** A retro console in a real mono at reading size: sharp 90 degree corners, one-pixel ink rules, warm paper, one burnt-ochre accent. Each tab is one **island**: the tabs, the head band and the table or list read as a single framed surface. Approved on 2026-11-13 on the estate redesign board (see [decisions.md](decisions.md)).
 
-This is a tool, not a brochure. It should feel like a TUI rendered in a browser — dense, fast to scan, no decorative bloat.
+This is a tool, not a brochure. It stays dense and fast to scan, and it takes its hierarchy from size, weight and position, not from decoration.
 
 ## Anti-goals
 
-- No rounded corners. Anywhere. The global `* { border-radius: 0 !important; }` rule in `styles.css` enforces this.
-- No drop-shadows on standard elements. Reserved for **only** floating overlays (Dialog popup, Select popup).
-- No gradient text, no glassmorphism, no faux-3D inset borders.
-- No "secondary" or "tertiary" accent. One muted accent (burnt ochre) and that's it.
-- No expressive serif "for warmth." This UI does not need warmth.
+- No rounded corners, anywhere. The global `* { border-radius: 0 !important; }` rule in `styles.css` enforces it, so a dot or a ring is drawn as an SVG circle.
+- No blur. Depth is a hard offset and nothing else (see Borders and depth).
+- No gradient text, no glassmorphism, no faux-3D inset borders or bevels.
+- No second accent. Burnt ochre only.
+- No tracked capitals. Sentence case everywhere; the wordmark alone is uppercase.
+- Colour is never the only signal: a failed source says `failed` with an icon, a stale row has a ring, a new row has the word `new`.
 
 ## Color
 
-Defined in `web/src/styles.css` under `@theme`. Use these Tailwind color tokens via classes like `bg-ink`, `text-ink-dim`, `border-rule-soft`.
+Defined in `web/src/styles.css` under `@theme`, as `light-dark(<light>, <dark>)`. `<html data-theme>` (`light`, `dark` or `system`) sets `color-scheme`, so the page follows without a class. A first visit shows light; the choice lives in `localStorage` (`theme`) and is set in the Account dialog. Use the tokens as Tailwind classes (`bg-panel`, `text-ink-dim`, `border-rule-soft`).
 
-| Token             | Hex       | Role                                                  |
-|-------------------|-----------|-------------------------------------------------------|
-| `paper`           | `#f9f9f9` | App background. Off-white, never pure white.          |
-| `panel`           | `#ffffff` | Surface for tables, dialogs, source rows.             |
-| `panel-alt`       | `#f3f3f1` | Zebra row, table header background.                   |
-| `ink`             | `#0a0a0a` | All text, all 1px borders. Never pure black (#000).   |
-| `ink-dim`         | `#5c5c5c` | Secondary text, labels, meta.                         |
-| `ink-faint`       | `#9a9a9a` | Placeholder text, disabled state.                     |
-| `rule`            | `#0a0a0a` | Hard divider (same as ink).                           |
-| `rule-soft`       | `#d8d8d4` | Soft divider inside panels.                           |
-| `accent`          | `#b25a00` | Burnt ochre. CTA hover, dirty-row indicator.          |
-| `accent-soft`     | `#f5e6d3` | Accent badge background.                              |
-| `ok` / `ok-soft`  | `#1f6b2a` / `#e3efd8` | Success badge, ok status dot.                  |
-| `bad` / `bad-soft`| `#a51a1a` / `#f7dcdc` | Error banner, failed status, "full" cap state. |
-| `warn`            | `#8a5a00` | Dirty-changes counter; a Refresh that found no listings (EMPTY badge, Sources line). |
-
-**Dark theme.** Each token is `light-dark(<light>, <dark>)` in `styles.css`, and `<html data-theme>` (`light`, `dark` or `system`) sets `color-scheme`, so the page follows without a class. The dark values invert the paper and ink roles:
-
-| Token | Dark | Token | Dark |
+| Token | Light | Dark | Role |
 |---|---|---|---|
-| `paper` | `#121212` | `accent` | `#e8913a` |
-| `panel` | `#1b1b1b` | `accent-soft` | `#3d2a14` |
-| `panel-alt` | `#242422` | `ok` / `ok-soft` | `#74d17f` / `#1e3321` |
-| `ink`, `rule` | `#ececec` | `bad` / `bad-soft` | `#ff8080` / `#3c1a1a` |
-| `ink-dim` | `#a9a9a9` | `warn` | `#e6ae45` |
-| `ink-faint` | `#7d7d7d` | `rule-soft` | `#3b3b38` |
+| `paper` | `#f3f2ee` | `#11110f` | The page ground. |
+| `panel` | `#fefdfb` | `#23221e` | The island, its rows, the bars, menus and dialogs. |
+| `panel-alt` | `#efede6` | `#2c2b26` | The head band, column heads, the current tab, a row under the pointer. |
+| `ink` | `#15140f` | `#edebe4` | Text, the solid button. |
+| `ink-dim` | `#58554c` | `#b1ada3` | Secondary text, labels, stale rows. |
+| `ink-faint` | `#6f6b62` | `#9a968c` | Placeholders and disabled controls only. |
+| `rule` | `#15140f` | `#8a867b` | The island's frame and every control's border. |
+| `rule-soft` | `#d6d3c9` | `#3d3b35` | Row lines and quiet dividers. |
+| `accent` | `#a35100` | `#eb9a4a` | The current tab's top rule, the `new` mark, a dirty row's `modified`. |
+| `accent-soft` | `#f8ecdc` | `#3e2c17` | The chosen menu item, the replace-draft notice. |
+| `on-accent` | `#fffdf9` | `#1a1206` | Text on a solid accent. |
+| `ok` / `ok-soft` | `#1f6b2a` / `#e3efd8` | `#7fd08a` / `#1e3321` | A source that ran; the toast. |
+| `bad` / `bad-soft` | `#a51a1a` / `#f7dcdc` | `#ff8a80` / `#3c1a1a` | A failed source, an error notice. |
+| `warn` | `#7f5300` | `#e8b04e` | The source-health line, unsaved changes, `+TVA`. |
+| `focus` | `#15140f` | `#edebe4` | The focus ring. |
 
-`scrim` (the dialog backdrop) and `bevel` (the knob highlight) are tokens too. `web/src/contrast.test.ts` reads these pairs from the stylesheet and fails a body-text pair under 4.5:1 in either theme; the one exception is light `accent` on `accent-soft` (3.9:1, as it always was), which may not drop further. A first visit shows light; the choice lives in `localStorage` (`theme`) and is set in the Account dialog.
-
-**Rules**
-- Body text is `ink` on `paper` or `panel`. Anything else needs justification.
-- Use `ink-dim` for labels, captions, meta. Not lighter than that on white — it stops being readable.
-- The accent appears at most once per screen — it earns its impact by being rare.
+`scrim` is the dialog backdrop. `web/src/contrast.test.ts` reads these pairs from the stylesheet and fails any text pair under 4.5:1, or any rule or focus pair under 3:1, in either theme. Lowest text pair: light `ink-faint` on `panel-alt` 4.53, dark `ink-faint` on `panel-alt` 4.81; lowest edge: dark `rule` on `panel-alt` 3.9.
 
 ## Typography
 
-One family: **monospace**. Stack:
+One family: **Source Code Pro**, self-hosted from `@fontsource-variable/source-code-pro` (imported in `main.tsx`), with the system mono as the fallback. Mono is the identity; there is no second face.
 
-```
-ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, monospace
-```
+| Token | Size / line | Use |
+|---|---|---|
+| `xs`, `sm` | 12 / 16 | Chips, column heads, helper text, the foot key. Nothing is smaller. |
+| `base` | 14 / 20 | Body, table cells, controls. |
+| `lg` | 16 / 24 | The desktop price (bold), the phone body and titles. |
+| `xl` | 18 / 24 | The wordmark (bold, uppercase, tight), the phone price. |
+| `2xl` | 20 / 28 | Dialog titles. |
 
-Mono is the whole identity. Headings, body, labels, data — all mono. We get hierarchy from **size + weight + uppercase + tracking**, not from a second face.
+Weights are 400, 500, 700. Prices and figures use tabular mono digits, so columns align.
 
-Scale (defined as Tailwind tokens):
+## Spacing and rhythm
 
-| Token  | Size / line-height | Use                                                |
-|--------|--------------------|----------------------------------------------------|
-| `xs`   | 10px / 16px        | Footer text, source IDs, tiny meta. Often uppercase + tracked. |
-| `sm`   | 12px / 18px        | Tab labels, badges, helper text.                   |
-| `base` | 13px / 18px        | Body text, table cells. Default everywhere.        |
-| `lg`   | 14px / 20px        | Button text in toolbar emphasis.                   |
-| `xl`   | 18px / 24px        | App title only. Bold + tight tracking.             |
+- Table rows are about 52 px; controls are 36 px (32 px for table actions), and 48 px on a phone.
+- The header is 48 px, the footer 40 px; the content column is at most 1168 px with 24 px of padding (16 px on a phone).
+- Gaps and padding step through 4, 8, 12, 16 and 24, with a few 5, 6, 7 and 10 px steps inside chips and rows.
+- No two cells' text in one row come closer than 8 px (`e2e/shots.spec.ts` checks it).
 
-**Conventions**
-- Headings, tab labels, table headers, badges → **UPPERCASE** + `tracking-wide` (5% letter-spacing).
-- App title → bold + `tracking-tight` (-2% letter-spacing) for that compressed-terminal feel.
-- Body text and data → normal weight, no tracking adjustments.
-- Numbers in the listings table use the mono font naturally, so columns align without `tabular-nums`.
+## Borders and depth
 
-## Spacing & rhythm
-
-4pt base. Touch points: 4, 8, 12, 16, 24, 32, 48.
-
-- **Row height = 28px (`h-7`)** for buttons, inputs, selects, table rows. Single rhythm unit; everything else is multiples.
-- App padding: `20px` on the y-axis, `24px` on the x-axis (`px-6 py-5`).
-- Sticky header: 36px tall (`h-9`), 1px ink border on bottom.
-- Table cell padding: `8px` x, `8px` y.
-
-## Borders, shadows, depth
-
-- **Default border**: `1px solid ink`. That's the depth language.
-- **No box-shadows on standard elements.** Cards, inputs, buttons — all flat, all bordered.
-- **Floating overlays** (Dialog popup, Select popup) get a single offset shadow that simulates a printed sticker:
-  - Select popup: `shadow-[2px_2px_0_0_var(--color-ink)]`
-  - Dialog popup: `shadow-[4px_4px_0_0_var(--color-ink)]`
-  Hard-edge ink shadow, not blurry. It reinforces the retro feel.
-- **Backdrops** behind a Dialog use `bg-scrim`. No backdrop-blur.
+- The default border is `1px solid rule`. In dark, `rule` is a lighter warm grey that still reads 3.9:1 or better on every surface.
+- **The island** carries a 3 px hard offset shadow in `rule`, in light only (`shadow-island` with `dark:shadow-none`). In dark the panel steps up by lightness and keeps its edge.
+- **Popups** (the Select list, the Dialog) keep the same hard offset in both themes (`shadow-popup`).
+- Backdrops use `bg-scrim`. No backdrop blur.
 
 ## Components
 
-All interactive elements come from `web/src/components/ui/`, which wrap **Base UI** primitives with `cn()` styling. Never use a bare `<button>`, `<input>`, `<select>`, or hand-roll a modal.
+All interactive parts come from `web/src/components/ui/`, which wrap **Base UI** primitives. Never use a bare `<button>`, `<input>`, `<select>`, or a hand-built modal.
 
 | Primitive | File | Base UI source |
-|-----------|------|----------------|
-| `Button` (variants: default / primary / ghost) | `ui/Button.tsx` | `@base-ui/react/button` |
-| `Input` | `ui/Input.tsx` | `@base-ui/react/input` |
-| `Textarea` | `ui/Textarea.tsx` | native (no Base UI textarea exists) |
+|---|---|---|
+| `Button` (default / primary / ghost) | `ui/Button.tsx` | `@base-ui/react/button` |
+| `Input`, `Textarea` | `ui/Input.tsx`, `ui/Textarea.tsx` | `@base-ui/react/input`; native |
 | `Checkbox` | `ui/Checkbox.tsx` | `@base-ui/react/checkbox` |
 | `Field`, `FieldLabel`, `FieldDescription`, `FieldError` | `ui/Field.tsx` | `@base-ui/react/field` |
-| `Select` (takes `items`), `SelectTrigger`, `SelectValue`, `SelectPopup`, `SelectItem` | `ui/Select.tsx` | `@base-ui/react/select` |
-| `Dialog`, `DialogTrigger`, `DialogContent`, `DialogTitle`, `DialogDescription`, `DialogClose` | `ui/Dialog.tsx` | `@base-ui/react/dialog` |
+| `Select` (takes `items`), `SelectTrigger`, `SelectValue`, `SelectPopup`, `SelectItem` (with a `detail` line) | `ui/Select.tsx` | `@base-ui/react/select` |
+| `Dialog` and its parts | `ui/Dialog.tsx` | `@base-ui/react/dialog` |
 | `RadioGroup` (the theme switch) | `ui/RadioGroup.tsx` | `@base-ui/react/radio-group` |
 | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | `ui/Tabs.tsx` | `@base-ui/react/tabs` |
-| `Panel` (1px ink-bordered surface) | `ui/Panel.tsx` | none — semantic div |
-| `Badge` (tones: default / ok / bad / warn / accent) | `ui/Badge.tsx` | none |
-| `StatusDot` (ok / bad / warn / unknown) | `ui/StatusDot.tsx` | none |
+| `Panel`, `Island`, `IslandHead` | `ui/Panel.tsx` | none |
+| `Badge` (a square chip) | `ui/Badge.tsx` | none |
 
-### Button variants
+Beside them: `Icon` (a few 24-unit line icons, drawn here, no icon package), `RunStatus` (the last-run line and the `failed` chip) and `lib/useLayout.ts` (which of the table or the cards to draw).
 
-- **default** — 1px ink border on white. Inverts to ink/paper on hover. The everyday button.
-- **primary** — Solid ink, paper text. Inverts on hover. Reserved for the dominant action on a screen (Save, Refresh, Submit).
-- **ghost** — Inline, no chrome, underline on hover. Used inside tabs or table actions.
+### Buttons
 
-### Tab strip
+- **default**: the quiet secondary button, a 1 px rule on the panel. Refresh, Discard, Cancel.
+- **primary**: solid ink, flat, bold. One per screen where there is an action: Fetch details on Saved, Save on Sources. Refresh is never the loudest control.
+- **ghost**: no chrome until the pointer is over it. Save on a listing (with a bookmark icon; it opens a draft, it is not a toggle), Edit and Delete (icons, 48 px icon buttons on a phone).
+- A disabled button drops to `ink-faint` on a soft rule.
 
-Underline-driven, not pill-driven. Active tab gets bold + ink color + a 2px ink line under it, flush with the list's bottom border. Inactive tabs are `ink-dim`.
+### Tabs
 
-### Dirty-state styling
+Listings, Saved and Sources stay Base UI `Tabs` with every panel `keepMounted`. On a desktop they are folder tabs: the current one takes the head band's ground, a rule on three sides and an ochre top rule, and covers the island's top edge. On a phone the same `TabsList` is the **bottom bar** (icon over label, three equal cells, an ochre top rule on the current one, 48 px or more to hit), sticky at the foot of the screen.
 
-On the Sources page, when a row has unsaved changes, its border switches from `ink` to `accent` and a small "modified" caret appears. No glow, no shadow — the color change is the only signal.
+### Head band
 
-### Modal (Dialog)
+Each island starts with a head band on `panel-alt`, ruled below. Listings: Refresh, the source control, sort, order, the source-health line and the count. Saved: the link field and Fetch details, then the hint, the sort and the count. Sources: Save, Discard, the health line and `7 of 10 enabled`. On a phone the bands stack (Listings takes two rows; Sources one 48 px row of Save, Discard and the count).
 
-- Centered, 1px ink border, 4px offset ink shadow.
-- Backdrop: `bg-scrim`. A dialog that holds a form (Report, Edit) ignores an outside press.
-- Title: uppercase, bold, tracked tight.
-- Footer buttons right-aligned: ghost Cancel + primary Submit.
+### Source health
+
+The source control lists each site with its last run. A source that failed shows a square `failed` chip (an icon and the word, a `bad` border on `bad-soft`, no side stripe). When any enabled source failed, the line `<site> failed on its last run` sits in the head band, in `warn`.
+
+### Listings table
+
+- Columns: Title, Source, Rooms, m², **Price** (16 px bold, right-aligned, the first stop), €/m², Location, Age, History, Save. Titles take two lines at most, set by the column's width, never a clamp. Prices keep the app's format (`89.000 €`, `1.712 €/m²`) and the `+TVA` marker.
+- Widths: the full table from 1200 px; from 960 to 1199 the table with Location under the title, History narrower and Save icon-only; two-column cards from 640 to 959; one column below 640. Saved draws its table from 1200 and cards below.
+- `new`: an ochre dot and the word, on a row first seen two days ago or less (the day count the Age column shows, `isNew` in `lib/format.ts`).
+- Stale rows (not found by their source's last refresh) are dimmed to `ink-dim`, 4.5:1 or better, and carry a hollow ring before the Age. The foot key says so: `Dimmed: not found by its source’s last refresh.` and `new: first seen 2 days ago or less. A row can be both new and dimmed.`
+- Phone cards lead with the price (18 px bold), then the title, then fixed rows (rooms, m², age; location and source), with a 48 px Save.
+
+### Saved and Sources
+
+Saved: the price leads the data columns; the title, source chip, layout and note stay together; an empty photo shows an image glyph; Edit and Delete are ghost buttons with icons. Phone cards put the photo beside the price and the two actions as 48 px icon buttons. Sources: the site key sits under the name, the last run takes 220 px with its check or `failed` chip, and the search URL takes the rest. On a phone each row is the checkbox (a 48 px target), the name, a full-width field, then the last run with the key at the right; keys and run lines wrap by whole words. A row with unsaved changes says `modified` in `accent`.
+
+### Dialog
+
+Centered, 1 px rule, the hard offset shadow. Title in `2xl` bold, sentence case. A dialog that holds a form (Report, Edit) ignores an outside press. Footer buttons right-aligned: Cancel then the primary.
+
+### Dirty, error and empty states
+
+An error notice is `bad` text on `bad-soft` with a `bad` border and a Retry button. An empty list is one centered line in the island. A notice or a toast uses the same square border.
 
 ## Layout
 
-Max width `960px` content column, centered. Sticky header with the app title left + Report-issue button right, 1px ink bottom border. Tabs sit immediately below the header on a separate row.
+One column, no sidebar. A sticky 48 px header (the wordmark left; Report and the account at the right), the tabs, the island, a 40 px footer. Phone (820 px and below): the tabs become the bottom bar and the island sits in 16 px of page padding.
 
-The whole app is one column. No sidebar. No grid system more elaborate than `flex` and `grid-cols-N`.
+## What this design system is not
 
-## What this design system is **not**
-
-- Material-style. No FABs, no elevation layers, no ripples.
-- Bootstrap-style. No utility helpers like "muted text-3" or "card with header/footer slots."
-- Brand-system style. There is no logo, no brand voice document, no marketing surface.
-
-It is a project-local set of opinions about how this specific app should look and which Base UI components to compose. That's the entire scope.
+Material (no elevation layers, ripples or FABs), Bootstrap, or a brand system. It is a project-local set of opinions about how this app looks and which Base UI parts it composes.

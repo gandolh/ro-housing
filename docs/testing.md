@@ -93,3 +93,12 @@ Whenever a bug is found in the live app, the fix lands together with a regressio
 - `locationFromImobiliareUrl` extracts the neighborhood from the URL slug
 
 If any of these tests goes red, the corresponding adapter behavior regressed.
+
+## Browser checks (Playwright, the root harness)
+
+`npm run test:e2e` runs `e2e/` with `@playwright/test` 1.63.0 (headless Chromium, two workers at most). It is not part of `npm run check`: it needs a running app. The specs:
+
+- `e2e/floor.spec.ts`: the Floor on every screen in both themes: a focus ring of 2 px or more on every control the keyboard reaches, no running transition under `prefers-reduced-motion`, no sideways scroll at 390 and 360 px, and the Light, Dark and System switch with the island's shadow following it.
+- `e2e/shots.spec.ts`: the first-screen row counts, the 8 px gap between neighbouring cells, and, with `SHOTS_DIR=<folder>`, screenshots of every screen (kept out of git).
+
+Start the API on a scratch database (`RO_HOUSING_DB` and `RO_HOUSING_ISSUES_DIR` in a throwaway folder, `npm run seed` for a throwaway account, `docs/images/demo-seed.mjs` for listings), then Vite in `web/` over it, and pass `E2E_BASE_URL`, `E2E_USERNAME` and `E2E_PASSWORD`. Every spec stubs `/api/refresh`, `/api/saved/scrape` and `/api/saved/fill` (`e2e/fixtures.ts`), so a stray click never reaches a real site or Wicket. The clock is frozen so ages and the `new` mark are stable.

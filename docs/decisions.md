@@ -180,3 +180,32 @@ The API follows the estate's code structure for Fastify servers (the code-struct
 - **Playwright per-site**: if more sites turn out to need it, fine. If only storia needs it forever, also fine.
 - **Saved vs listings**: if most saved apartments also show up in the Listings table, join them on normalized URL to show the refresh price history next to the saved row.
 - **Re-check a saved apartment**: a "fetch again" that shows what changed on the page (price drops, taken down) without overwriting the user's values.
+
+## The console, re-ruled (2026-11-13)
+
+The owner approved the redesign "The console, re-ruled" on the estate redesign board, with every question there standing as proposed. The retro console stays: mono, sharp corners, 1 px ink rules, one burnt-ochre accent. Two earlier lines of [design.md](design.md) are **changed**; their old text is kept here as history.
+
+### The island has a hard shadow in light (changed 2026-11-13)
+
+- **Was:** "No box-shadows on standard elements. Cards, inputs, buttons — all flat." Only the Select and Dialog popups carried a hard offset.
+- **Now:** each tab's island (the tabs, the head band and the table as one surface, on Listings, Saved and Sources) carries a 3 px hard offset shadow in `rule`, in light only. Popups keep a hard offset in both themes, never a blur. Dark drops the island's shadow: the panel steps up by lightness and keeps a 4.4:1 rule edge. The utility is `shadow-island dark:shadow-none`, because Tailwind inlines the token and a `[data-theme]` override of it never reached the utility.
+
+### Sentence case, a 12 to 20 px scale (changed 2026-11-13)
+
+- **Was:** "We get hierarchy from size + weight + uppercase + tracking", with headings, tab labels, table headers and badges in UPPERCASE with `tracking-wide`, a 13 px body and a 10 px smallest size.
+- **Now:** sentence case everywhere, no tracked capitals (the wordmark alone stays uppercase). The scale is 12, 14, 16, 18 and 20: body and table at 14, nothing under 12. The face is Source Code Pro, self-hosted from `@fontsource-variable/source-code-pro` 5.3.1. `shadow-knob`, `color-bevel` and `--tracking-wide` are gone: nothing used them once Refresh became a flat secondary button.
+
+### Phone navigation is a bottom bar (changed 2026-11-13)
+
+- **Was:** the top tabs on every width.
+- **Now:** below 821 px the same Base UI `TabsList` (every panel still `keepMounted`) is a sticky bottom bar of Listings, Saved and Sources. One list, so each tab exists once for assistive tech.
+
+### The new mark, source health and the table's break
+
+- **A row is `new`** when its `firstSeen` is two days old or less, computed in the web from data it already has (`isNew`, the same day count as the Age column). There is no seen flag in the API.
+- **Source health:** the source control lists each site with its last run; a failed site shows a square `failed` chip, and the head band carries `<site> failed on its last run`.
+- **The table breaks at 960 px**, where titles still take two lines. Between 960 and 1199 the table keeps Location under the title; from 640 to 959 the listings are two-column cards; below 640, one column.
+- **No saved mark on a listing.** The saved table has no link to listings (saved is keyed by URL), so a listing's Save opens a draft as before.
+- **The URL field stays on unchecked sources**, on a phone too; hiding it would change what the field is for.
+- **Stale rows** are drawn as the app computes them (`staleCutoffs`); a ring before the Age and a key in the foot say so.
+
