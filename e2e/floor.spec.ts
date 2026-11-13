@@ -70,7 +70,7 @@ test("the theme switch: Light, Dark and System, and the island's shadow follows"
   const shadow = () => page.locator("section[aria-label='Listings']").evaluate((el) => getComputedStyle(el).boxShadow);
   const html = page.locator("html");
 
-  await page.getByRole("button", { name: /shotuser|account/i }).click();
+  await page.getByRole("button", { name: process.env.E2E_USERNAME ?? "" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("radio", { name: "Dark" }).click();
   await expect(html).toHaveAttribute("data-theme", "dark");

@@ -116,7 +116,7 @@ test.describe("undrawn screens", () => {
       await page.setViewportSize({ width: size.w, height: size.h });
       await setTheme(page, "light");
 
-      await page.getByRole("button", { name: /shotuser/ }).click();
+      await page.getByRole("button", { name: process.env.E2E_USERNAME ?? "" }).click();
       await shoot(page, "account");
       await page.keyboard.press("Escape");
 
