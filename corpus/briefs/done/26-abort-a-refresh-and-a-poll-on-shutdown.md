@@ -41,3 +41,7 @@ Leave the server's timeout values (`keepAliveTimeout`, the default `connectionTi
 - The new tests prove both aborts and a prompt close.
 - The built server, run from a scratch folder with `RO_HOUSING_DB` and `RO_HOUSING_ISSUES_DIR` on the command line, stub sources and no `.env`, exits 0 within a second of SIGTERM with a refresh held (if run).
 - Timeout values are unchanged.
+
+## Outcome (2026-11-13)
+
+Built in `7b8df13`. `plugins/shutdown.ts` decorates the app with `shutdownSignal` and aborts it in `preClose`. `Adapter.scrape`, `FetchSession.get`, `fetchRenderedHtml` and `WicketClient.get` take an optional signal (joined to their own timeouts with `AbortSignal.any`); `refreshAll` checks it between sources and rethrows an abort, so a cut source is not recorded as failed; the refresh route and the fill poll answer 503 "The server is restarting; try again in a moment." Tests close the app with a refresh and a poll hanging on stubs: 503, close under a second. `npm run check` exit 0 (api 302, web 150). Not run: the built server on a real socket with a held refresh, and `docker build`. Fetch details (`fetchListingPage`) is not covered. Owner step: `node cli.ts ro-housing server` from vps-deploy.
