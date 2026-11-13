@@ -1,6 +1,6 @@
 ---
-summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript). The owner deployed it on 2026-11-05 and linked Ward. 18, Fill the gaps through Wicket, built 2026-11-05, not deployed: it needs ro-housing's Wicket token in vps-deploy's secrets. 20, every hop of a fetch checked and Chromium kept off local addresses, built 2026-11-06, not deployed.
-updated: 2026-11-12
+summary: Where ro-housing's work stands on 2026-11-04, per area. The 2026-10-20 sweep's fixes built 2026-10-27 and the Host check 2026-10-28; on 2026-11-04 the Firecrawl research closed (01) and briefs 13 to 17 and 19 were built (hitchmosher note, extractor rules, empty-Refresh warning, imobiliare's RSS feed, ready for the VPS with sign-in and a container, the container running built JavaScript). The owner deployed it on 2026-11-05 and linked Ward. 18, Fill the gaps through Wicket, built 2026-11-05, not deployed: it needs ro-housing's Wicket token in vps-deploy's secrets. 20, every hop of a fetch checked and Chromium kept off local addresses, built 2026-11-06, not deployed. 25, the redesign "The console, re-ruled", built 2026-11-13, awaits a deploy (`deploy`).
+updated: 2026-11-13
 ---
 
 # Status: 2026-11-04
@@ -13,6 +13,7 @@ Brief 21 (Base UI 1.9.0) was built on 2026-11-10 and awaits a deploy; see [log.m
 Brief 22 (the house style and quality harness) was built on 2026-11-11: `npm run check` and `npm run check:fast` run both projects; the temporary exceptions are in [docs/decisions.md](../../docs/decisions.md). Awaits a deploy.
 Brief 23 (Base UI by the conventions, and a Light/Dark/System theme) was built on 2026-11-11 and awaits a deploy; see [log.md](../log.md).
 Brief 24 (the server in the code structure: features, plugins, zod schemas on every route, one error handler) was built on 2026-11-12 and awaits a deploy (`server`); see [log.md](../log.md) and [docs/decisions.md](../../docs/decisions.md).
+Brief 25 (the redesign: warm paper, Source Code Pro, islands, a bottom bar on a phone, Playwright in the root harness) was built on 2026-11-13 and awaits a deploy (`deploy`); see [log.md](../log.md) and [docs/design.md](../../docs/design.md).
 
 ## By area
 

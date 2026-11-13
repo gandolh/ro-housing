@@ -332,3 +332,8 @@ Seventeen commits on `main` (`d3de342` to `ab1a85b`), one per step. `config.ts` 
 ## [2026-11-13] approved | Brief 25: the redesign direction
 
 The owner approved the redesign direction "The console, re-ruled" for ro-housing on the estate redesign board, with every question on the board standing as proposed: the island and its hard shadow in light, burnt ochre (`#a35100`) and all-mono in Source Code Pro, and the direction itself. The runner-up, "The source rail", lends the source health and the phone's price-first cards with a bottom bar. The build follows in the commits after this entry.
+
+## [2026-11-13] done | Brief 25: the redesign, The console, re-ruled
+
+Built after the owner's approval of the same day, in nine commits. Tokens and fonts first (Source Code Pro self-hosted, burnt ochre `#a35100`, a 12 to 20 px scale, warm paper and a warm near-black dark), then the header, the tabs (a bottom bar on a phone, still one Base UI `TabsList` with `keepMounted` panels) and the shared controls, then Listings, Saved and Sources as islands (the tabs, a head band and the table as one surface; a hard shadow in light only), then the screens the board never drew. Listings gained source health, price first, the `new` mark (first seen two days ago or less) and the stale ring; both contrast exceptions are gone. Browser checks live in the root harness (`@playwright/test` 1.63.0, `npm run test:e2e`: focus ring, reduced motion, 390 and 360 overflow, the theme switch). `npm run check` exit 0; 40 browser tests pass. Owner step: `node cli.ts ro-housing deploy` from vps-deploy. Details in [the brief](briefs/done/25-a-redesign-with-hallmark-on-the-estate-board.md) and [docs/design.md](../docs/design.md).
+

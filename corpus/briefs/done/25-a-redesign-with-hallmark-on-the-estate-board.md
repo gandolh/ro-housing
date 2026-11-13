@@ -81,3 +81,15 @@ A proposal stays inside those decisions unless the owner reopens one on the boar
 - Brief 23's wrappers, tokens and theme module are what this brief changes. It adds no new Base UI behaviour.
 - `docs/design.md` is rewritten here, so brief 22's `.claude/rules/web.md` points at it by name only.
 - **Contrast (added 2026-11-11).** Brief 23's `web/src/contrast.test.ts` holds every token pair to 4.5:1 in both themes, except two light-theme pairs it held to their current ratios: `accent` on `accent-soft` (3.9:1, a floor of 3.9) and `ink-faint`. The redesign picks new colours, so it raises both to 4.5:1 and removes the two exceptions from the test.
+
+## Outcome (2026-11-13)
+
+Built as the approved direction "The console, re-ruled" (runner-up "The source rail" lent its source health and phone cards). Web only; `api/` untouched; `web/package.json` gained one line, `@fontsource-variable/source-code-pro` 5.3.1.
+
+- **Commits:** approval log entry; tokens (self-hosted Source Code Pro, `#a35100`, the 12 to 20 px scale, new tokens `focus`, `on-accent`, `text-2xl`, `shadow-island`, `shadow-popup`, `z-index-bar`); the Playwright harness in the root (`@playwright/test` 1.63.0, `playwright.config.ts`, `e2e/`, `test:e2e`); header, tabs and footer with the shared controls; Listings; Saved; Sources; the undrawn screens (sign-in, the apartment form, Account, Report, Edit, empty, error and refreshing states); `docs/design.md` and `docs/decisions.md`.
+- **Reopened and recorded** in [docs/decisions.md](../../../docs/decisions.md), old lines kept: the island's hard shadow in light, sentence case and the 12 to 20 px scale, the bottom bar on a phone. Also recorded: the `new` rule, the 960 px break, no saved mark, the URL field kept.
+- **Contrast** (`web/src/contrast.test.ts`, both exceptions deleted, `accent` on `accent-soft` 4.83 and `ink-faint` 4.74 on paper): lowest text pair 4.53 in light (`ink-faint` on `panel-alt`) and 4.81 in dark; lowest edge pair 3.9 in dark (`rule` on `panel-alt`).
+- **Against the twins** (rendered and diffed by pixel): Listings 1.1 to 2.3 percent, Saved 0.6 to 1.0, Sources 1.5 to 2.6, at 1280 and 390, light and dark. First-screen whole rows: Listings 10 (1280), 3 (390), 3 (360); Saved 5, 2, 1; Sources 9, 5, 5. No two cells' text closer than 8 px (smallest 8.0, Area to Edit on Saved).
+- **Tokens dropped** once unused: `shadow-knob`, `shadow-knob-pressed`, `color-bevel`, `--tracking-wide`; `StatusDot` is deleted.
+- **Left for the owner:** the stale-rows question (10 of 11 demo rows dimmed on the board; a clean seed dims fewer, a second run of the demo seed dims most, so likely a seeding artifact; `api/` was not touched). `docs/images/demo-seed.mjs` posts saved apartments without signing in, so it fails at that step against the signed-in API.
+
