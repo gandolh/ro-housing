@@ -62,7 +62,8 @@
   --z-index-overlay: 40;
   --z-index-dialog: 50;
 
-  /* Depth: hard offsets, never a blur. The island's is light only (see the blocks below). */
+  /* Depth: hard offsets, never a blur. The island's is light only: Island adds `dark:shadow-none`, because Tailwind
+     inlines this value into the utility, so a [data-theme] override of the token would never reach it. */
   --shadow-island: 3px 3px 0 var(--color-rule);
   --shadow-popup: 3px 3px 0 var(--color-rule);
 
@@ -73,17 +74,6 @@
 
   --tracking-tight: -0.02em;
   --tracking-wide: 0.05em;
-}
-
-/* Dark: no island shadow; the panel steps up by lightness and keeps its rule edge. color-scheme cannot
-   switch a shadow, so these follow the theme attribute. */
-:root[data-theme="dark"] {
-  --shadow-island: none;
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="system"] {
-    --shadow-island: none;
-  }
 }
 
 @layer base {

@@ -14,7 +14,7 @@ export function Panel({ className, children, ...props }: HTMLAttributes<HTMLDivE
  *  in light (the token is none in dark). */
 export function Island({ className, children, ...props }: HTMLAttributes<HTMLElement>) {
   return (
-    <section {...props} className={cn("border border-rule bg-panel shadow-island", className)}>
+    <section {...props} className={cn("border border-rule bg-panel shadow-island dark:shadow-none", className)}>
       {children}
     </section>
   );

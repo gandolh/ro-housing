@@ -93,7 +93,7 @@ describe("<SourcesPage> last runs", () => {
     );
     render(<SourcesPage active />);
 
-    expect(await screen.findByText("— found no listings")).toBeInTheDocument();
-    expect(screen.getAllByText(/— found no listings/)).toHaveLength(1);
+    expect(await screen.findByText("found no listings")).toBeInTheDocument();
+    expect(screen.getAllByText(/found no listings/)).toHaveLength(1);
   });
 });

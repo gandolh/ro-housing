@@ -1,26 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, type Source } from "../api.ts";
-import { cn } from "../lib/cn.ts";
 import { ApiErrorNotice } from "../components/ApiErrorNotice.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Checkbox } from "../components/ui/Checkbox.tsx";
 import { Input } from "../components/ui/Input.tsx";
-import { StatusDot } from "../components/ui/StatusDot.tsx";
+import { Icon } from "../components/Icon.tsx";
+import { LastRun } from "../components/RunStatus.tsx";
+import { Island, IslandHead } from "../components/ui/Panel.tsx";
 
 interface Draft {
   searchUrl: string;
   enabled: boolean;
-}
-
-function fmtWhen(ts: number | null): string {
-  if (ts === null) return "never";
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
 }
 
 function toDraft(s: Source): Draft {
@@ -128,75 +118,103 @@ export function SourcesPage({ active = true }: Props) {
   };
 
   const hasChanges = dirtyIds.length > 0;
+  const failed = sources.filter((s) => s.enabled && s.lastRunOk === false).map((s) => s.displayName);
+  const enabledCount = sources.filter((s) => drafts[s.id]?.enabled).length;
 
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
-        <Button variant="primary" disabled={!hasChanges || saving} onClick={() => void save()}>
+    <Island aria-label="Sources">
+      <IslandHead className="max-[820px]:gap-2 max-[820px]:p-3">
+        <Button
+          variant="primary"
+          disabled={!hasChanges || saving}
+          onClick={() => void save()}
+          className="max-[820px]:h-12 max-[820px]:w-20 max-[820px]:px-1"
+        >
           {saving ? "Saving…" : "Save"}
         </Button>
-        <Button variant="default" disabled={!hasChanges || saving} onClick={discard}>
+        <Button
+          variant="default"
+          disabled={!hasChanges || saving}
+          onClick={discard}
+          className="max-[820px]:h-12 max-[820px]:w-20 max-[820px]:px-1"
+        >
           Discard
         </Button>
-        {hasChanges && <span className="text-xs uppercase tracking-wide text-warn">{dirtyIds.length} unsaved</span>}
-      </div>
+        {hasChanges && <span className="text-xs font-bold text-warn">{dirtyIds.length} unsaved</span>}
+        {failed.length > 0 && (
+          <p className="m-0 inline-flex items-center gap-2 text-xs font-bold text-warn max-[820px]:order-last max-[820px]:basis-full">
+            <Icon name="warn" />
+            {failed.join(", ")} failed on its last run
+          </p>
+        )}
+        {sources.length > 0 && (
+          <span className="ml-auto whitespace-nowrap text-ink-dim max-[820px]:ml-auto max-[820px]:text-xs">
+            {enabledCount} of {sources.length} enabled
+          </span>
+        )}
+      </IslandHead>
 
       {saveError && (
-        <div className="mb-3">
+        <div className="p-3">
           <ApiErrorNotice action="Not saved" error={saveError.error} onRetry={() => void save()} busy={saving} />
         </div>
       )}
 
       {loadError && (
-        <ApiErrorNotice
-          action="Couldn't load the sources"
-          error={loadError.error}
-          onRetry={() => void reloadKeepingEdits()}
-          busy={loading}
-        />
+        <div className="p-3">
+          <ApiErrorNotice
+            action="Couldn't load the sources"
+            error={loadError.error}
+            onRetry={() => void reloadKeepingEdits()}
+            busy={loading}
+          />
+        </div>
       )}
 
-      <div className="flex flex-col gap-2">
+      <ul className="m-0 list-none p-0">
         {sources.map((s) => {
           const draft = drafts[s.id];
           if (!draft) return null;
           const dirty = isDirty(s, draft);
-          const empty = s.lastRunOk === true && s.lastRunCount === 0;
-          const dot = s.lastRunOk === null ? "unknown" : !s.lastRunOk ? "bad" : empty ? "warn" : "ok";
           return (
-            <div
+            <li
               key={s.id}
-              className={cn(
-                "grid grid-cols-[auto_1fr_auto] items-center gap-4 border bg-panel px-3 py-2",
-                dirty ? "border-accent" : "border-ink",
-              )}
+              className="grid min-h-16 grid-cols-[20px_240px_minmax(0,1fr)_220px] items-center gap-x-4 border-b border-rule-soft px-4 py-3 last:border-b-0 max-[820px]:grid-cols-[48px_minmax(0,1fr)] max-[820px]:gap-x-0 max-[820px]:gap-y-1 max-[820px]:py-2.5 max-[820px]:pl-1 max-[820px]:pr-3"
             >
-              <label className="flex items-center gap-2">
-                <Checkbox
-                  checked={draft.enabled}
-                  onCheckedChange={(checked) => setField(s.id, { enabled: Boolean(checked) })}
-                />
-                <span className="text-sm">{s.displayName}</span>
-              </label>
-              <div>
-                <Input
-                  placeholder="Paste search URL from this site…"
-                  value={draft.searchUrl}
-                  onChange={(e) => setField(s.id, { searchUrl: e.target.value })}
-                />
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-ink-dim">
-                  <StatusDot status={dot} />
-                  <span>last run: {fmtWhen(s.lastRunAt)}</span>
-                  {s.lastRunOk === false && <span className="text-bad">— failed</span>}
-                  {empty && <span className="text-warn">— found no listings</span>}
-                  {dirty && <span className="ml-2 text-accent">▸ modified</span>}
-                </div>
+              <Checkbox
+                id={`enabled-${s.id}`}
+                aria-label={s.displayName}
+                checked={draft.enabled}
+                onCheckedChange={(checked) => setField(s.id, { enabled: Boolean(checked) })}
+                className="size-5 max-[820px]:col-start-1 max-[820px]:row-span-2 max-[820px]:self-start max-[820px]:justify-self-center max-[820px]:mt-1.5"
+              />
+              <div className="flex min-w-0 flex-col max-[820px]:col-start-2 max-[820px]:row-start-1">
+                <label htmlFor={`enabled-${s.id}`} className="cursor-pointer break-words font-medium">
+                  {s.displayName}
+                </label>
+                <span className="break-words text-xs text-ink-dim max-[820px]:hidden">{s.id}</span>
               </div>
-              <div className="text-xs uppercase tracking-wide text-ink-faint">{s.id}</div>
-            </div>
+              <Input
+                aria-label={`Search URL for ${s.displayName}`}
+                placeholder="Paste search URL from this site…"
+                value={draft.searchUrl}
+                onChange={(e) => setField(s.id, { searchUrl: e.target.value })}
+                className="max-[820px]:col-start-2 max-[820px]:row-start-2 max-[820px]:h-12"
+              />
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 max-[820px]:col-start-2 max-[820px]:row-start-3">
+                <LastRun source={s} />
+                {dirty && <span className="whitespace-nowrap text-xs font-bold text-accent">modified</span>}
+                <span
+                  className="ml-auto hidden whitespace-nowrap text-xs text-ink-dim max-[820px]:inline"
+                  aria-hidden="true"
+                >
+                  {s.id}
+                </span>
+              </div>
+            </li>
           );
         })}
-      </div>
-    </div>
+      </ul>
+    </Island>
   );
 }

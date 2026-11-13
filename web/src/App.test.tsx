@@ -121,7 +121,7 @@ describe("<App> tabs", () => {
     await user.click(screen.getByRole("tab", { name: "Listings" }));
     await user.click(screen.getByRole("tab", { name: "Sources" }));
 
-    expect(await screen.findByText("— failed")).toBeInTheDocument();
+    expect(await screen.findByText("failed")).toBeInTheDocument();
     expect(screen.getByRole("textbox")).toHaveValue("https://www.storia.ro/ro/rezultate");
     expect(screen.getByText("1 unsaved")).toBeInTheDocument();
   });
