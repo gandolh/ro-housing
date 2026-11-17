@@ -1,22 +1,40 @@
 // Fills a throwaway ro-housing clone with made-up listings and saved
 // apartments for the README screenshots. See shots.md.
 //
-//   node docs/images/demo-seed.mjs <clone-root> [api-base]
+//   DEMO_USER=<name> DEMO_PASS=<password> node docs/images/demo-seed.mjs <clone-root> [api-base]
 //
-// Start the clone's API first (`cd api && npm run dev`): it creates the
-// tables, and the saved apartments go in through POST /api/saved. Listings
-// have no insert route, so they are written straight into the clone's
-// data/ro-housing.db. Every title, price and note below is invented.
+// Make the account in the clone first (`cd api && npm run seed`), then start
+// its API (`npm run dev`): it creates the tables, and the saved apartments go
+// in through POST /api/saved, signed in as DEMO_USER. Listings have no insert
+// route, so they are written straight into the clone's data/ro-housing.db.
+// Every title, price and note below is invented.
 
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 
 const root = process.argv[2];
 const api = process.argv[3] ?? "http://127.0.0.1:3000";
-if (!root) {
-  console.error("usage: node docs/images/demo-seed.mjs <clone-root> [api-base]");
+const user = process.env.DEMO_USER;
+const pass = process.env.DEMO_PASS;
+if (!root || !user || !pass) {
+  console.error("usage: DEMO_USER=<name> DEMO_PASS=<password> node docs/images/demo-seed.mjs <clone-root> [api-base]");
   process.exit(1);
 }
+
+// Sign in before anything is written, so a wrong password changes nothing.
+// A request with no Origin header passes the API's same-origin check.
+const login = await fetch(`${api}/auth/login`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username: user, password: pass }),
+});
+if (!login.ok) {
+  throw new Error(`POST /auth/login → ${login.status}: ${await login.text()}`);
+}
+const cookie = login.headers
+  .getSetCookie()
+  .map((c) => c.split(";")[0])
+  .join("; ");
 
 const require = createRequire(join(resolve(root), "api", "package.json"));
 const Database = require("better-sqlite3");
@@ -34,7 +52,10 @@ const SEARCH_URLS = {
   district: "https://districtestate.ro/proprietati/",
 };
 
-// [source, title, rooms, m², location, days since first seen, prices oldest → newest]
+// [source, title, rooms, m², location, days since first seen, prices oldest → newest, options]
+// options.plusVat: the price is before VAT ("+ TVA"). options.goneDays: the
+// last Refresh did not find it, and it was last seen that many days ago, so
+// the table dims it.
 const LISTINGS = [
   ["storia", "Apartament 2 camere, Soarelui, centrală proprie", 2, 52, "Soarelui", 21, [92000, 92000, 89000]],
   [
@@ -47,9 +68,18 @@ const LISTINGS = [
     [124000, 121000, 121000, 118000],
   ],
   ["foxfort", "Apartament 3 camere, zona Iosefin, bloc nou", 3, 74, "Iosefin", 12, [135000, 135000]],
-  ["storia", "Garsonieră renovată, Complexul Studențesc", 1, 32, "Complexul Studențesc", 3, [54500]],
+  [
+    "storia",
+    "Garsonieră renovată, Complexul Studențesc",
+    1,
+    32,
+    "Complexul Studențesc",
+    5,
+    [54500],
+    { goneDays: 2 },
+  ],
   ["foxfort", "Apartament 2 camere, Fabric, etaj 2", 2, 49, "Fabric", 17, [85000, 85000, 82000]],
-  ["apostu", "Apartament 2 camere, Freidorf, bloc 2025", 2, 50, "Freidorf", 9, [104000, 102000]],
+  ["apostu", "Apartament 2 camere, Freidorf, bloc 2025", 2, 50, "Freidorf", 9, [104000, 102000], { plusVat: true }],
   ["primum", "Apartament 2 camere, Calea Aradului, lift", 2, 50, "Calea Aradului", 14, [108000, 108000, 108000]],
   ["district", "Apartament 4 camere, Elisabetin, casă interbelică", 4, 112, "Elisabetin", 26, [255000, 249000, 245000]],
   ["storia", "Apartament 3 camere, Dâmbovița, renovat", 3, 64, "Dâmbovița", 6, [112000, 109000]],
@@ -57,42 +87,55 @@ const LISTINGS = [
   ["storia", "Apartament 3 camere, Take Ionescu, două băi", 3, 80, "Take Ionescu", 19, [165000, 162000, 159000]],
 ];
 
+// Every source ran a minute ago. Its listings carry the run's time, so the
+// table dims only the ones marked goneDays (ListingsTable.tsx, staleCutoffs).
+const runAt = now - 60_000;
+
 // imobiliare.ro shows as failed: on 2026-10-16 it answered every request
 // with a bot check (docs/adapters.md), so a real refresh fails there too.
 const enable = db.prepare(
-  `UPDATE sources SET enabled = 1, search_url = ?, last_run_at = ?, last_run_ok = ? WHERE id = ?`,
+  `UPDATE sources SET enabled = 1, search_url = ?, last_run_at = ?, last_run_ok = ?, last_run_count = ? WHERE id = ?`,
 );
 for (const [id, url] of Object.entries(SEARCH_URLS)) {
-  enable.run(url, now - 60_000, id === "imobiliare" ? 0 : 1, id);
+  const failed = id === "imobiliare";
+  const found = LISTINGS.filter(([source, , , , , , , opts]) => source === id && !opts?.goneDays).length;
+  enable.run(url, runAt, failed ? 0 : 1, failed ? null : found, id);
 }
 
 const insertListing = db.prepare(`
-  INSERT INTO listings (source_id, source_uid, url, title, price_eur, rooms, sqm, location, first_seen, last_seen, raw_json)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '{}')
+  INSERT INTO listings (source_id, source_uid, url, title, price_eur, price_plus_vat, rooms, sqm, location, first_seen, last_seen, raw_json)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '{}')
   ON CONFLICT(source_id, source_uid) DO NOTHING
   RETURNING id
 `);
+// A second run moves the sources' last run, so it moves last_seen with it;
+// otherwise every listing from the first run would show as gone.
+const touchListing = db.prepare(`UPDATE listings SET last_seen = ? WHERE source_id = ? AND source_uid = ?`);
 const insertPrice = db.prepare(
   `INSERT OR IGNORE INTO price_history (listing_id, observed_at, price_eur) VALUES (?, ?, ?)`,
 );
 
-LISTINGS.forEach(([source, title, rooms, sqm, location, age, prices], i) => {
+LISTINGS.forEach(([source, title, rooms, sqm, location, age, prices, opts], i) => {
   const uid = `demo-${i + 1}`;
   const firstSeen = now - age * DAY;
-  const lastSeen = now - 60_000 - i * 1_000;
+  const lastSeen = opts?.goneDays ? now - opts.goneDays * DAY : runAt - 1_000;
   const row = insertListing.get(
     source,
     uid,
     `https://example.com/${source}/${uid}`,
     title,
     prices[prices.length - 1],
+    opts?.plusVat ? 1 : null,
     rooms,
     sqm,
     location,
     firstSeen,
     lastSeen,
   );
-  if (!row) return;
+  if (!row) {
+    touchListing.run(lastSeen, source, uid);
+    return;
+  }
   prices.forEach((p, k) => {
     const at = prices.length === 1 ? lastSeen : firstSeen + ((lastSeen - firstSeen) * k) / (prices.length - 1);
     insertPrice.run(row.id, Math.round(at), p);
@@ -138,7 +181,8 @@ const SAVED = [
     yearBuilt: 2025,
     location: "Freidorf",
     partitioning: "semidecomandat",
-    notes: "New block. No bus stop close by yet.",
+    pricePlusVat: true,
+    notes: "New block, the price is before VAT. No bus stop close by yet.",
   },
   {
     url: "https://districtestate.ro/proprietate/exemplu-elisabetin/",
@@ -171,7 +215,7 @@ const SAVED = [
 for (const s of SAVED) {
   const res = await fetch(`${api}/api/saved`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({ imageUrl: null, ...s }),
   });
   if (res.status !== 201 && res.status !== 409) {
