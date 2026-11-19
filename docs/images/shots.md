@@ -28,14 +28,14 @@ The bot-check image is not staged: the clone's API really asked imobiliare.ro, g
 ## Demo data
 
 1. Clone the repo outside your working copy, then run `npm install` in `api/` and in `web/`.
-2. Start both dev servers in the clone with `npm run dev` in each. The API creates the tables on its first start.
-3. From any checkout, point the seed at the clone:
+2. Make a demo account in the clone, with the password only in your shell: `export DEMO_PASS=$(openssl rand -hex 12)`, then `cd api && SEED_USERNAME=demo SEED_PASSWORD="$DEMO_PASS" npm run seed`. Then start both dev servers with `npm run dev` in each. The API creates the tables on its first start.
+3. From any checkout, point the seed at the clone, signed in as that account:
 
    ```bash
-   node docs/images/demo-seed.mjs /path/to/clone
+   DEMO_USER=demo DEMO_PASS="$DEMO_PASS" node docs/images/demo-seed.mjs /path/to/clone
    ```
 
-   It writes the listings and the Sources settings straight into the clone's `data/ro-housing.db`, and adds the saved apartments through `POST /api/saved` on `http://127.0.0.1:3000`, or on the address given as a second argument. It touches no listing site. Running it twice adds nothing new.
+   It signs in first, so a wrong password changes nothing. Then it writes the listings and the Sources settings straight into the clone's `data/ro-housing.db`, and adds the saved apartments through `POST /api/saved` on `http://127.0.0.1:3000`, or on the address given as a second argument. It touches no listing site. Running it twice adds nothing new.
 
 ## Capture method
 
