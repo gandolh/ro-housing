@@ -46,3 +46,24 @@ What the update changes here:
 - [ ] Both vendored copies at the new version; the tests above pass; `npm run check` exit 0; `bash corpus/lint.sh` OK.
 - [ ] The outcome note lists each CHANGELOG entry this app crossed and what it needed.
 - [ ] End move `ready_for_deploy` with the app's deploy step (server and web both change).
+
+## Outcome (2026-11-19)
+
+Built in commit `e7e18fb` (with `216938e`, a Prettier-only fix of `docs/images/demo-seed.mjs`, which failed `format:check` before this brief and kept `npm run check` from exiting 0). Both vendored copies (`api/vendor/ward`, `web/vendor/ward`) went from ward-auth 0.7.0 to 1.1.0 (six files each, checked against the staged copy's `SHA256SUMS`). `allowRename: false` is unchanged.
+
+**CHANGELOG entries crossed, and what each needed**
+
+- 0.7.1, 0.7.2: no change for apps.
+- 1.0.0, password on link and unlink: the account dialog has a "Current password" field with the Link Ward button (`web/src/components/LinkWardForm.tsx`), calling `link(currentPassword)`. A wrong password and `too_many_attempts` (with the wait) show beside the field, which keeps focus; `accountMessage` gained both words. Unlink is not offered by this app.
+- 1.1.0, look-alike usernames, migration 5: nothing by hand.
+
+**Tests.** Server (`api/src/ward-link.test.ts`, Ward on a stubbed issuer): link with no session (401), without the password (400), with a wrong one (401 `invalid_credentials`), with the right one (200, the authorize URL); the library refuses `AIice` beside `alice`. Web (`AccountButton.test.tsx`): the call carries the typed password, a wrong one shows its message with focus on the field, `too_many_attempts` shows the wait, an empty field makes no call. `npm run check` exit 0.
+
+**Not done.** The look-alike test on `/register` is skipped: this app has no `/register` and no rename route (the existing "no sign-up and no rename" test covers that), so the test calls the library's `createUser`. "A linked user still signs in with Ward" is not tested: it needs a full OIDC provider; the Ward callback is untouched.
+
+**Start log.** On a fresh dev seed the start log has no username-key line (the library warns only when users share a key); `auth_migrations` shows version 5 `username_skeleton` applied and `owner` keyed `owner`.
+
+**Shots** (account dialog at 1280 light and 390 dark, Ward and session routes stubbed, wrong password showing): read; the dialog fits, no clipping, focus stays on the field. At 390 the page behind scrolls sideways only because the stub made the Report button read "(undefined/undefined)".
+
+**Owner step.** Deploy server and web together: from the vps-deploy checkout, `node cli.ts ro-housing all`. Migration 5 runs on the first boot and cannot be stepped back from without the earlier database.
+

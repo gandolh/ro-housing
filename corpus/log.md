@@ -341,3 +341,8 @@ Built after the owner's approval of the same day, in nine commits. Tokens and fo
 ## [2026-11-13] done | Brief 26: abort a refresh and a Wicket poll on shutdown
 
 Promoted from the todo "A refresh in flight holds the shutdown". A `preClose` hook (`plugins/shutdown.ts`) aborts `app.shutdownSignal`; the nine adapters' requests and Chromium pages, the refresh loop and the Fill-the-gaps poll stop, both answer 503 "The server is restarting", and the close finishes at once instead of running close-with-grace's 10 s out and exiting 1. Timeout values untouched. Fetch details is not covered. `npm run check` exit 0. Owner step: `node cli.ts ro-housing server` from vps-deploy. See [the brief](briefs/done/26-abort-a-refresh-and-a-poll-on-shutdown.md).
+
+## [2026-11-19] done | Brief 27: linking Ward asks for the password
+
+Ward's shared library moved from 0.7.0 to 1.1.0 in both vendored copies. Linking a Ward account now asks for the local password typed again, with a refusal shown beside the field; a new local name that looks like an existing one is refused by the library (this app has no sign-up or rename route, so only the seed meets it). Crossed entries and the start-log finding are in [the brief's outcome](briefs/done/27-linking-ward-asks-for-the-password.md). Awaits a deploy (`all`).
+

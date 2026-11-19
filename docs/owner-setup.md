@@ -174,7 +174,7 @@ should.
 Link your accounts in this order, or you end up with two users:
 
 1. Sign in at `<production origin>/ro-housing/` with the local account from step 5.
-2. Press your name in the header and then "Link Ward".
+2. Press your name in the header, type your ro-housing password in "Current password" and press "Link Ward".
 
 From then on "Sign in with Ward" on the login page signs you in as that user.
 
