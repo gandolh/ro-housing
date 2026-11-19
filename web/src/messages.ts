@@ -62,6 +62,12 @@ export function sessionReasonMessage(reason: string | undefined): string | null 
 
 export function accountMessage(error: AuthError): string {
   switch (error.code) {
+    case "invalid_credentials":
+      return "That password isn't right.";
+    case "too_many_attempts":
+      return error.retryAfterSeconds === undefined
+        ? "Too many tries. Wait a few minutes, then try again."
+        : `Too many tries. Wait ${waitText(error.retryAfterSeconds)}, then try again.`;
     case "already_linked":
       return "A Ward account is already linked.";
     case "ward_account_in_use":

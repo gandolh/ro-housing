@@ -8,6 +8,7 @@ import {
 import { accountMessage } from "../messages.ts";
 import { navigate, usePage } from "../route.ts";
 import { Icon } from "./Icon.tsx";
+import { LinkWardForm } from "./LinkWardForm.tsx";
 import { ThemeSwitch } from "./ThemeSwitch.tsx";
 import { Button } from "./ui/Button.tsx";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/Dialog.tsx";
@@ -31,7 +32,7 @@ export function AccountButton() {
   const { user, ward } = session;
   const viaWard = session.session.origin === "ward";
   const linked = ward.linked || link.linked || result.result === "linked";
-  const failure = link.error ?? result.error ?? logout.error ?? wardSignOut.error;
+  const failure = result.error ?? logout.error ?? wardSignOut.error;
 
   return (
     <Dialog open={open} onOpenChange={(next) => navigate(next ? "account" : "app", { replace: !next })}>
@@ -70,12 +71,8 @@ export function AccountButton() {
             {accountMessage(failure)}
           </p>
         )}
+        {ward.enabled && !linked && <LinkWardForm link={link} />}
         <div className="mt-4 flex flex-wrap gap-2">
-          {ward.enabled && !linked && (
-            <Button disabled={link.pending} onClick={() => void link.link()}>
-              {link.pending ? "Opening Ward…" : "Link Ward"}
-            </Button>
-          )}
           <Button disabled={logout.pending} onClick={() => void logout.logout()}>
             Sign out
           </Button>
