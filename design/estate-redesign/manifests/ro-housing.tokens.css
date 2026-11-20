@@ -1,0 +1,68 @@
+/*
+ * ro-housing, direction A "The console, re-ruled": the token set in the app's own
+ * names. Replaces the colour, type and z-index-free groups of the `@theme` block in
+ * web/src/styles.css and adds the names listed in ro-housing.tokens-map.md. The
+ * file's own mechanism is kept: each colour is light-dark(light, dark), picked by
+ * color-scheme on :root, so there is no second colour block. Only the shadows differ
+ * per theme (color-scheme cannot switch them), so they get the [data-theme] blocks
+ * below. Corners stay square: the global `border-radius: 0 !important` rule stays,
+ * so there are no --radius-* tokens.
+ */
+@theme {
+  --color-paper: light-dark(#f3f2ee, #11110f); /* the page, the header bar's sibling ground, the tabs */
+  --color-panel: light-dark(#fefdfb, #23221e); /* the island, its rows, the bars, the menus and dialogs */
+  --color-panel-alt: light-dark(#efede6, #2c2b26); /* the island's head band, the column heads, the current tab, a row under the pointer */
+  --color-ink: light-dark(#15140f, #edebe4); /* text, the solid button, the frame in light */
+  --color-ink-dim: light-dark(#58554c, #b1ada3); /* secondary text, labels, stale rows */
+  --color-ink-faint: light-dark(#6f6b62, #9a968c); /* placeholders and disabled controls only */
+  --color-rule: light-dark(#15140f, #8a867b); /* the island's frame and every control's border */
+  --color-rule-soft: light-dark(#d6d3c9, #3d3b35); /* row lines and quiet dividers */
+  --color-accent: light-dark(#a35100, #eb9a4a); /* burnt ochre: the current tab's rule, the new mark, a saved bookmark */
+  --color-accent-soft: light-dark(#f8ecdc, #3e2c17); /* the chosen item in a menu */
+  --color-on-accent: light-dark(#fffdf9, #1a1206); /* text on a solid accent (kept for the Badge) */
+  --color-ok: light-dark(#1f6b2a, #7fd08a); /* a source that ran: the dot and the word */
+  --color-ok-soft: light-dark(#e3efd8, #1e3321); /* the toast's ground */
+  --color-bad: light-dark(#a51a1a, #ff8a80); /* a failed source, an error notice */
+  --color-bad-soft: light-dark(#f7dcdc, #3c1a1a); /* the error notice's ground */
+  --color-warn: light-dark(#7f5300, #e8b04e); /* the source-health line, unsaved changes */
+  --color-focus: light-dark(#15140f, #edebe4); /* NEW: the focus ring, 2px, offset 2px */
+  --color-scrim: light-dark(rgb(21 20 15 / 0.3), rgb(0 0 0 / 0.6));
+
+  /* Type: Source Code Pro (Google Fonts, latin-ext for ș ț ă), one face. Sizes 12 14 16 18 20, nothing under 12 */
+  --font-mono: "Source Code Pro", ui-monospace, "Cascadia Code", Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-mono);
+  --text-xs: 12px; /* was 10 */
+  --text-xs--line-height: 16px;
+  --text-sm: 12px;
+  --text-sm--line-height: 16px; /* was 18 */
+  --text-base: 14px; /* was 13: the table and controls on desktop */
+  --text-base--line-height: 20px;
+  --text-lg: 16px; /* was 14: phone body, the desktop price (700) */
+  --text-lg--line-height: 24px;
+  --text-xl: 18px;
+  --text-xl--line-height: 24px; /* the wordmark (700, uppercase), the phone price */
+  --text-2xl: 20px; /* NEW: dialog titles */
+  --text-2xl--line-height: 28px;
+  --text-mark: 12px; /* was 11 */
+  --text-mark--line-height: 1;
+  --tracking-tight: -0.02em;
+
+  /* Depth: the island's hard offset "sticker" in light; popups keep it too */
+  --shadow-island: 3px 3px 0 var(--color-rule); /* NEW */
+  --shadow-popup: 3px 3px 0 var(--color-rule); /* NEW */
+
+  --z-index-header: 30;
+  --z-index-overlay: 40;
+  --z-index-dialog: 50;
+  --z-index-bar: 30; /* NEW: the phone's bottom tab bar, same layer as the header */
+}
+
+/* Dark: no hard shadow; the panel steps up by lightness and keeps its rule edge. */
+[data-theme="dark"] {
+  --shadow-island: none;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --shadow-island: none;
+  }
+}

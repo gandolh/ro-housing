@@ -6,6 +6,7 @@ data
 issues
 web
 corpus
+design
 docs
 .git
 .env

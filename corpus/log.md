@@ -346,3 +346,7 @@ Promoted from the todo "A refresh in flight holds the shutdown". A `preClose` ho
 
 Ward's shared library moved from 0.7.0 to 1.1.0 in both vendored copies. Linking a Ward account now asks for the local password typed again, with a refusal shown beside the field; a new local name that looks like an existing one is refused by the library (this app has no sign-up or rename route, so only the seed meets it). Crossed entries and the start-log finding are in [the brief's outcome](briefs/done/27-linking-ward-asks-for-the-password.md). Awaits a deploy (`all`).
 
+
+## [2026-11-20] maintenance | The redesign's board page copied into the repo
+
+The estate redesign board is a private canvas, so `design/estate-redesign/` now holds a copy of this app's page on it and the build behind it: the directions, the judges' and the controller's rulings, the critique, the token hand-off, the board's notes, the owner's decisions, the proposed screens (as HTML with renders, or as the board's own artboard sources), and today's shots from before the redesign. It is the design record of brief 25, which built it; its README says what each file is. Prettier and the Docker build skip the folder.
