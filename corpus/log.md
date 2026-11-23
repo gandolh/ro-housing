@@ -350,3 +350,7 @@ Ward's shared library moved from 0.7.0 to 1.1.0 in both vendored copies. Linking
 ## [2026-11-20] maintenance | The redesign's board page copied into the repo
 
 The estate redesign board is a private canvas, so `design/estate-redesign/` now holds a copy of this app's page on it and the build behind it: the directions, the judges' and the controller's rulings, the critique, the token hand-off, the board's notes, the owner's decisions, the proposed screens (as HTML with renders, or as the board's own artboard sources), and today's shots from before the redesign. It is the design record of brief 25, which built it; its README says what each file is. Prettier and the Docker build skip the folder.
+
+## [2026-11-23] todo | Fence the listing page as data in the fill prompt
+
+From the odysseus research (Wicket's corpus, `corpus/wiki/research-odysseus.md` there): "Fill the gaps" sends the fetched page as plain text with nothing marking it as someone else's material. A todo, not a brief: the schema, `mergeFill()` and the owner's Save already limit the damage, and a prompt change needs a re-score. See [the todo](todos/fence-the-listing-page-as-data-in-the-fill-prompt.md).
