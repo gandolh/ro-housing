@@ -10,6 +10,9 @@ Run them in the repo root unless it says otherwise.
 - `npm ci` here, then in `api/` and `web/`: the root holds the house-style tools, each project its own.
 - `npm run check`: typecheck, lint, format check, conventions, tests, across both projects. Run it before
   every hand-back.
+- `npm run check` keeps going after a failing step and prints one line per step, then the end of each failure. The whole
+  output stays in `node_modules/.cache/check/last.log`, so read that log rather than running the gate again. While you
+  work, `npm run check:fast` and any test file you touched are enough; run the full gate once, after your last change.
 - `npm run check:fast`: both typechecks, then ESLint on the changed files. The Stop hook runs it from the
   folder of the file you saved, so `api/` or `web/` alone has the same script.
 - `npm run format`: Prettier writes every file it covers (Markdown stays out).
