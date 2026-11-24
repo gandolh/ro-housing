@@ -6,6 +6,9 @@ paths:
 # The web app (`web/src`)
 
 - Read the `base-ui` skill before you add or change a component.
+- Browsers: Chrome on Android decides what to build; Safari on iPhone,
+  Firefox and desktop Safari must keep working. Before you use a platform
+  feature newer than Baseline Widely available, read the `web-platform` skill.
 - Base UI is imported only by the wrappers in `web/src/components/ui/`. Pages import the wrapper, never
   `@base-ui/react`.
 - Colours and sizes come from the tokens in `web/src/styles.css`; no bare-element rules outside
