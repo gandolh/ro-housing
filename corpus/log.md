@@ -368,3 +368,10 @@ and gazette (pinned bookworm base, Playwright 1.60.0's headless shell and librar
 of about 580 MB of Chromium layers. `deps` stops downloading the full Chromium it then deletes, the base is
 pinned, and the runtime gets `MALLOC_ARENA_MAX=2`. Waits for newspapper's brief 16 check; ships with
 `node cli.ts ro-housing server`.
+
+## [2026-11-24] done | Brief 29, the Chromium layers are shared on a pinned base
+
+`prod` starts with the prefix shared with newspapper and gazette, `deps` installs without the postinstall's Chromium
+download (`--ignore-scripts` plus `npm rebuild better-sqlite3`), the base is `node:24.22.1-bookworm-slim`, a
+build-time launch check ties `api/`'s Playwright to the prefix's pin, and `MALLOC_ARENA_MAX=2` is set. Same size,
+the layers now share on the box. Awaits `node cli.ts ro-housing server`.

@@ -101,3 +101,30 @@ the controller.
 
 - `node cli.ts ro-housing server` from vps-deploy, after or with `node cli.ts newspapper server`, so both images
   come from the same build cache.
+
+## Outcome (2026-11-24)
+
+Built. `infrastructure/Dockerfile`: all three `FROM node` lines are `node:24.22.1-bookworm-slim`; `prod` starts with the
+shared prefix (the three lines diff identical to newspapper's `prod` stage), then a comment naming the other repos, the
+`LABEL`, `ENV PLAYWRIGHT_BROWSERS_PATH`, the app's `node_modules`, and the build-time launch check
+(`RUN node -e "require('playwright').chromium.launch().then((b) => b.close())"`), which passes. `prod` no longer copies
+`/ms-playwright` or runs `install-deps`. `MALLOC_ARENA_MAX=2` joins the `ENV` block with its reason.
+
+- **Step 2, `deps` downloads no browser.** `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` did NOT stop the `postinstall` (the
+  scratch `PLAYWRIGHT_BROWSERS_PATH` filled with `chromium`, the shell and `ffmpeg`), so `deps` uses the fallback:
+  `npm ci --omit=dev --ignore-scripts && npm rebuild better-sqlite3`. The scratch folder stayed empty and
+  `require('better-sqlite3')(':memory:')` works. The `rm -rf` of the full Chromium is gone.
+- **`docker history`, one machine**: before, `install-deps` 318 MB +
+  `COPY /ms-playwright` 276 MB + `COPY node_modules` 53.1 MB; after, one prefix layer of 594 MB + `COPY node_modules` 53.1 MB
+  + a 186 kB launch-check layer. Whole image 879 MB both ways: the change is sharing, not size. The "before" image was
+  built from the working tree, since `git archive` omits the gitignored issues feature the build needs (an open todo).
+- **Step 4, sharing.** A throwaway image with newspapper's two prefix lines plus `COPY a.txt` has the same six layers
+  (five base, one prefix) as this image, built on this machine from the same cache. Caveat seen on the way: the first
+  build of this image reused an older cache record of the prefix (made by newspapper's `--no-cache` check), and a
+  throwaway then got a different digest; the builder picks one record, and once rebuilt both gave one digest. So the
+  sharing depends on one cache record being in use, which a deploy of newspapper then ro-housing from the same cache gives.
+- **Step 5, refresh.** Both images ran on scratch data with `storia` (the browser source) enabled: the same
+  `imobiliare-feed` 53 listings and `storia` ok on both (40 on today's image, 41 on the new; the stored listings overlap
+  91 of 93 and 94 on the live site's own churn). Chromium launched and scraped in the new image.
+- `npm run check` exit 0; `bash corpus/lint.sh` ok. Ships with `node cli.ts ro-housing server`, after or with
+  `node cli.ts newspapper server`.

@@ -15,6 +15,7 @@ Brief 23 (Base UI by the conventions, and a Light/Dark/System theme) was built o
 Brief 24 (the server in the code structure: features, plugins, zod schemas on every route, one error handler) was built on 2026-11-12 and awaits a deploy (`server`); see [log.md](../log.md) and [docs/decisions.md](../../docs/decisions.md).
 Brief 25 (the redesign: warm paper, Source Code Pro, islands, a bottom bar on a phone, Playwright in the root harness) was built on 2026-11-13 and awaits a deploy (`deploy`); see [log.md](../log.md) and [docs/design.md](../../docs/design.md).
 Brief 27 (ward-auth 1.1.0: the password on Ward link, look-alike usernames refused) was built on 2026-11-19 and awaits a deploy (`all`); see [log.md](../log.md).
+Brief 29 (the Chromium layers shared with newspapper and gazette on a pinned base, `MALLOC_ARENA_MAX=2`) was built on 2026-11-24 and awaits a deploy (`server`); see [log.md](../log.md).
 
 ## By area
 
