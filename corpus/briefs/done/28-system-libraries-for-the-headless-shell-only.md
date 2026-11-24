@@ -69,3 +69,13 @@ repo's checks, and hand back with steps 2 to 4 for the controller.
 - The outcome note has both `docker history` readings, taken on one machine.
 - If the Dockerfile changed, the deploy is the owner's step:
   `node cli.ts ro-housing deploy` from vps-deploy.
+
+## Outcome (2026-11-24)
+
+Closed at step 1, as the brief allows: newspapper's brief 14 answers it. Measured there on
+2026-11-24 with the same Playwright, 1.60.0: `npx playwright install-deps chromium-headless-shell`
+installs the same 111 packages as `install-deps chromium`, so the layer is the same size (318 MB
+both ways, `--dry-run` reports nothing missing for either). It saves 0 MB, under the 50 MB bar.
+`install-deps chromium` stays, the Dockerfile is unchanged, and nothing deploys. Revisit only when a
+Playwright upgrade changes the headless shell's dependency list. The numbers are in newspapper's
+`corpus/wiki/image.md`, "Layer sizes".

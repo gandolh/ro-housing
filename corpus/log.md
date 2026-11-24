@@ -354,3 +354,9 @@ The estate redesign board is a private canvas, so `design/estate-redesign/` now 
 ## [2026-11-23] todo | Fence the listing page as data in the fill prompt
 
 From the odysseus research (Wicket's corpus, `corpus/wiki/research-odysseus.md` there): "Fill the gaps" sends the fetched page as plain text with nothing marking it as someone else's material. A todo, not a brief: the schema, `mergeFill()` and the owner's Save already limit the damage, and a prompt change needs a re-score. See [the todo](todos/fence-the-listing-page-as-data-in-the-fill-prompt.md).
+
+## [2026-11-24] done | Brief 28: system libraries for the headless shell only
+
+Closed without a build. newspapper's brief 14 measured, on the same Playwright (1.60.0), that the
+headless shell's `install-deps` list is the full Chromium's list (111 packages, 318 MB both ways),
+so the 50 MB bar can't be met. The Dockerfile stays as it is. See [the brief](briefs/done/28-system-libraries-for-the-headless-shell-only.md).
