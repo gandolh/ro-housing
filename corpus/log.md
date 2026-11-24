@@ -360,3 +360,11 @@ From the odysseus research (Wicket's corpus, `corpus/wiki/research-odysseus.md` 
 Closed without a build. newspapper's brief 14 measured, on the same Playwright (1.60.0), that the
 headless shell's `install-deps` list is the full Chromium's list (111 packages, 318 MB both ways),
 so the 50 MB bar can't be met. The Dockerfile stays as it is. See [the brief](briefs/done/28-system-libraries-for-the-headless-shell-only.md).
+
+## [2026-11-24] todo | Brief 29 from the infra review of 2026-11-24
+
+Filed from the estate's infra review. The `prod` stage starts with a prefix shared byte for byte with newspapper
+and gazette (pinned bookworm base, Playwright 1.60.0's headless shell and libraries), so the box keeps one copy
+of about 580 MB of Chromium layers. `deps` stops downloading the full Chromium it then deletes, the base is
+pinned, and the runtime gets `MALLOC_ARENA_MAX=2`. Waits for newspapper's brief 16 check; ships with
+`node cli.ts ro-housing server`.
