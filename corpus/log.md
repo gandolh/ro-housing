@@ -381,3 +381,9 @@ the layers now share on the box. Awaits `node cli.ts ro-housing server`.
 The unanchored `issues/` rule in `.gitignore` also hid `api/src/features/issues/`. It is now `/issues/`, and the five
 untracked files are committed unchanged. A scratch clone of HEAD typechecks `api/`, so a fresh clone and a vps-deploy
 rollback build. No deploy needed.
+
+## [2026-11-25] done | Brief 31, the listing page is fenced as data in the fill prompt
+
+"Fill the gaps" now sends the page between `<<<LISTING PAGE>>>` and `<<<END LISTING PAGE>>>`, with any marker copy in
+the page removed first, and the system message says the fenced text is data. Idea only from Wicket's odysseus
+research. Awaits `node cli.ts ro-housing server`; the live spot check is the owner's.

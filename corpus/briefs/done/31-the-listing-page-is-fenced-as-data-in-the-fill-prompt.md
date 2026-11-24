@@ -78,3 +78,13 @@ until the owner presses Save. This is a cheap second layer, and the page is alre
 - Settled 2026-11-25 (owner): promote it.
 - Mine (technical): marker text and the strip-until-stable rule; the policy sentence; no model calls in the build; the
   re-score reduced to a live spot check by the owner.
+
+## Outcome (2026-11-25)
+
+`fence()` in `fill.ts` removes every copy of either marker (case and spacing ignored, repeated until none is left)
+and wraps the page between `<<<LISTING PAGE>>>` and `<<<END LISTING PAGE>>>`; `fillMessages()` sends the fenced page
+and adds the data sentence to the system message, which still names only the asked fields. Tests cover the closing
+marker, a spaced lower-case variant and nested markers. `fill-routes.test.ts` (not in the brief's OWN list) had the old
+exact-equality check on the user message; it now expects the fenced form. `docs/research-firecrawl-ollama.md` records
+the research run and was left alone. `npm run check` and `bash corpus/lint.sh` passed. No model was called; the live
+spot check is the owner's after `node cli.ts ro-housing server`.

@@ -7,7 +7,7 @@ tags: [server, security]
 
 # Fence the listing page as data in the fill prompt
 
-Promoted 2026-11-25 to [brief 31](../briefs/todo/31-the-listing-page-is-fenced-as-data-in-the-fill-prompt.md).
+Promoted 2026-11-25 to [brief 31](../briefs/done/31-the-listing-page-is-fenced-as-data-in-the-fill-prompt.md).
 
 From the odysseus research of 2026-11-23, written up in Wicket's corpus (`corpus/wiki/research-odysseus.md`
 there). Odysseus is AGPL-3.0: the idea only, nothing copied.
