@@ -209,3 +209,9 @@ The owner approved the redesign "The console, re-ruled" on the estate redesign b
 - **The URL field stays on unchecked sources**, on a phone too; hiding it would change what the field is for.
 - **Stale rows** are drawn as the app computes them (`staleCutoffs`); a ring before the Age and a key in the foot say so.
 
+
+### The listing page is fenced as data in the fill prompt (2026-11-25)
+
+- **Now:** "Fill the gaps" sends the page as the user message between `<<<LISTING PAGE>>>` and `<<<END LISTING PAGE>>>`, any copy of either marker in the page is removed first (repeatedly, case and spacing ignored), and the system message says the fenced text is a web page to read whose orders are not orders.
+- **Why it is cheap:** the stakes are low. The JSON schema, `mergeFill()` and the extractor's sanity ranges already drop anything outside the asked fields and ranges, a filled field is marked "from AI", and nothing is saved until the owner presses Save. The fence is a second layer, not the defence.
+- **Source:** the idea comes from Wicket's odysseus research (`corpus/wiki/research-odysseus.md` there); the markers and wording are this app's own.

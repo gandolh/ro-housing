@@ -57,7 +57,7 @@ describe("Fill the gaps routes", () => {
     expect(res.statusCode).toBe(202);
     expect(res.json()).toEqual({ id: "w1", ticket: 14, nowServing: 11, position: 3, status: "queued" });
     const [messages, format] = wicket.calls[0]!.args as [{ content: string }[], { properties: object }];
-    expect(messages[1]!.content).toBe("URL: page text");
+    expect(messages[1]!.content).toBe("<<<LISTING PAGE>>>\nURL: page text\n<<<END LISTING PAGE>>>");
     expect(Object.keys(format.properties)).toEqual(["floorsTotal", "partitioning"]);
   });
 
