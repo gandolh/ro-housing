@@ -375,3 +375,9 @@ pinned, and the runtime gets `MALLOC_ARENA_MAX=2`. Waits for newspapper's brief 
 download (`--ignore-scripts` plus `npm rebuild better-sqlite3`), the base is `node:24.22.1-bookworm-slim`, a
 build-time launch check ties `api/`'s Playwright to the prefix's pin, and `MALLOC_ARENA_MAX=2` is set. Same size,
 the layers now share on the box. Awaits `node cli.ts ro-housing server`.
+
+## [2026-11-25] done | Brief 30, the issues feature is tracked
+
+The unanchored `issues/` rule in `.gitignore` also hid `api/src/features/issues/`. It is now `/issues/`, and the five
+untracked files are committed unchanged. A scratch clone of HEAD typechecks `api/`, so a fresh clone and a vps-deploy
+rollback build. No deploy needed.

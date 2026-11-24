@@ -70,3 +70,12 @@ None. The next deploy and any rollback now work from a clone.
 - Settled 2026-11-25 (owner): promote it.
 - Mine (technical): anchor the rule instead of removing it; commit the files unchanged; verify with a scratch clone's
   typecheck rather than a Docker build.
+
+## Outcome (2026-11-25)
+
+`.gitignore` now ignores `/issues/` (comment kept), and the five untracked files of `api/src/features/issues/` are
+committed unchanged (six tracked). No other ignored source file turned up: the ignored paths on disk are `.env`,
+build output, `node_modules` and `test-results/`. `git check-ignore -v api/src/features/issues/index.ts` prints
+nothing; `issues/x` still matches `/issues/`. Fresh clone of HEAD: `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci` in
+`api/`, then `npx tsc -p tsconfig.json --noEmit` there, exit 0. `npm run check` passed (it runs the five newly tracked
+tests); `bash corpus/lint.sh` passed. No deploy needed.
