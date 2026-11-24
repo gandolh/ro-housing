@@ -5,7 +5,7 @@ status: promoted
 tags: [fix, server]
 ---
 
-Promoted 2026-11-25 to [brief 30](../briefs/done/30-the-issues-feature-is-tracked.md).
+Promoted 2026-11-24 to [brief 30](../briefs/done/30-the-issues-feature-is-tracked.md).
 
 `.gitignore` line 152, `issues/` ("User-reported issues (consumed by Claude, deleted after fix)"), is not anchored,
 so it also matches `api/src/features/issues/`. Five of its six files are in no commit (`git check-ignore -v`

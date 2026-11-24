@@ -75,11 +75,11 @@ until the owner presses Save. This is a cheap second layer, and the page is alre
 
 ## Owner decisions
 
-- Settled 2026-11-25 (owner): promote it.
+- Settled 2026-11-24 (owner): promote it.
 - Mine (technical): marker text and the strip-until-stable rule; the policy sentence; no model calls in the build; the
   re-score reduced to a live spot check by the owner.
 
-## Outcome (2026-11-25)
+## Outcome (2026-11-24)
 
 `fence()` in `fill.ts` removes every copy of either marker (case and spacing ignored, repeated until none is left)
 and wraps the page between `<<<LISTING PAGE>>>` and `<<<END LISTING PAGE>>>`; `fillMessages()` sends the fenced page

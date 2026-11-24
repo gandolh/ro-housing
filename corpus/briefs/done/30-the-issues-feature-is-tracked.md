@@ -67,11 +67,11 @@ None. The next deploy and any rollback now work from a clone.
 
 ## Owner decisions
 
-- Settled 2026-11-25 (owner): promote it.
+- Settled 2026-11-24 (owner): promote it.
 - Mine (technical): anchor the rule instead of removing it; commit the files unchanged; verify with a scratch clone's
   typecheck rather than a Docker build.
 
-## Outcome (2026-11-25)
+## Outcome (2026-11-24)
 
 `.gitignore` now ignores `/issues/` (comment kept), and the five untracked files of `api/src/features/issues/` are
 committed unchanged (six tracked). No other ignored source file turned up: the ignored paths on disk are `.env`,
