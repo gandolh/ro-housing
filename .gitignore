@@ -149,7 +149,7 @@ data/*.db-wal
 data/*.db-shm
 
 # User-reported issues (consumed by Claude, deleted after fix)
-issues/
+/issues/
 .claude/*
 !.claude/rules/
 .agents
