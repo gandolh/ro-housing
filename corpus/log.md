@@ -387,3 +387,9 @@ rollback build. No deploy needed.
 "Fill the gaps" now sends the page between `<<<LISTING PAGE>>>` and `<<<END LISTING PAGE>>>`, with any marker copy in
 the page removed first, and the system message says the fenced text is data. Idea only from Wicket's odysseus
 research. Awaits `node cli.ts ro-housing server`; the live spot check is the owner's.
+
+## [2026-11-25] todo | Brief 32: the colour mode is kept under ro-housing's own key
+
+Filed from the owner's report that the colour-mode picker acts across apps. ro-housing and six other apps on the shared
+domain keep the choice under the bare `theme` key; it moves to `ro-housing.theme`, carrying the old value over once.
+Ships with `node cli.ts ro-housing all`.
