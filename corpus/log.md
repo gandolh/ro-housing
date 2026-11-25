@@ -392,4 +392,4 @@ research. Awaits `node cli.ts ro-housing server`; the live spot check is the own
 
 Filed from the owner's report that the colour-mode picker acts across apps. ro-housing and six other apps on the shared
 domain keep the choice under the bare `theme` key; it moves to `ro-housing.theme`, carrying the old value over once.
-Ships with `node cli.ts ro-housing all`.
+Ships with `node cli.ts ro-housing deploy`.

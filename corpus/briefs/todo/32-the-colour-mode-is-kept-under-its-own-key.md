@@ -60,7 +60,7 @@ All settled. None of them is open.
 
 ## Owner steps
 
-- `node cli.ts ro-housing all` from vps-deploy. On the first load after it, ro-housing takes the mode last picked in any
+- `node cli.ts ro-housing deploy` from vps-deploy (the web build only; no server restart). On the first load after it, ro-housing takes the mode last picked in any
   app, once; from then on it keeps its own.
 
 ## Owner decisions
