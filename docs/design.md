@@ -15,7 +15,7 @@ This is a tool, not a brochure. It stays dense and fast to scan, and it takes it
 
 ## Color
 
-Defined in `web/src/styles.css` under `@theme`, as `light-dark(<light>, <dark>)`. `<html data-theme>` (`light`, `dark` or `system`) sets `color-scheme`, so the page follows without a class. A first visit shows light; the choice lives in `localStorage` (`theme`) and is set in the Account dialog. Use the tokens as Tailwind classes (`bg-panel`, `text-ink-dim`, `border-rule-soft`).
+Defined in `web/src/styles.css` under `@theme`, as `light-dark(<light>, <dark>)`. `<html data-theme>` (`light`, `dark` or `system`) sets `color-scheme`, so the page follows without a class. A first visit shows light; the choice lives in `localStorage` (`ro-housing.theme`; the bare `theme` is read once to carry an old choice over) and is set in the Account dialog. Use the tokens as Tailwind classes (`bg-panel`, `text-ink-dim`, `border-rule-soft`).
 
 | Token | Light | Dark | Role |
 |---|---|---|---|

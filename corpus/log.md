@@ -393,3 +393,11 @@ research. Awaits `node cli.ts ro-housing server`; the live spot check is the own
 Filed from the owner's report that the colour-mode picker acts across apps. ro-housing and six other apps on the shared
 domain keep the choice under the bare `theme` key; it moves to `ro-housing.theme`, carrying the old value over once.
 Ships with `node cli.ts ro-housing deploy`.
+
+## [2026-11-26] done | Brief 32, the colour mode is kept under its own key
+
+The boot script and the store use `ro-housing.theme` and read the bare `theme` once (`LEGACY_THEME_KEY`) to carry an
+old choice over, never writing or deleting it. Unit tests cover carry-over, own key winning, the bare key untouched and
+unknown values; the e2e fixture seeds the new key. `npm run check` passes, and a Chromium walk on a scratch API showed
+the carry-over, no flash and the toggle writing only the new key. Awaits `node cli.ts ro-housing deploy`. The board was
+not updated because brief-board was not available in this session.

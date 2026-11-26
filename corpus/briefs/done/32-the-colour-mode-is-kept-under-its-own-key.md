@@ -67,3 +67,16 @@ All settled. None of them is open.
 
 - Settled 2026-11-25 (owner): "color-mode picker should be per app, not per ward account." The key, the carry-over
   and the legacy name are the controller's calls, the same in all seven apps.
+
+## Outcome
+
+Built 2026-11-26. The key is `ro-housing.theme` in the boot script (`web/index.html`) and the store
+(`web/src/theme.ts`, with `LEGACY_THEME_KEY`); both read the bare `theme` once when their own key holds nothing valid,
+copy a valid value to `ro-housing.theme`, and never write or delete the bare key. `theme.test.ts` covers own key wins,
+a bare `dark` carried over, the bare key never written, and unknown values reading as light, for the store and the boot
+script. `e2e/fixtures.ts` seeds `ro-housing.theme`. `docs/design.md` and `docs/decisions.md` name the new key.
+Checked: `npm run check` passes; in Chromium over a scratch API, a stored bare `dark` came up dark with no flash and
+copied to `ro-housing.theme`, then setting the bare key to `light` and reloading kept the page dark, and the System
+switch wrote only `ro-housing.theme`. The e2e suite gives 26 passed and 4 failed
+(360 px sideways scroll in Listings, and the row-gap counts at 1280 and 1024); the same four fail without the change.
+Brief-board was not updated: brief-board was not available in this session.

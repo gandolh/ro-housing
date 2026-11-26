@@ -81,7 +81,7 @@ export async function openTab(page: Page, name: (typeof SCREENS)[number]): Promi
 
 export async function setTheme(page: Page, theme: "light" | "dark"): Promise<void> {
   await page.evaluate((t) => {
-    localStorage.setItem("theme", t);
+    localStorage.setItem("ro-housing.theme", t);
     document.documentElement.dataset.theme = t;
   }, theme);
 }
