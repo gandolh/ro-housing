@@ -17,6 +17,8 @@ Brief 25 (the redesign: warm paper, Source Code Pro, islands, a bottom bar on a 
 Brief 27 (ward-auth 1.1.0: the password on Ward link, look-alike usernames refused) was built on 2026-11-19 and awaits a deploy (`all`); see [log.md](../log.md).
 Brief 29 (the Chromium layers shared with newspapper and gazette on a pinned base, `MALLOC_ARENA_MAX=2`) was built on 2026-11-24 and awaits a deploy (`server`); see [log.md](../log.md).
 
+Brief 32 (the colour mode kept under `ro-housing.theme`, the bare `theme` read once) was built on 2026-11-26 and awaits a deploy (`deploy`); see [log.md](../log.md).
+
 ## By area
 
 - **On the VPS: ready, not deployed** (2026-11-04). Sign-in (a seeded local account or Sign in

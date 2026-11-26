@@ -7,7 +7,10 @@ export const THEMES: readonly { value: Theme; label: string }[] = [
   { value: "system", label: "System" },
 ];
 
-const KEY = "theme";
+/** The app's own key: one localStorage serves every app on the domain, so the name carries the app's. */
+const KEY = "ro-housing.theme";
+/** The bare key older builds used, read once to carry the choice over and never written. */
+const LEGACY_THEME_KEY = "theme";
 
 function isTheme(value: unknown): value is Theme {
   return value === "light" || value === "dark" || value === "system";
@@ -17,7 +20,11 @@ function isTheme(value: unknown): value is Theme {
 export function readTheme(): Theme {
   try {
     const value = localStorage.getItem(KEY);
-    return isTheme(value) ? value : "light";
+    if (isTheme(value)) return value;
+    const legacy = localStorage.getItem(LEGACY_THEME_KEY);
+    if (!isTheme(legacy)) return "light";
+    localStorage.setItem(KEY, legacy);
+    return legacy;
   } catch {
     return "light";
   }
