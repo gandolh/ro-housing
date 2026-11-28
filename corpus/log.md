@@ -401,3 +401,11 @@ old choice over, never writing or deleting it. Unit tests cover carry-over, own 
 unknown values; the e2e fixture seeds the new key. `npm run check` passes, and a Chromium walk on a scratch API showed
 the carry-over, no flash and the toggle writing only the new key. Awaits `node cli.ts ro-housing deploy`. The board was
 not updated because brief-board was not available in this session.
+
+## [2026-11-28] todo | Briefs 33 and 34 from the grill of open questions
+
+The owner's grill of that day settled the open-questions page. The owner chose to hide the Report button on the VPS:
+brief 33 (a server switch the compose file sets, and the web app hides the button on a 404). As the controller's
+calls: a fresh database starts with imobiliare.ro's search unticked (brief 34), and the shared-origin sessions stay as
+built. Two entries were already answered: every redirect hop has been checked since 2026-11-06, and the container
+checks needed nothing. ro-housing-31 deployed in the owner's rollout of 2026-11-28 (68ad432).
